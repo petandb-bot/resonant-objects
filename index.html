@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#101716">
+<title>RESONANT OBJECTS — v0.1</title>
+<style>
+  :root { color-scheme: dark; --bg:#111817; --ink:#d8d6c9; --muted:#89938e; --line:rgba(212,220,199,.13); --accent:#c6bca3; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { width:100%; height:100%; margin:0; padding:0; overflow:hidden; overscroll-behavior:none; background:var(--bg); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif; }
+  body { user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; }
+  #app { height:100dvh; width:100vw; display:flex; flex-direction:column; padding-left:env(safe-area-inset-left); padding-right:env(safe-area-inset-right); padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom); }
+  header { height:42px; min-height:42px; display:flex; align-items:center; justify-content:space-between; gap:14px; padding:0 17px; border-bottom:1px solid var(--line); }
+  .brand { display:flex; align-items:baseline; gap:9px; white-space:nowrap; letter-spacing:.165em; font-size:10px; font-weight:600; }
+  .brand small { font-weight:400; opacity:.5; letter-spacing:.06em; font-size:9px; }
+  .status { color:var(--muted); font-size:10px; letter-spacing:.13em; white-space:nowrap; text-align:center; }
+  #mode { min-height:29px; min-width:88px; padding:5px 11px; border:1px solid rgba(219,209,187,.30); border-radius:40px; background:transparent; color:#d2d0c5; font-size:10px; letter-spacing:.12em; cursor:pointer; }
+  #mode[aria-pressed="true"] { background:rgba(210,197,168,.18); border-color:rgba(210,197,168,.60); }
+  #stage { position:relative; flex:1; min-height:0; overflow:hidden; background:radial-gradient(ellipse at 50% 48%,#1b2623 0%,#121b19 53%,#101716 100%); }
+  canvas { display:block; width:100%; height:100%; touch-action:none; outline:none; }
+  footer { height:59px; min-height:59px; border-top:1px solid var(--line); display:flex; align-items:center; justify-content:center; gap:clamp(20px,8vw,94px); padding:4px 16px; }
+  .control { display:flex; align-items:center; gap:11px; min-width:0; }
+  .control label { display:flex; flex-direction:column; gap:3px; width:56px; font-size:9px; letter-spacing:.15em; color:#b5bcb1; }
+  .control output { font-size:9px; color:#778780; letter-spacing:0; }
+  input[type=range] { width:clamp(80px,14vw,158px); height:27px; margin:0; padding:0; appearance:none; -webkit-appearance:none; background:transparent; cursor:pointer; touch-action:pan-x; }
+  input[type=range]::-webkit-slider-runnable-track { height:2px; border-radius:2px; background:linear-gradient(90deg,#837f6f, #53635b); }
+  input[type=range]::-webkit-slider-thumb { appearance:none; -webkit-appearance:none; width:16px; height:16px; border:1px solid #d6d1ba; border-radius:50%; background:#293b36; margin-top:-7px; }
+  input[type=range]::-moz-range-track { height:2px; background:#68766a; }
+  input[type=range]::-moz-range-thumb { width:16px; height:16px; border:1px solid #d6d1ba; border-radius:50%; background:#293b36; }
+  #rotate { position:fixed; inset:0; z-index:10; display:none; flex-direction:column; align-items:center; justify-content:center; background:#101716; color:#b9bdaf; gap:17px; padding:22px; text-align:center; font-size:12px; line-height:1.8; letter-spacing:.09em; }
+  .rotate-icon { width:82px; height:48px; border:2px solid #a6ad9e; border-radius:10px; position:relative; }
+  .rotate-icon::after { content:'↻'; position:absolute; font-size:28px; right:-30px; top:-23px; }
+  #rotate small { color:#747f76; letter-spacing:0; }
+  @media (orientation:portrait) { #rotate { display:flex; } }
+  @media (max-height:320px) and (orientation:landscape) { header { height:32px; min-height:32px; } footer { height:44px; min-height:44px; } .control label {font-size:8px;} }
+  @media (max-width:590px) and (orientation:landscape) { .status {display:none;} header {padding:0 10px;} footer {gap:14px; padding:2px 9px;} .control {gap:5px;} .control label {width:49px;} }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="brand">RESONANT OBJECTS <small>0.1</small></div>
+    <div class="status" id="status" aria-live="polite">TOUCH AN OBJECT TO BEGIN</div>
+    <button id="mode" type="button" aria-pressed="false" title="Toggle between performance and repositioning objects">REARRANGE</button>
+  </header>
+  <main id="stage"><canvas id="instrument" aria-label="Nine resonant objects. Touch or drag across them to play." tabindex="0"></canvas></main>
+  <footer>
+    <div class="control"><label for="material">MATERIAL<output id="materialValue">SOFT / 36</output></label><input id="material" type="range" min="0" max="100" value="36" aria-label="Material from soft metal to glass"></div>
+    <div class="control"><label for="decay">DECAY<output id="decayValue">LONG / 67</output></label><input id="decay" type="range" min="0" max="100" value="67" aria-label="Resonance decay duration"></div>
+  </footer>
+</div>
+<div id="rotate"><span class="rotate-icon" aria-hidden="true"></span><span>ROTATE YOUR PHONE<br>TO PLAY IN LANDSCAPE</span><small>If the screen does not rotate, disable orientation lock.</small></div>
+<script>
+(() => {
+  'use strict';
+
+  const $ = (id) => document.getElementById(id);
+  const canvas = $('instrument');
+  const surface = canvas.getContext('2d', {alpha: true});
+  const stage = $('stage');
+  const status = $('status');
+  const materialInput = $('material');
+  const decayInput = $('decay');
+  const modeButton = $('mode');
+  const TWO_PI = Math.PI * 2;
+  const LIMIT = (v,min,max) => Math.min(max, Math.max(min,v));
+
+  // Handpan-inspired D minor family: D3, A3, Bb3, C4, D4, E4, F4, G4, A4.
+  // Note-field modes: fundamental, octave, twelfth, with intentionally weak irregular modes.
+  const notes = [
+    {name:'D3', midi:50, u:.50, v:.50, big:true},
+    {name:'A3', midi:57, u:.50, v:.16},
+    {name:'Bb3',midi:58, u:.718, v:.260},
+    {name:'C4', midi:60, u:.80, v:.50},
+    {name:'D4', midi:62, u:.718, v:.740},
+    {name:'E4', midi:64, u:.50, v:.84},
+    {name:'F4', midi:65, u:.282, v:.740},
+    {name:'G4', midi:67, u:.20, v:.50},
+    {name:'A4', midi:69, u:.282, v:.260}
+  ].map((n,i) => ({...n, id:i, x:0,y:0,r:35, last:0,energy:0}));
+
+  class ResonantEngine {
+    constructor() {
+      this.ctx = null;
+      this.voices = [];
+      this.noise = null;
+      this.material = Number(materialInput.value) / 100;
+      this.decay = Number(decayInput.value) / 100;
+    }
+    init() {
+      if (this.ctx) return;
+      const Audio = window.AudioContext || window.webkitAudioContext;
+      if (!Audio) {status.textContent = 'WEB AUDIO NOT AVAILABLE';return;}
+      this.ctx = new Audio({latencyHint:'interactive'});
+
+      // Dry voice bus -> future FX insert -> limiter -> speaker.
+      // Keep physical sympathetic coupling inside the voice engine, not in the effects stage.
+      this.voiceBus = this.ctx.createGain();
+      this.voiceBus.gain.value = .84;
+      this.effectInsert = this.ctx.createGain(); // clean pass-through in v0.1
+      this.compressor = this.ctx.createDynamicsCompressor();
+      this.compressor.threshold.value = -16;
+      this.compressor.knee.value = 12;
+      this.compressor.ratio.value = 3.6;
+      this.compressor.attack.value = .004;
+      this.compressor.release.value = .20;
+      this.output = this.ctx.createGain();
+      this.output.gain.value = .84;
+      this.voiceBus.connect(this.effectInsert).connect(this.compressor).connect(this.output).connect(this.ctx.destination);
+
+      // One reusable transient texture. Very short high-passed noise, not a long hiss.
+      const n = Math.floor(this.ctx.sampleRate * .08);
+      this.noise = this.ctx.createBuffer(1,n,this.ctx.sampleRate);
+      const a = this.noise.getChannelData(0);
+      for (let i=0;i<n;i++) a[i] = (Math.random()*2-1);
+    }
+    unlock() {
+      this.init();
+      if (!this.ctx) return Promise.resolve(false);
+      if (this.ctx.state === 'running') return Promise.resolve(true);
+      // Called directly by pointerdown / keydown: required for iOS Safari.
+      return this.ctx.resume().then(() => this.ctx.state === 'running').catch(() => false);
+    }
+    setMaterial(value) {this.material = value / 100;}
+    setDecay(value) {this.decay = value / 100;}
+    newVoice(time) {
+      // Limit persistent oscillator banks on slower iPhones.
+      const maxVoices = 30;
+      if (this.voices.length >= maxVoices) {
+        const oldest = this.voices.shift();
+        if (oldest) this.releaseVoice(oldest, time);
+      }
+      const bus = this.ctx.createGain();
+      bus.gain.setValueAtTime(1, time);
+      bus.connect(this.voiceBus);
+      const v = {bus, oscillators:[], finished:false};
+      this.voices.push(v);
+      return v;
+    }
+    releaseVoice(v, time) {
+      if (v.finished) return;
+      v.finished = true;
+      v.bus.gain.cancelScheduledValues(time);
+      v.bus.gain.setValueAtTime(Math.max(.0001,v.bus.gain.value),time);
+      v.bus.gain.exponentialRampToValueAtTime(.0001,time+.055);
+      for (const osc of v.oscillators) {try {osc.stop(time+.065);} catch(_) {}}
+    }
+    tone(note, velocity, sympathetic=false, delay=0) {
+      if (!this.ctx || this.ctx.state !== 'running' || velocity < .012) return;
+      const now = this.ctx.currentTime;
+      const time = now + delay + .004;
+      const v = this.newVoice(time);
+      const ctx = this.ctx;
+      const m = this.material;
+      const d = this.decay;
+      const fundamental = 440 * Math.pow(2,(note.midi-69)/12);
+      const tail = (.65 + 2.45*d) * (note.big?1.13:1);
+      const bright = .40 + .80*m;
+      const vel = LIMIT(velocity, .02, 1);
+      const strength = vel * (sympathetic ? .48 : .82);
+      const drift = (note.id*17 % 11 - 5) * .00023;
+      const modes = [
+        [1,       .32, 1.03],
+        [2+drift, .37, .88],
+        [3-drift, .17, .66],
+        [1.006,   .10, 1.30], // slow beating like two not-quite-identical vibration axes
+        [4.06+.18*m, .048*bright, .28],
+        [5.31+.39*m, .026*bright, .17]
+      ];
+      const peak = strength * .34;
+      let lastEnd = time;
+      (sympathetic ? modes.slice(0,4) : modes).forEach(([ratio,amp,dur],idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const decaySeconds = Math.max(.09,tail*dur*(sympathetic?.84:1));
+        const rise = sympathetic ? .046 : ((idx>=4)? .0025 : .0065 + .002*m);
+        const target = Math.max(.0001,peak*amp*(idx>=4?(0.45+vel*.55):1));
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(fundamental*ratio, time);
+        // Envelope decays continuously instead of dropping at note-off.
+        gain.gain.setValueAtTime(.00001,time);
+        gain.gain.linearRampToValueAtTime(target,time+rise);
+        gain.gain.exponentialRampToValueAtTime(.000012,time+rise+decaySeconds);
+        osc.connect(gain).connect(v.bus);
+        osc.start(time);
+        const end = time+rise+decaySeconds+.012;
+        osc.stop(end);
+        v.oscillators.push(osc);
+        lastEnd = Math.max(lastEnd,end);
+      });
+      // A little mallet noise makes soft tapping legible on tiny speakers.
+      if (!sympathetic) {
+        const src = ctx.createBufferSource();
+        src.buffer = this.noise;
+        const hp = ctx.createBiquadFilter();
+        hp.type = 'highpass';
+        hp.frequency.value = 900 + m*1600;
+        const band = ctx.createBiquadFilter();
+        band.type = 'lowpass';
+        band.frequency.value = 2600+m*3700;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(.00001,time);
+        g.gain.linearRampToValueAtTime(.036*vel*(.55+m*.8),time+.0015);
+        g.gain.exponentialRampToValueAtTime(.00001,time+.016);
+        src.connect(hp).connect(band).connect(g).connect(v.bus);
+        src.start(time);
+        src.stop(time+.02);
+      }
+      // Clean up the graph. onended is only attached to the longest-running partial.
+      // Release and disconnect this bank when its longest partial has ended.
+      const cleanupMs = Math.max(0, (lastEnd - ctx.currentTime)*1000+120);
+      window.setTimeout(() => {
+        if (!v.finished) v.finished=true;
+        v.bus.disconnect();
+        const at = this.voices.indexOf(v);
+        if (at>=0) this.voices.splice(at,1);
+      }, cleanupMs);
+    }
+    strike(index,velocity=1) {
+      if (!this.ctx || this.ctx.state!=='running') return;
+      const origin = notes[index];
+      this.tone(origin,velocity);
+      const now = performance.now();
+      origin.last=now;
+      origin.energy = Math.min(1,origin.energy+velocity*.92);
+      // Sympathetic response is based on proximity, not a random trigger.
+      const distances = notes.filter(n=>n.id!==index).map(n=>({n,dist:Math.hypot(n.x-origin.x,n.y-origin.y)})).sort((a,b)=>a.dist-b.dist);
+      const reach = Math.max(85,Math.min(stage.clientWidth,stage.clientHeight)*.61);
+      let sent = 0;
+      for (const item of distances) {
+        if (sent>=2 || item.dist>reach) break;
+        const relation = 1-item.dist/reach;
+        const sympatheticVel = velocity * (.09+.19*relation);
+        if (sympatheticVel<.045) continue;
+        this.tone(item.n,sympatheticVel,true,.014+sent*.009);
+        item.n.energy=Math.min(1,item.n.energy+sympatheticVel*.55);
+        sent++;
+      }
+      requestDraw();
+    }
+  }
+
+  const engine = new ResonantEngine();
+  const interaction = new Map();
+  let rearrange = false;
+  let W=0,H=0,DPR=1;
+  let drawing=false;
+  let lastFrame=0;
+  let lastResize=0;
+
+  function layout() {
+    const rect = stage.getBoundingClientRect();
+    W=Math.max(1,rect.width); H=Math.max(1,rect.height);
+    DPR=Math.min(window.devicePixelRatio||1,2);
+    canvas.width=Math.round(W*DPR);
+    canvas.height=Math.round(H*DPR);
+    surface.setTransform(DPR,0,0,DPR,0,0);
+    const rOuter = LIMIT(H*.117,24,39);
+    for (const n of notes) {
+      n.x=n.u*W; n.y=n.v*H;
+      n.r=n.big? rOuter*1.37:rOuter;
+    }
+    lastResize=performance.now();
+    requestDraw();
+  }
+
+  function hit(x,y) {
+    let selected=-1,near=Infinity;
+    for (let i=0;i<notes.length;i++) {
+      const n=notes[i];
+      const d=Math.hypot(n.x-x,n.y-y);
+      if (d<Math.max(n.r*1.24,31) && d<near) {selected=i;near=d;}
+    }
+    return selected;
+  }
+  function coords(e) {
+    const r=canvas.getBoundingClientRect();
+    return {x:e.clientX-r.left,y:e.clientY-r.top};
+  }
+  function playPointer(e,index) {
+    const n=notes[index];
+    const {x,y}=coords(e);
+    const r=Math.hypot(x-n.x,y-n.y)/n.r;
+    const velocity=LIMIT(1.02-.28*r,.65,1);
+    const trigger=() => {engine.strike(index,velocity);status.textContent='PLAY / TOUCH AND SLIDE';};
+    engine.unlock().then(ok => {if(ok) trigger(); else status.textContent='TOUCH AGAIN TO ENABLE AUDIO';});
+  }
+  canvas.addEventListener('pointerdown',(e)=>{
+    e.preventDefault();
+    const p=coords(e),index=hit(p.x,p.y);
+    if (index<0) return;
+    try {canvas.setPointerCapture(e.pointerId);} catch(_) {}
+    interaction.set(e.pointerId,{index, lastIndex:index, moving:rearrange});
+    if (!rearrange) playPointer(e,index);
+    else {status.textContent='DRAG OBJECTS / TAP DONE';requestDraw();}
+  },{passive:false});
+  canvas.addEventListener('pointermove',(e)=>{
+    const state=interaction.get(e.pointerId);
+    if (!state) return;
+    e.preventDefault();
+    const p=coords(e);
+    if (state.moving) {
+      const n=notes[state.index];
+      // The allowed layout protects the header, footer, and other controls.
+      n.x=LIMIT(p.x,n.r+6,W-n.r-6);
+      n.y=LIMIT(p.y,n.r+6,H-n.r-6);
+      n.u=n.x/W;n.v=n.y/H;
+      requestDraw();
+    } else {
+      const i=hit(p.x,p.y);
+      if (i!==state.lastIndex && i>=0) {state.lastIndex=i;playPointer(e,i);}
+      if (i<0) state.lastIndex=-1;
+    }
+  },{passive:false});
+  for (const eventName of ['pointerup','pointercancel','lostpointercapture']) {
+    canvas.addEventListener(eventName,(e)=>{interaction.delete(e.pointerId);});
+  }
+  modeButton.addEventListener('click',()=>{
+    rearrange=!rearrange;
+    modeButton.setAttribute('aria-pressed',String(rearrange));
+    modeButton.textContent=rearrange?'DONE':'REARRANGE';
+    status.textContent=rearrange?'MOVE OBJECTS TO CHANGE COUPLING':'PLAY / TOUCH AND SLIDE';
+    requestDraw();
+  });
+  materialInput.addEventListener('input',()=>{
+    const value=Number(materialInput.value);
+    engine.setMaterial(value);
+    $('materialValue').textContent=(value<35?'SOFT':value>70?'GLASS':'ALLOY')+' / '+value;
+    requestDraw();
+  });
+  decayInput.addEventListener('input',()=>{
+    const value=Number(decayInput.value);
+    engine.setDecay(value);
+    $('decayValue').textContent=(value<32?'SHORT':value>64?'LONG':'MEDIUM')+' / '+value;
+    requestDraw();
+  });
+  window.addEventListener('keydown',(e)=>{
+    if (e.repeat || e.target.tagName==='INPUT') return;
+    if (/^[1-9]$/.test(e.key)) {
+      const i=Number(e.key)-1;
+      e.preventDefault();
+      engine.unlock().then(ok=>{if(ok)engine.strike(i,.9);});
+    }
+  });
+
+  function requestDraw() {
+    if (!drawing) {drawing=true;requestAnimationFrame(draw);}
+  }
+  function draw(time=0) {
+    drawing=false;
+    const dt=lastFrame?Math.min(.06,(time-lastFrame)/1000):.016;
+    lastFrame=time;
+    surface.clearRect(0,0,W,H);
+
+    // A barely visible shared body: nodes are facets of one physical instrument.
+    surface.save();
+    surface.strokeStyle='rgba(189,193,170,.045)';
+    surface.lineWidth=1;
+    surface.beginPath();
+    surface.ellipse(W*.50,H*.50,W*.335,H*.43,0,0,TWO_PI);
+    surface.stroke();
+    surface.restore();
+
+    // Connection strength follows physical proximity; audio uses the same coordinates.
+    const maxReach=Math.max(85,Math.min(W,H)*.61);
+    for (let a=0;a<notes.length;a++) for (let b=a+1;b<notes.length;b++) {
+      const x=notes[a],y=notes[b];
+      const dist=Math.hypot(x.x-y.x,x.y-y.y);
+      if (dist>maxReach) continue;
+      const active=Math.max(x.energy,y.energy);
+      const alpha=.018 + active*.12*(1-dist/maxReach);
+      surface.strokeStyle=`rgba(183,201,184,${alpha.toFixed(4)})`;
+      surface.lineWidth=.6+active*.65;
+      surface.beginPath();surface.moveTo(x.x,x.y);surface.lineTo(y.x,y.y);surface.stroke();
+    }
+
+    const hardness=engine.material;
+    for (const n of notes) {
+      n.energy=Math.max(0,n.energy - dt*.64);
+      const energy=n.energy;
+      const base=n.big? [119,128,112]:[100,120,111];
+      const tint=hardness*22;
+      const outerR=n.r + energy*3;
+      const g=surface.createRadialGradient(n.x-n.r*.27,n.y-n.r*.36,3,n.x,n.y,outerR);
+      g.addColorStop(0,`rgba(${base[0]+39+tint},${base[1]+38+tint},${base[2]+25+tint},${.38+energy*.22})`);
+      g.addColorStop(.40,`rgba(${base[0]+18+tint},${base[1]+20+tint},${base[2]+12+tint},${.43+energy*.18})`);
+      g.addColorStop(1,`rgba(${base[0]-18},${base[1]-10},${base[2]-13},${.66+energy*.16})`);
+      surface.save();
+      surface.shadowColor=`rgba(0,0,0,${.43+energy*.10})`;
+      surface.shadowBlur=15;surface.shadowOffsetY=4;
+      surface.fillStyle=g;
+      surface.beginPath();
+      // Slightly elliptical, like hammered metal note fields; no generic circles UI.
+      surface.ellipse(n.x,n.y,n.r*.96,n.r*1.04,n.id%2?.09:-.05,0,TWO_PI);
+      surface.fill();
+      surface.restore();
+      surface.strokeStyle=`rgba(216,214,194,${.20+energy*.30})`;
+      surface.lineWidth=.8;
+      surface.beginPath();surface.ellipse(n.x,n.y,outerR*.96,outerR*1.04,n.id%2?.09:-.05,0,TWO_PI);surface.stroke();
+      // Two restrained nested resonant contours.
+      for (const fraction of [.72,.46]) {
+        surface.beginPath();
+        surface.ellipse(n.x,n.y,n.r*fraction*.96,n.r*fraction*1.04,0,0,TWO_PI);
+        surface.strokeStyle=`rgba(219,223,198,${.035+energy*.08})`;
+        surface.lineWidth=.8;
+        surface.stroke();
+      }
+      if (energy>.02) {
+        surface.beginPath();
+        surface.ellipse(n.x,n.y,n.r*(1.04+energy*.20),n.r*(1.04+energy*.20),0,0,TWO_PI);
+        surface.strokeStyle=`rgba(202,215,181,${energy*.29})`;
+        surface.stroke();
+      }
+      surface.fillStyle=`rgba(236,234,212,${.64+energy*.30})`;
+      surface.font=`${n.big?'600 12px':'500 10px'} -apple-system,BlinkMacSystemFont,sans-serif`;
+      surface.textAlign='center';surface.textBaseline='middle';
+      surface.fillText(n.name,n.x,n.y+.2);
+      if (rearrange) {
+        surface.fillStyle='rgba(219,222,197,.25)';
+        surface.fillRect(n.x-1,n.y+n.r*.63,2,3);
+      }
+    }
+    if (notes.some(n=>n.energy>.015)) requestDraw();
+  }
+  if ('ResizeObserver' in window) new ResizeObserver(layout).observe(stage);
+  else window.addEventListener('resize',layout);
+  window.addEventListener('orientationchange',()=>setTimeout(layout,120));
+  layout();
+})();
+</script>
+</body>
+</html>
