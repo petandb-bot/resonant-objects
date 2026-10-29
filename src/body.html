@@ -1,0 +1,82 @@
+<div id="app">
+<header class="top">
+  <div class="brand"><span class="brandmark" aria-hidden="true">✧</span><div class="brand-name">RESONANT OBJECTS<small>PLAY · MOVE · RESONATE</small></div></div>
+  <div class="top-center" role="group" aria-label="Performance mode">
+    <button class="pill selected" data-mode="play" type="button">PLAY</button><button class="pill" data-mode="move" type="button">↗ MOVE</button>
+  </div>
+  <div class="top-right">
+    <button id="reset" class="flatbtn" type="button" title="Restore the current layout">RESET</button>
+    <button id="tuneBtn" class="flatbtn" type="button" aria-expanded="false" aria-controls="drawer">TUNE</button>
+    <button id="labButton" class="flatbtn" type="button" title="Layout playability test">LAB</button>
+  </div>
+</header>
+<div class="workspace">
+<aside class="rail" aria-label="Sonic parameters">
+  <section class="panel"><div class="panel-title"><span class="symbol">◈</span>MATERIAL</div>
+    <div class="knobline"><div class="knob" aria-hidden="true"></div><div class="control-detail"><output data-value="material">Warm alloy</output><small>soft ↔ bright</small></div></div>
+    <input data-param="material" aria-label="Material" type="range" min="0" max="100" value="36">
+  </section>
+  <section class="panel"><div class="panel-title"><span class="symbol">◎</span>RING</div>
+    <div class="knobline"><div class="knob" data-knob="ring" aria-hidden="true"></div><div class="control-detail"><output data-value="ring">Long</output><small>length of the tone</small></div></div>
+    <input data-param="ring" aria-label="Ring" type="range" min="0" max="100" value="67">
+  </section>
+  <section class="panel"><div class="panel-title"><span class="symbol">◌</span>SPACE</div>
+    <div class="knobline"><div class="knob" data-knob="space" aria-hidden="true"></div><div class="control-detail"><output data-value="space">Dry</output><small>room reflections</small></div></div>
+    <input data-param="space" aria-label="Space" type="range" min="0" max="100" value="0">
+  </section>
+  <section class="panel"><div class="panel-title"><span class="symbol">☷</span>BOND</div>
+    <div class="knobline"><div class="knob" data-knob="bond" aria-hidden="true"></div><div class="control-detail"><output data-value="bond">Connected</output><small>shared resonance</small></div></div>
+    <input data-param="bond" aria-label="Bond" type="range" min="0" max="100" value="75">
+  </section>
+</aside>
+<main class="stage" id="stage" aria-label="Instrument performance area">
+  <canvas id="instrument" tabindex="0" aria-label="Tap, slide or drag a resonant shape to play and move it"></canvas>
+  <canvas id="overlay" aria-hidden="true"></canvas><div id="labels" aria-hidden="true"></div>
+  <div class="stage-topline">AN INSTRUMENT OF SMALL THINGS</div>
+  <div class="stage-message" id="touchHint">✦ TOUCH · SLIDE · LISTEN</div>
+</main>
+<aside class="rail" aria-label="Instrument settings">
+  <section class="panel"><div class="panel-title"><span class="symbol">⁙</span>OBJECTS</div>
+    <div class="piece-count" role="group" aria-label="Number of sound objects">
+      <button data-count="7" aria-pressed="false" type="button">7</button><button data-count="9" aria-pressed="true" type="button">9</button><button data-count="11" aria-pressed="false" type="button">11</button>
+    </div></section>
+  <section class="panel"><div class="panel-title"><span class="symbol">✧</span>SCENE</div>
+    <div class="actionrow"><button id="scenePrev" type="button" aria-label="Previous scene">‹</button><button id="sceneName" type="button" disabled>Glass garden</button><button id="sceneNext" type="button" aria-label="Next scene">›</button></div>
+  </section>
+  <section class="panel"><div class="panel-title"><span class="symbol">⊙</span>TUNING</div>
+    <select data-scale aria-label="Musical scale"><option value="minor">D minor</option><option value="penta">C pentatonic</option><option value="lydian">F lydian</option></select></section>
+  <section class="panel"><div class="panel-title"><span class="symbol">≈</span>MOVEMENT</div>
+    <div class="rowbuttons"><button data-motion="still" aria-pressed="true" type="button">Still</button><button data-motion="float" aria-pressed="false" type="button">Float</button><button data-motion="orbit" aria-pressed="false" type="button">Orbit</button></div>
+    <p class="panel-desc">Shapes rotate gently; touch positions stay stable.</p></section>
+  <section class="panel"><div class="panel-title"><span class="symbol">✳</span>EXPLORE</div><div class="actionrow"><button id="shuffle" type="button">SHUFFLE</button><button id="save" type="button">SAVE</button></div></section>
+  <section class="panel"><div class="panel-title"><span class="symbol">≋</span>OUTPUT</div>
+    <input data-param="level" aria-label="Master output volume" type="range" min="0" max="100" value="84"><output data-value="level">84%</output>
+  </section>
+</aside>
+</div>
+<footer class="bottom"><span class="fine">✧  RESONANT OBJECTS · v0.4</span><span class="readout" id="status" role="status" aria-live="polite">Tap a shape to wake the instrument</span></footer>
+</div>
+<section id="drawer" role="region" aria-label="Instrument controls">
+ <div class="drawer-title">TUNE THE INSTRUMENT <button id="closeTune" type="button" class="flatbtn" aria-label="Close tuning">✕</button></div>
+ <div class="drawer-grid">
+  <div class="mini-field"><label>Material <output data-value="material">Warm alloy</output></label><input data-param="material" aria-label="Material" type="range" min="0" max="100" value="36"></div>
+  <div class="mini-field"><label>Ring <output data-value="ring">Long</output></label><input data-param="ring" aria-label="Ring" type="range" min="0" max="100" value="67"></div>
+  <div class="mini-field"><label>Space <output data-value="space">Dry</output></label><input data-param="space" aria-label="Space" type="range" min="0" max="100" value="0"></div>
+  <div class="mini-field"><label>Bond <output data-value="bond">Connected</output></label><input data-param="bond" aria-label="Bond" type="range" min="0" max="100" value="75"></div>
+ </div>
+ <div class="drawer-grid" style="margin-top:8px">
+  <div class="mini-field"><label>Pieces</label><div class="piece-count"><button data-count="7" type="button">7</button><button data-count="9" type="button">9</button><button data-count="11" type="button">11</button></div></div>
+  <div class="mini-field"><label>Scale</label><select data-scale aria-label="Musical scale"><option value="minor">D minor</option><option value="penta">C pentatonic</option><option value="lydian">F lydian</option></select></div>
+  <div class="mini-field"><label>Motion</label><div class="rowbuttons"><button data-motion="still" type="button">Still</button><button data-motion="float" type="button">Float</button><button data-motion="orbit" type="button">Orbit</button></div></div>
+  <div class="mini-field"><label>Scene</label><div class="actionrow"><button id="miniScenePrev" type="button">‹</button><button id="miniSceneNext" type="button">›</button></div></div>
+  <div class="mini-field"><label>Explore</label><div class="actionrow"><button id="miniShuffle" type="button">Shuffle</button><button id="miniSave" type="button">Save</button></div></div>
+ </div>
+</section>
+<div id="shade" class="modal-shade"></div>
+<section id="lab" role="dialog" aria-modal="true" aria-label="Playability lab">
+ <div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><h2>PLAYABILITY LAB</h2><button id="labClose" type="button" class="flatbtn">CLOSE</button></div>
+ <p>Compare seven, nine and eleven playable shapes. Move the objects, test with two hands and watch the touch statistics.</p>
+ <table><thead><tr><th>Pieces</th><th>Diameter</th><th>Gap</th><th>Hits</th><th>Empty</th><th>Slides</th><th>Multi</th></tr></thead><tbody id="labRows"></tbody></table>
+ <p>Diameter and gap are CSS pixel estimates at this screen size, not real touch measurements. Empty taps are not necessarily mistakes. Multi is the maximum simultaneous pointers. Values are reset on reload. No personal/audio data is collected.</p>
+</section>
+<div id="turn" aria-label="Rotate device"><div class="turn-geometry" aria-hidden="true">◇</div><strong>TURN SIDEWAYS</strong><small>This little instrument likes both hands.<br>Disable rotation lock if necessary.</small></div>
