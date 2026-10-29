@@ -11,7 +11,7 @@ html=f'''<!doctype html>
 <meta name="theme-color" content="#d8f1f2">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>RESONANT OBJECTS · v0.5</title>
+<title>RESONANT OBJECTS · v0.6</title>
 <style>\n{styles}\n</style></head><body>
 {body}
 <script>\n{audio}\n{renderer}\n{app}\n</script></body></html>

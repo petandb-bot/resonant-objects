@@ -118,3 +118,12 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;background:white;bord
 @media(max-width:1100px){.quick-count{display:flex}.quick-count button{height:30px;min-width:27px;padding:0 7px}.top-right{gap:4px}.brand-name{letter-spacing:.07em}.top{background:#f2fcffd1}}
 @media(max-width:720px){.quick-count button{min-width:25px;padding:0 5px}.quick-count{min-width:76px;gap:2px}.top{gap:4px}.top-center{gap:0;padding:2px}.brand-name{font-size:11px;letter-spacing:0}.pill{padding:5px 7px}.flatbtn{font-size:9px;padding:0 5px}}
 @media(max-width:670px) and (orientation:landscape){.brand-name{font-size:10px}.top{padding-left:5px;padding-right:5px}.top-right{gap:2px}.quick-count button{min-width:22px}}
+
+/* v0.6: GPU quality control remains secondary to the playing field. */
+.graphics-panel{padding-top:9px;padding-bottom:9px}
+.graphics-grid{display:grid;grid-template-columns:54px 1fr;align-items:center;gap:6px;margin:0}
+.graphics-grid label{font-size:9px;letter-spacing:.10em;font-weight:740}
+.graphics-grid label output{display:block;letter-spacing:0;color:var(--muted);font-size:9px;font-weight:500}
+.graphics-grid input[type=range]{min-width:0}
+.graphics-panel select{width:100%;margin-top:4px;height:28px;border-radius:10px;background:#ffffff9d;border:1px solid white;color:#456687;font-size:10px}
+#gpuMode{display:inline-block;margin-left:9px;padding:2px 7px;border-radius:10px;background:#ffffff78;letter-spacing:.08em;font-size:8px}

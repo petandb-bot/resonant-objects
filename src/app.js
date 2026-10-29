@@ -1,4 +1,4 @@
-/* RESONANT OBJECTS v0.5 — App / interaction layer.
+/* RESONANT OBJECTS v0.6 — App / interaction layer.
  * 描画 / 音源 / 状態を分離。WebGL描画上の位置とタッチ領域は同一のモデルを参照。
  * Notes use stable IDs within each layout; no timer-driven animation when idle. */
 (()=>{
@@ -15,13 +15,22 @@ const pitchBanks={
  lydian:[['F3',53],['C4',60],['E4',64],['F4',65],['G4',67],['A4',69],['B4',71],['C5',72],['E5',76]]
 };
 const selects={7:[0,1,2,3,4,6,8],9:[0,1,2,3,4,5,6,7,8],11:[0,1,2,3,4,5,6,7,8,9,10]};
-const params={material:36,ring:67,space:0,bond:75,bloom:0,level:84};
-const state={count:9,scale:'minor',motion:'still',move:false,scene:'original',drawer:false,link:true,hold:true};
+const params={material:36,ring:67,space:0,bond:75,bloom:0,level:84,aura:48,trace:38};
+const state={count:9,scale:'minor',motion:'still',move:false,scene:'original',drawer:false,link:true,hold:true,quality:'balanced'};
 const sets=new Map(),stats={7:{hits:0,empty:0,slides:0,multi:0},9:{hits:0,empty:0,slides:0,multi:0},11:{hits:0,empty:0,slides:0,multi:0}};
 const pointerMap=new Map();let notes=[],W=1,H=1,requestId=0,lastTime=0,lastActive=0,viewReady=false;
 let lastTrigger=-1,lastLinkRefresh=0;
 const engine=new ResonantEngine(msg=>say(msg)),renderer=new VisualRenderer(canvas,overlay,msg=>say(msg));
-function say(msg){readout.textContent=msg;}
+function say(msg){
+ readout.textContent=msg;
+ // Renderer status is explicit; the label must never claim WebGL in 2D fallback.
+ const badge=$('gpuMode');
+ if(badge&&(/WebGL unsupported|compatibility mode|graphics fallback|2D graphics/i.test(msg)))badge.textContent='2D COMPATIBILITY';
+ else if(badge&&/WEBGL2.*direct graphics/i.test(msg))badge.textContent='WEBGL2 DIRECT';
+ else if(badge&&/WEBGL1.*direct graphics/i.test(msg))badge.textContent='WEBGL1 DIRECT';
+ else if(badge&&/WEBGL2.*GPU pipeline/i.test(msg))badge.textContent='WEBGL2 GPU';
+ else if(badge&&/WEBGL1.*GPU pipeline/i.test(msg))badge.textContent='WEBGL1 GPU';
+}
 function pitches(count,scale){const source=pitchBanks[scale];const entries=source.concat([['G3',55],['C5',72]]);
  return selects[count].map(i=>entries[i]);}
 function makeSet(count){return Array.from({length:count},(_,id)=>({id,midi:50,name:'',kind:id===0?0:((id-1)%8),big:id===0,
@@ -72,7 +81,7 @@ function draw(t){requestId=0;
  else if(state.motion==='float')n.angle=Math.sin(now*.33+n.id*1.3)*.055;
  }
  updateLabels();renderer.draw(now,notes,state);
- if(any||state.motion!=='still')drawRequest();
+ if(any||renderer.needsFrame()||state.motion!=='still')drawRequest();
 }
 function hit(x,y){let best=-1,dist=Infinity;
  for(const n of notes){const d=Math.hypot(n.x-x,n.y-y);
@@ -123,6 +132,7 @@ function pointerMove(e){const p=pointerMap.get(e.pointerId);if(!p)return;e.preve
   const v=clamp(.86-.18*Math.hypot(x-notes[i].x,y-notes[i].y)/notes[i].r,.55,.86);
   lastTrigger=i;play(i,v);scheduleHold(e.pointerId,i);}
 }
+canvas.addEventListener('rendererrestored',()=>{lastTime=0;drawRequest();});
 canvas.addEventListener('pointerdown',pointerDown,{passive:false});
 canvas.addEventListener('pointermove',pointerMove,{passive:false});
 function pointerEnd(e){
@@ -138,6 +148,7 @@ function updateButtons(){
  qsa('[data-scale]').forEach(s=>s.value=state.scale);
  qsa('[data-link]').forEach(b=>{b.setAttribute('aria-pressed',String(state.link));b.textContent=state.link?'ON':'OFF';});
  qsa('[data-hold]').forEach(b=>{b.setAttribute('aria-pressed',String(state.hold));b.textContent=state.hold?'ON':'OFF';});
+ qsa('[data-quality]').forEach(s=>s.value=state.quality);
  $('reset').disabled=!state.move;
  $('touchHint').textContent=state.move?'✦ DRAG · CONNECT · RESONATE':'✦ TAP · SLIDE · HOLD';
  $('sceneName').textContent=({original:'Glass garden',cloud:'Blue hour',bright:'Little sun'})[state.scene]||'Custom';
@@ -155,12 +166,15 @@ function setParam(k,v){v=clamp(Number(v),0,100);params[k]=v;
  if(k==='bond')engine.setBond(v);
  if(k==='bloom')engine.setBloom(v);
  if(k==='level')engine.setLevel(v);
+ if(k==='aura'||k==='trace')renderer.setFX(params.aura,params.trace);
  const caption={
   material:v<30?'Soft metal':v>70?'Bright glass':'Warm alloy',
   ring:v<30?'Short':v>63?'Long':'Medium',
   space:v<1?'Dry':v<45?'Small room':'Large room',
   bond:v<26?'Quiet':v>65?'Connected':'Gentle',
   bloom:v<1?'Off':v<45?'Soft':'Deep',
+  aura:v<1?'Off':v<45?'Soft':'Luminous',
+  trace:v<1?'Off':v<45?'Gentle':'Long',
   level:`${v}%`
  }[k];
  qsa(`[data-param="${k}"]`).forEach(e=>e.value=v);
@@ -183,15 +197,16 @@ function reset(){for(const n of notes)n.saved=false;layoutSet(notes);engine.refr
 function save(){
  try{const result={count:state.count,scale:state.scale,motion:state.motion,scene:state.scene,params,
   positions:Object.fromEntries([...sets].map(([k,set])=>[k,set.map(n=>({u:n.u,v:n.v,saved:n.saved}))]))};
-  localStorage.setItem('resonant-objects-v05',JSON.stringify(result));say('Saved on this device');
+  localStorage.setItem('resonant-objects-v06',JSON.stringify(result));say('Saved on this device');
  }catch(e){say('Storage unavailable');}
 }
 function restore(){
- try{const raw=localStorage.getItem('resonant-objects-v05')||localStorage.getItem('resonant-objects-v04');if(!raw)return;
+ try{const raw=localStorage.getItem('resonant-objects-v06')||localStorage.getItem('resonant-objects-v05')||localStorage.getItem('resonant-objects-v04');if(!raw)return;
   const v=JSON.parse(raw);if([7,9,11].includes(v.count))state.count=v.count;
   if(pitchBanks[v.scale])state.scale=v.scale;
   if(['still','float','orbit'].includes(v.motion))state.motion=v.motion;
   if(['original','cloud','bright','custom'].includes(v.scene))state.scene=v.scene;
+  if(['eco','balanced','high'].includes(v.quality))state.quality=v.quality;
   if(typeof v.link==='boolean')state.link=v.link;
   if(typeof v.hold==='boolean')state.hold=v.hold;
   if(v.positions)for(const [key,ps] of Object.entries(v.positions)){
@@ -228,6 +243,10 @@ qsa('[data-hold]').forEach(b=>b.addEventListener('click',()=>{
  updateButtons();say(state.hold?'Hold-to-sing enabled':'Hold-to-sing disabled');
 }));
 qsa('[data-scale]').forEach(s=>s.addEventListener('change',()=>setScale(s.value)));
+qsa('[data-quality]').forEach(s=>s.addEventListener('change',()=>{
+ state.quality=s.value;renderer.setQuality(state.quality);updateButtons();drawRequest();
+ say('GPU quality · '+state.quality);
+}));
 qsa('[data-param]').forEach(input=>input.addEventListener('input',()=>{
   setParam(input.dataset.param,input.value);state.scene='custom';updateButtons();
 }));
@@ -248,5 +267,5 @@ window.addEventListener('orientationchange',()=>setTimeout(resize,150));
 document.addEventListener('visibilitychange',()=>{if(document.hidden){clearPointers();engine.suspend();}else{lastTime=0;resize();}});
 window.addEventListener('pagehide',()=>engine.suspend());
 // Deliberately initialize without audio; first gesture must create/resume its context.
-viewReady=true;restore();for(const k of Object.keys(params))setParam(k,params[k]);engine.setLink(state.link);setNotes();say('Touch a shape · hold to sing · move to connect');
+viewReady=true;restore();renderer.setQuality(state.quality);for(const k of Object.keys(params))setParam(k,params[k]);engine.setLink(state.link);setNotes();say('Touch a shape · GPU resonance is ready');
 })();

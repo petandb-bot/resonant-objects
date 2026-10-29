@@ -1,0 +1,9 @@
+iphone_landscape status= Touch a shape · GPU resonance is ready errors= []
+viewport metrics: {'stage': {'x': 0, 'y': 51, 'width': 844, 'height': 312, 'top': 51, 'right': 844, 'bottom': 363, 'left': 0}, 'w': 844, 'h': 390, 'canvas': [1097, 406], 'lab': True}
+after interactions status Storage unavailable errors: []
+compact_landscape status= Touch a shape · GPU resonance is ready errors= []
+viewport metrics: {'stage': {'x': 0, 'y': 51, 'width': 667, 'height': 297, 'top': 51, 'right': 667, 'bottom': 348, 'left': 0}, 'w': 667, 'h': 375, 'canvas': [867, 386], 'lab': True}
+desktop status= Touch a shape · GPU resonance is ready errors= []
+viewport metrics: {'stage': {'x': 202, 'y': 66, 'width': 876, 'height': 615, 'top': 66, 'right': 1078, 'bottom': 681, 'left': 202}, 'w': 1280, 'h': 720, 'canvas': [1139, 800], 'lab': True}
+portrait status= Touch a shape · GPU resonance is ready errors= []
+viewport metrics: {'stage': {'x': 0, 'y': 51, 'width': 390, 'height': 766, 'top': 51, 'right': 390, 'bottom': 817, 'left': 0}, 'w': 390, 'h': 844, 'canvas': [507, 996], 'lab': True}
