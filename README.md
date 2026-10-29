@@ -1,29 +1,53 @@
-# resonant objects v0.2 — little sound things
+# RESONANT OBJECTS v0.3 — Play Lab
 
-A complete, self-contained landscape instrument for iPhone Safari and desktop browsers.
+iPhoneの横向き画面で両手演奏する、WebGLを主描画系とした共鳴楽器の試作版です。依存ライブラリ、ネットワーク通信、ユーザー登録は不要です。
 
-## How to use
+## 起動
 
-1. Upload `index.html` to GitHub Pages or another HTTPS static host. No dependencies, build tools, third-party scripts, fonts or network services are required.
-2. Open the published link in Safari and rotate the iPhone to landscape; disable Rotation Lock if needed. The page cannot force rotation in normal Safari tabs.
-3. Tap one of the nine colorful sound objects to enable audio, then continue tapping or sliding across objects. Multi-touch and chords are supported.
-4. **material**: from softer metal to brighter, glass-like partials. **ring**: intrinsic modal decay, not a delay/reverb effect.
-5. Choose **move things**, drag objects to change their proximity and sympathetic coupling, then choose **let’s play!**. **reset places** restores the original arrangement.
-6. On desktop, use mouse or keys `1`–`9`.
+1. `index.html` をGitHub Pages等のHTTPS対応静的サイトに置いてください。
+2. iPhone Safariで公開URLを開き、端末を横向きにします。端末の画面回転ロックが有効なら解除してください。
+3. 音を出すには、最初に物体をタップします。Safariの自動再生制約により、利用者の操作が必要です。
+4. 複数タッチ、タップ、スライドして演奏できます。PCでは数字キーで演奏できます（1〜9、11音時は0・-も追加）。
 
-## Implementation
+## 操作
 
-- Primary rendering path is **WebGL 2**, with **WebGL 1** support via GLSL ES 1.00 shaders. Includes a small Canvas 2D fallback for devices where WebGL is disabled/unavailable (for example due to enterprise security policy). It does not use p5.js or Three.js.
-- GPU-drawn organically irregular pads, lighting, low-contrast fine connections, paper-toned background, and touch-driven resonance rings. Note glyphs and controls remain accessible HTML elements.
-- **Audio is Web Audio**, not WebGL. The sound synthesis algorithm is preserved from v0.1: nine pitches (D3 / A3 / Bb3 / C4 / D4 / E4 / F4 / G4 / A4), six modal sine partials, softened noise attack, local sympathetic resonances, dynamics compressor.
-- Graph routing preserves a **future FX insertion point** (`effectInsert`): modal voices -> effectInsert (currently bypass) -> compressor -> output. Effects have not yet been added.
-- Renders only when needed instead of continuously animating. Device pixel ratio capped at 1.75 for mobile performance.
-- No microphone, motion-sensor, or location permissions; no data collected, saved, or uploaded.
+- **7 / 9 / 11**：発音体の数と音域、配置を切替。9音モードはv0.2と同じ音程セット（D3 / A3 / Bb3 / C4 / D4 / E4 / F4 / G4 / A4）。7音は抜粋し、11音は2音追加しています。
+- **move / play**：配置変更モードの切り替え。move時には物体をドラッグできます。各音数の配置は、そのページを開いている間は個別に保持されます。
+- **reset**：移動モード時に表示され、現在の音数の配置のみ初期化。
+- **material**：柔らかい金属／明るいガラス的な音色を連続変化。
+- **ring**：音源自身の減衰時間。リバーブとは別です。
+- **space**：初期反射を模した3本の遅延経路を並列加算。**初期値は0（完全にドライ）**。大規模な残響アルゴリズムではありません。
+- **bond**：隣の発音体への共鳴励起量。初期値75ではv0.2の共鳴強度を維持。
+- **test**：7/9/11の最小当たり領域の直径、最小隙間、押した回数、空白へのタップ数、スライド発音数、同時接触最大数を比較する簡易パネル。検証値はブラウザ上のものです。
 
-## Known limitations and validation
+## 設計変更
 
-- Checked in a desktop Chromium browser at 1200x700, 844x390, 667x375, and 390x844 emulated viewports. GPU/WebGL 2 initialization, rendering, clicking, drag & reset, sliders, and portrait notice worked in this test environment.
-- **Physical iPhone Safari, actual two-finger touch, speaker loudness, audio latency, and thermal performance have NOT been verified**. Tune these on the target phone before treating this as a finished instrument.
-- Portrait is intentionally not an instrument-playing layout; smaller phone screens show a rotation message.
-- Arrangements and settings reset when the page is reloaded.
-- If WebGL is disabled, the fallback uses the same note interactions and audio with a simpler visual treatment.
+- 従来の「淡色の石／スタンプ風アイコン／クラシックなつまみ」を撤去。
+- 強いコバルト系背景、ポップな色の光沢をもつ不規則な形、音名だけのタイポグラフィへ更新。
+- WebGL 2を優先し、WebGL 1互換シェーダーで描画。未対応環境ではCanvas 2Dにフォールバック。音響はWeb Audioで生成。
+- v0.2のモーダル合成の部分音と打撃ノイズ、デフォルトの減衰、ダイナミクス処理は原則そのまま。新しいspaceはデフォルトで無効です。
+- リサイズ時は過剰なピクセル密度を避け、描画は変化がある時だけに実行。
+
+## 演奏性の検証（画面上の幾何学的な参考値）
+
+| 横向き画面 | 音数 | 最小直径 | 最小の物体間隙間 |
+|---|---:|---:|---:|
+| 844×390 | 7 | 75 CSS px | 7 CSS px |
+| 844×390 | 9 | 69 CSS px | 10 CSS px |
+| 844×390 | 11 | 53 CSS px | 8 CSS px |
+| 667×375 | 7 | 71 CSS px | 7 CSS px |
+| 667×375 | 9 | 65 CSS px | 9 CSS px |
+| 667×375 | 11 | 50 CSS px | 8 CSS px |
+
+- 上記は矩形・円形の理論的な配置近似であり、実際の指による誤タッチ率を計測したものではありません。
+- テスト内の **empty** は、背景で発生したタップ数です。誤タッチとは断定できません。
+- PC上のChromiumでレイアウト、切替、音声操作、ドラッグ・リセット、スライダー、模擬2指タッチを確認しました（JavaScript例外なし）。
+- **この検証環境ではWebGLのGPUコンテキストを作成できなかったため、スクリーンショットはCanvas 2Dフォールバック表示です。WebGLシェーダーの実機での表示は未検証です。**
+- 実際のiPhone SafariのWebGL、音響、操作遅延、発熱、同時発音時の負荷は未検証です。
+
+## 今後の検証ポイント
+
+1. 7/9/11の各モードを、片手／両手／スライド演奏で3分ずつ試す。実際に意図した音を鳴らせたか、指の重なりやすさを確認する。
+2. 画面左右端の音が無理なく届くか、中央の音が手に隠れすぎないかを確認する。
+3. spaceを0→25→50と上げ、原音の明瞭度・歪み・音量を比較する。スピーカー側の音量も一定にする。
+4. 次段階で音同士の受動的な共鳴と、より精密な残響モデルの追加を検討する。
