@@ -1,0 +1,6 @@
+default iphone_landscape {'gl': False, 'status': 'Touch a shape · hold to sing · move to connect', 'overflow': False, 'topWidth': 844, 'start': {'x': 0, 'y': 51, 'width': 844, 'height': 312, 'top': 51, 'right': 844, 'bottom': 363, 'left': 0}} errors []
+after interaction Live resonance connected ctxError []
+default compact_landscape {'gl': False, 'status': 'Touch a shape · hold to sing · move to connect', 'overflow': False, 'topWidth': 667, 'start': {'x': 0, 'y': 51, 'width': 667, 'height': 297, 'top': 51, 'right': 667, 'bottom': 348, 'left': 0}} errors []
+default desktop {'gl': False, 'status': 'Touch a shape · hold to sing · move to connect', 'overflow': False, 'topWidth': 1280, 'start': {'x': 202, 'y': 66, 'width': 876, 'height': 615, 'top': 66, 'right': 1078, 'bottom': 681, 'left': 202}} errors []
+default portrait {'gl': False, 'status': 'Touch a shape · hold to sing · move to connect', 'overflow': False, 'topWidth': 390, 'start': {'x': 0, 'y': 51, 'width': 390, 'height': 766, 'top': 51, 'right': 390, 'bottom': 817, 'left': 0}} errors []
+swiftshader iphone_landscape {'gl': False, 'status': 'Touch a shape · hold to sing · move to connect', 'overflow': False, 'topWidth': 844, 'start': {'x': 0, 'y': 51, 'width': 844, 'height': 312, 'top': 51, 'right': 844, 'bottom': 363, 'left': 0}} errors []

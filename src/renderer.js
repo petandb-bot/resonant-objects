@@ -1,4 +1,4 @@
-/* RESONANT OBJECTS — WebGL / 2D renderer
+/* RESONANT OBJECTS v0.5 — WebGL / 2D renderer
    音響とは独立。WebGL 2を優先、WebGL 1もGLSL ES 1.00で対応。
    レンダリング解像度を制限し、実機でのGPU負荷を抑える。
    オーバーレイの線画は描画コストを抑えたCanvas 2D。
@@ -21,7 +21,7 @@ const GL_SHADER={
       col+=vec3(.07,.13,.10)*bloom(uv,vec2(.15,.18),3.9);
       col=mix(col,vec3(.97,.98,.93),.14*bloom(uv,vec2(.49,.46),1.9));
       float weave=sin(uv.x*7.1+uv.y*5.6+uTime*.07)*sin(uv.y*4.4-uv.x*3.3);
-      col+=weave*.007;
+      col+=weave*.010;
       gl_FragColor=vec4(clamp(col,0.,1.),1.);}`,
  objfs:`precision highp float;varying vec2 vP;
   uniform float uKind,uSeed,uEnergy,uTime,uMove,uAngle;uniform vec3 uColor;
@@ -43,10 +43,13 @@ const GL_SHADER={
     float edge=exp(-pow(sd/.037,2.));
     float shimmer=sin(p.x*6.2+p.y*4.4+uSeed)*sin(p.y*5.7-p.x*1.5);
     float gleam=exp(-pow(length((p-vec2(-.36,.36))*vec2(.9,1.2))/.39,2.));
-    vec3 col=mix(uColor,vec3(.98,.98,1.),.45+.19*shimmer+.20*gleam);
-    col=mix(col,vec3(.41,.73,.99),.15*smoothstep(-.7,.7,p.x-p.y));
-    col+=.31*gleam+.32*ridge+uEnergy*.19;
-    col=mix(col,vec3(1.),.61*edge);
+    vec3 col=mix(uColor,vec3(.985,.998,1.),.20+.10*shimmer+.25*gleam);
+    col=mix(col,vec3(.36,.70,.99),.20*smoothstep(-.7,.7,p.x-p.y));
+    float caustic=sin(11.*atan(p.y,p.x)+uSeed*2.+r*13.);float crystal=exp(-pow(caustic/.31,2.))*.17;
+    col+=crystal*vec3(.77,.84,1.0)*body;
+    float core=exp(-pow(r/.45,2.))*.24;col+=core*vec3(.48,.72,1.);
+    col+=.23*gleam+.26*ridge+uEnergy*.24;
+    col=mix(col,vec3(1.),.74*edge);
     // 透明感とコントラストを保ち、CGのプラスチック球にしない。
     float alpha=clamp(body*.94+halo+edge*.40,0.,1.);
     // 発音体の外側に発光するリング。
@@ -60,7 +63,7 @@ const GL_SHADER={
 class VisualRenderer {
  constructor(canvas,overlay,onStatus=()=>{}){
   this.canvas=canvas;this.overlay=overlay;this.ctx=overlay.getContext('2d');this.onStatus=onStatus;
-  this.gl=null;this.ready=false;this.fallback=false;this.lost=false;this.W=1;this.H=1;this.dpr=1;
+  this.gl=null;this.ready=false;this.fallback=false;this.lost=false;this.fallbackCanvas=null;this.W=1;this.H=1;this.dpr=1;
   this.init();
   canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();this.lost=true;this.ready=false;this.onStatus('WebGL paused');});
   canvas.addEventListener('webglcontextrestored',()=>{this.lost=false;this.init();this.resize(this.W,this.H);this.onStatus('Graphics restored');});
@@ -82,13 +85,28 @@ class VisualRenderer {
    this.bgInfo=this.locate(this.pBg,['uTime']);this.objInfo=this.locate(this.pObj,['uCenter','uScreen','uRadius','uColor','uKind','uSeed','uEnergy','uTime','uMove','uAngle']);
    gl.disable(gl.DEPTH_TEST);gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
    this.ready=true;this.fallback=false;
-  }catch(e){console.error('WebGL setup:',e);this.onStatus('WebGL shader error');this.ready=false;}
+   if(this.fallbackCanvas){this.fallbackCanvas.remove();this.fallbackCanvas=null;this.c2d=null;this.canvas.style.opacity='1';}
+  }catch(e){
+   console.error('WebGL setup:',e);
+   // Once WebGL is acquired, the same canvas cannot switch to 2D. Place a
+   // separate 2D canvas behind it while keeping the transparent input surface.
+   if(!this.fallbackCanvas){
+    this.fallbackCanvas=document.createElement('canvas');
+    this.fallbackCanvas.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none';
+    this.canvas.before(this.fallbackCanvas);
+   }
+   this.c2d=this.fallbackCanvas.getContext('2d');
+   this.canvas.style.opacity='0';
+   this.fallback=true;this.ready=!!this.c2d;
+   this.onStatus('2D graphics fallback');
+  }
  }
  locate(p,names){const g=this.gl,o={a:g.getAttribLocation(p,'aCorner')};for(const n of names)o[n]=g.getUniformLocation(p,n);return o;}
  quad(info){const g=this.gl;g.bindBuffer(g.ARRAY_BUFFER,this.quadBuffer);g.enableVertexAttribArray(info.a);
   g.vertexAttribPointer(info.a,2,g.FLOAT,false,0,0);g.drawArrays(g.TRIANGLES,0,6);g.disableVertexAttribArray(info.a);}
  resize(w,h){this.W=w;this.H=h;this.dpr=Math.min(window.devicePixelRatio||1,1.6);
   this.canvas.width=Math.round(w*this.dpr);this.canvas.height=Math.round(h*this.dpr);
+  if(this.fallbackCanvas){this.fallbackCanvas.width=this.canvas.width;this.fallbackCanvas.height=this.canvas.height;}
   this.overlay.width=Math.round(w*this.dpr);this.overlay.height=Math.round(h*this.dpr);
   if(this.gl&&this.ready)this.gl.viewport(0,0,this.canvas.width,this.canvas.height);}
  draw(time,notes,state){if(!this.ready||this.lost)return;
@@ -114,13 +132,13 @@ class VisualRenderer {
  drawFallback(time,notes,state){const c=this.c2d,W=this.W,H=this.H,d=this.dpr;
   c.setTransform(d,0,0,d,0,0);
   const bg=c.createLinearGradient(0,0,W,H);
-  bg.addColorStop(0,'#c8faf1');bg.addColorStop(.43,'#cfd8f7');bg.addColorStop(.76,'#d5e1fb');bg.addColorStop(1,'#c7efe9');
+  bg.addColorStop(0,'#b5f4ee');bg.addColorStop(.38,'#cbdcf7');bg.addColorStop(.75,'#d3d5fb');bg.addColorStop(1,'#c2f6ed');
   c.fillStyle=bg;c.fillRect(0,0,W,H);
   // 光の雲は背景にのみ乗せ、音を鳴らす領域は明瞭に保つ。
-  for(const [x,y,rgb,r] of [[.28,.16,'255,255,254',.60],[.80,.25,'173,236,240',.58],[.52,.74,'226,183,255',.55],[.18,.89,'255,235,207',.62]]){
+  for(const [x,y,rgb,r] of [[.26,.16,'255,255,255',.60],[.8,.25,'117,225,236',.51],[.52,.74,'189,157,255',.50],[.18,.89,'255,225,194',.52]]){
     const cx=x*W,cy=y*H,R=Math.max(W,H)*r;
     const glow=c.createRadialGradient(cx,cy,0,cx,cy,R);
-    glow.addColorStop(0,`rgba(${rgb},.19)`);glow.addColorStop(.55,`rgba(${rgb},.07)`);glow.addColorStop(1,`rgba(${rgb},0)`);
+    glow.addColorStop(0,`rgba(${rgb},.26)`);glow.addColorStop(.55,`rgba(${rgb},.09)`);glow.addColorStop(1,`rgba(${rgb},0)`);
     c.fillStyle=glow;c.fillRect(0,0,W,H);
   }
   for(const n of notes){const {x,y,r,kind,angle}=n;c.save();c.translate(x,y);c.rotate(angle);
@@ -129,15 +147,15 @@ class VisualRenderer {
    halo.addColorStop(0,n.hex+'39');halo.addColorStop(.56,n.hex+'1f');halo.addColorStop(1,n.hex+'00');
    c.fillStyle=halo;c.beginPath();c.arc(0,0,r*1.75,0,Math.PI*2);c.fill();
    const grad=c.createLinearGradient(-r,-r,r,r);
-   grad.addColorStop(0,'#ffffff');grad.addColorStop(.19,n.hex);
-   grad.addColorStop(.47,'#d4faff');grad.addColorStop(.70,n.hex);grad.addColorStop(1,'#92b9ef');
+   grad.addColorStop(0,'#f5ffff');grad.addColorStop(.18,n.hex);
+   grad.addColorStop(.40,'#caeaff');grad.addColorStop(.64,n.hex);grad.addColorStop(1,'#5e87c7');
    c.globalAlpha=.94;this.shapePath(c,kind,r);
-   c.shadowColor=n.hex;c.shadowBlur=12+n.energy*18;c.fillStyle=grad;c.fill();
+   c.shadowColor=n.hex;c.shadowBlur=17+n.energy*19;c.fillStyle=grad;c.fill();
    c.shadowBlur=0;c.lineWidth=2.1;c.strokeStyle='#ffffffee';c.stroke();
    c.save();c.clip();
    // 中心で交わる屈折線と虹色の薄膜。高解像度でもジャギーを抑える。
    const inner=c.createRadialGradient(-r*.28,-r*.32,r*.02,0,0,r*1.1);
-   inner.addColorStop(0,'#ffffffa8');inner.addColorStop(.5,'#f9ffff1a');inner.addColorStop(1,'#4877ce23');
+   inner.addColorStop(0,'#ffffffb0');inner.addColorStop(.5,'#f9ffff12');inner.addColorStop(1,'#395bd339');
    c.fillStyle=inner;c.fillRect(-r*1.2,-r*1.2,r*2.4,r*2.4);
    c.strokeStyle='#ffffff8b';c.lineWidth=.9;
    for(let k=0;k<3;k++){const a=k*Math.PI/3+.3;
@@ -148,6 +166,9 @@ class VisualRenderer {
      c.beginPath();c.arc(-r*.25,-r*.34,r*.30,Math.PI*1.11,Math.PI*1.72);
      c.strokeStyle='#fffffff2';c.lineWidth=2;c.stroke();
    }
+   // A quiet off-axis highlight gives a faceted, refractive feeling without photo texture.
+   c.save();c.rotate(.3);c.beginPath();c.ellipse(-r*.24,-r*.22,r*.12,r*.25,-.48,0,Math.PI*2);
+   c.fillStyle='#ffffff85';c.fill();c.restore();
    c.globalAlpha=1;
    c.restore();
   }
@@ -166,23 +187,29 @@ class VisualRenderer {
   // 記号のイラスト化ではなく、物体の「距離・共鳴」を可視化する。
   c.save();c.lineWidth=.9;
   const active=notes.some(n=>n.energy>.015);
-  c.strokeStyle='rgba(255,255,255,.36)';
+  c.strokeStyle='rgba(255,255,255,.56)';
   for(const scale of [.40,.52]){c.beginPath();c.ellipse(cx,cy,Math.min(W*.35,base*.95)*scale*2,Math.min(H*.38,base*.36)*scale*2,0,0,Math.PI*2);c.stroke();}
-  if(state.motion==='orbit'||active){c.setLineDash([2,7]);c.strokeStyle='rgba(255,255,255,.45)';c.beginPath();c.ellipse(cx,cy,Math.min(W*.38,base*.91),H*.39,0,0,Math.PI*2);c.stroke();c.setLineDash([]);}
+  if(state.motion==='orbit'||active){c.setLineDash([2,7]);c.strokeStyle='rgba(255,255,255,.67)';c.beginPath();c.ellipse(cx,cy,Math.min(W*.38,base*.91),H*.39,0,0,Math.PI*2);c.stroke();c.setLineDash([]);}
   const maxReach=Math.min(260,Math.max(95,base*.76));
   for(let i=0;i<notes.length;i++)for(let j=i+1;j<notes.length;j++){
    const a=notes[i],b=notes[j],dist=Math.hypot(a.x-b.x,a.y-b.y);
    if(dist>maxReach)continue;
-   const strength=Math.max(a.energy,b.energy),alpha=(state.move?.35:.095)+strength*.24;
+   const strength=state.link?Math.min(a.energy,b.energy):Math.max(a.energy,b.energy),alpha=(state.move?.48:.07)+strength*.56;
    c.strokeStyle=`rgba(255,255,255,${alpha.toFixed(3)})`;c.lineWidth=state.move?1.35:.8;
    c.beginPath();c.moveTo(a.x,a.y);c.lineTo(b.x,b.y);c.stroke();
+   if(state.link&&strength>.08){
+    const phase=(time*.38+(i+j)*.111)%1;
+    const px=a.x+(b.x-a.x)*phase,py=a.y+(b.y-a.y)*phase;
+    c.fillStyle=`rgba(255,255,255,${Math.min(.95,strength*.75)})`;
+    c.beginPath();c.arc(px,py,1.2+strength*2,0,Math.PI*2);c.fill();
+   }
   }
   for(const n of notes){
    // アクティブ音がオービットとして残る。実際の当たり判定は動かさない。
-   const halo=n.r*(1.18+n.energy*.25),opacity=.13+n.energy*.56;
+   const halo=n.r*(1.22+n.energy*.35),opacity=.20+n.energy*.57;
    c.strokeStyle=`rgba(255,255,255,${opacity})`;c.lineWidth=1.0+n.energy*1.5;
    c.beginPath();c.arc(n.x,n.y,halo,0,Math.PI*2);c.stroke();
-   if(n.energy>.08){c.strokeStyle=`rgba(133,180,240,${n.energy*.40})`;c.lineWidth=1;
+   if(n.energy>.08){c.strokeStyle=`rgba(94,144,236,${n.energy*.45})`;c.lineWidth=1;
     c.beginPath();c.arc(n.x,n.y,n.r*(1.42+n.energy*.5),0,Math.PI*2);c.stroke();}
    if(state.motion!=='still'){
     const a=time*(state.motion==='orbit'?.42:.19)+n.id*1.51;
