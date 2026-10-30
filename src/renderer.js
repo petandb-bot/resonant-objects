@@ -1,4 +1,4 @@
-/* RESONANT OBJECTS v0.8 — GPU field renderer
+/* RESONANT OBJECTS v0.8.1 — GPU field renderer
  * WebGL2 > WebGL1. Audio remains Web Audio (WebGL is graphics only).
  * Pass 1: native-resolution color field, geometry and GPU connection ribbons.
  * Pass 2: half-resolution double-buffered temporal resonance (GPU ping-pong).
@@ -106,9 +106,15 @@ class VisualRenderer{
   this.onStatus=onStatus;this.W=1;this.H=1;this.dpr=1;
   this.gl=null;this.ready=false;this.mode='none';this.lost=false;
   this.aura=.48;this.trace=.38;this.quality='balanced';this.post=true;
-  this.trailFrames=0;this.fallbackCanvas=null;this.frame=0;
+  this.trailFrames=0;this.fallbackCanvas=null;this.frame=0;this.validateGPU=true;this.renderFailures=0;
   this.init();
-  canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();this.lost=true;this.ready=false;this.onStatus('GPU context lost');});
+  canvas.addEventListener('webglcontextlost',e=>{
+   e.preventDefault();
+   // Keep the instrument visible while Safari/Chrome recovers the GPU context.
+   this.enableFallback('2D graphics · GPU context lost');
+   this.lost=false;
+   this.canvas.dispatchEvent(new Event('rendererrestored'));
+  });
   canvas.addEventListener('webglcontextrestored',()=>{this.lost=false;this.init();this.resize(this.W,this.H);this.onStatus(this.mode.toUpperCase()+' · GPU pipeline restored');this.canvas.dispatchEvent(new Event('rendererrestored'));});
  }
  setFX(aura,trace){this.aura=Math.max(0,Math.min(1,aura/100));this.trace=Math.max(0,Math.min(1,trace/100));
@@ -146,7 +152,7 @@ class VisualRenderer{
    g.disable(g.DEPTH_TEST);g.enable(g.BLEND);g.blendFunc(g.SRC_ALPHA,g.ONE_MINUS_SRC_ALPHA);
    this.ready=true;this.post=true;this.overlay.style.display='none';
    if(this.fallbackCanvas){this.fallbackCanvas.remove();this.fallbackCanvas=null;}
-   this.canvas.style.opacity='1';this.onStatus(this.mode.toUpperCase()+' · GPU pipeline');
+   this.canvas.style.opacity='1';this.validateGPU=true;this.onStatus(this.mode.toUpperCase()+' · GPU pipeline');
   }catch(e){console.warn('WebGL pipeline:',e);this.enableFallback('Graphics compatibility mode');}
  }
  enableFallback(message){
@@ -194,7 +200,7 @@ class VisualRenderer{
    this.history=[this.makeTarget(tw,th),this.makeTarget(tw,th)];
    this.historyIndex=0;
    for(const t of this.history){g.bindFramebuffer(g.FRAMEBUFFER,t.fbo);g.viewport(0,0,t.w,t.h);g.clearColor(0,0,0,1);g.clear(g.COLOR_BUFFER_BIT);}
-   this.post=true;
+   this.post=true;this.validateGPU=true;
   }catch(e){console.warn('Post-processing unavailable, using direct WebGL',e);
    this.freeTargets();this.post=false;this.onStatus(this.mode.toUpperCase()+' · direct graphics');}
   g.bindFramebuffer(g.FRAMEBUFFER,null);g.viewport(0,0,pw,ph);
@@ -204,19 +210,37 @@ class VisualRenderer{
   g.drawArrays(g.TRIANGLES,0,6);g.disableVertexAttribArray(info.aCorner);}
  draw(time,notes,state){if(!this.ready||this.lost)return;
   if(this.mode==='canvas2d'){this.drawFallback(time,notes,state);this.drawFallbackLines(time,notes,state);return;}
-  this.drawGPU(time,notes,state);
+  try{
+   this.drawGPU(time,notes,state);
+   // On the first frame after (re)initialization, verify that the GPU wrote pixels.
+   // A successful context acquisition alone does not guarantee a visible frame.
+   if(this.validateGPU){
+    this.validateGPU=false;
+    const g=this.gl,pixel=new Uint8Array(4);
+    g.readPixels(Math.floor(this.canvas.width*.5),Math.floor(this.canvas.height*.5),1,1,g.RGBA,g.UNSIGNED_BYTE,pixel);
+    const error=g.getError();
+    if(error!==g.NO_ERROR || pixel[0]+pixel[1]+pixel[2]<28)
+     throw Error('GPU frame validation failed (error '+error+', pixel '+Array.from(pixel).join(',')+')');
+   }
+  }catch(error){
+   console.error('GPU render failed; switching to Canvas 2D:',error);
+   this.renderFailures++;
+   this.enableFallback('2D graphics · automatic GPU recovery');
+   if(this.ready){this.drawFallback(time,notes,state);this.drawFallbackLines(time,notes,state);}
+  }
  }
  drawScene(time,notes,state){const g=this.gl;
   g.disable(g.BLEND);g.useProgram(this.programs.bg);g.uniform1f(this.bg.uTime,time);this.quad(this.bg);
   g.enable(g.BLEND);g.blendFunc(g.SRC_ALPHA,g.ONE_MINUS_SRC_ALPHA);
   this.drawLinks(time,notes,state);
   g.useProgram(this.programs.obj);g.uniform2f(this.obj.uScreen,this.W,this.H);
-  g.uniform1f(this.obj.uTime,time);g.uniform1f(this.obj.uMove,n.dragged?1:0);
+  g.uniform1f(this.obj.uTime,time);
   g.uniform1f(this.obj.uAura,this.aura);
   for(const n of notes){g.uniform2f(this.obj.uCenter,n.x,n.y);g.uniform1f(this.obj.uRadius,n.r);
    g.uniform3f(this.obj.uColor,...n.color);g.uniform1f(this.obj.uKind,n.kind);
    g.uniform1f(this.obj.uSeed,n.id*1.131+.7);g.uniform1f(this.obj.uEnergy,n.energy);
    g.uniform1f(this.obj.uGesture,n.gesture||0);
+   g.uniform1f(this.obj.uMove,n.dragged?1:0);
    g.uniform1f(this.obj.uAngle,n.angle);this.quad(this.obj);}
  }
  drawLinks(time,notes,state){const g=this.gl,verts=[];

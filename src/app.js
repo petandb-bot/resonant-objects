@@ -1,4 +1,4 @@
-/* RESONANT OBJECTS v0.8 — One Playing Field / interaction layer.
+/* RESONANT OBJECTS v0.8.1 — One Playing Field / interaction layer.
  * 描画 / 音源 / 状態を分離。WebGL描画上の位置とタッチ領域は同一のモデルを参照。
  * Notes use stable IDs within each layout; no timer-driven animation when idle. */
 (()=>{
@@ -58,6 +58,9 @@ function layoutSet(set){
   n.y=clamp(n.v*H,r+4,H-r-4);
   n.u=n.x/W;n.v=n.y/H;
  }
+ // Imported saved positions, or an orientation change, may create overlaps.
+ separateObjects(set, null, 38);
+ for(const n of set){n.u=n.x/W;n.v=n.y/H;}
 }
 
 function resize(){if(!viewReady)return;
@@ -121,7 +124,7 @@ function pointerDown(e){
  try{canvas.setPointerCapture(e.pointerId);}catch(_){}
  const n=notes[i],radial=clamp(Math.hypot(x-n.x,y-n.y)/n.r,0,1);
  // Center-first drag, edge-first glide. They share the same immediate note onset.
- const alreadyGrabbed=[...pointerMap.values()].some(p=>p.id===i&&p.intent==='drag');
+ const alreadyGrabbed=[...pointerMap.values()].some(p=>p.id===i);
  const p={id:i,last:i,intent:'pending',canDrag:radial<.69&&!state.locked&&!alreadyGrabbed,
   holdTimer:0,x,y,startX:x,startY:y,when:performance.now(),moved:false,gesture:false,
   offsetX:x-n.x,offsetY:y-n.y,countedRub:false,countedMove:false,
@@ -145,31 +148,90 @@ function scheduleHold(pointerId,index){
   }
  },270);
 }
-// Reposition without allowing a dragged object to cover the centre of another pad.
-// Contact sound is emitted only once per entry into an overlap zone (re-arms on exit).
+// Position-based collisions: contact can push neighbours, including chains.
+// Every body is a disc with the same radius across 7/9/11 modes. A soft grab
+// correction lets the selected body yield when its neighbours hit a wall.
+const COLLISION_GAP=3;
+function separateObjects(set, grabbed, rounds=16){
+ const held=new Set([...pointerMap.values()]
+  .filter(p=>p.intent==='drag').map(p=>p.id));
+ for(let k=0;k<rounds;k++){
+  let maxPenetration=0;
+  for(let i=0;i<set.length;i++)for(let j=i+1;j<set.length;j++){
+   const a=set[i],b=set[j],minDist=a.r+b.r+COLLISION_GAP;
+   let dx=a.x-b.x,dy=a.y-b.y,dist=Math.hypot(dx,dy);
+   if(dist>=minDist-.02)continue;
+   if(dist<.001){const angle=(i*2.399+j*1.57);dx=Math.cos(angle);dy=Math.sin(angle);dist=1;}
+   const penetration=minDist-dist;
+   maxPenetration=Math.max(maxPenetration,penetration);
+   let wa=a===grabbed?.25:held.has(a.id)?0:1;
+   let wb=b===grabbed?.25:held.has(b.id)?0:1;
+   // Do not move another actively held object; make this moving object yield.
+   if(wa+wb<.01){wa=a===grabbed?1:0;wb=b===grabbed?1:0;}
+   if(wa+wb<.01)continue;
+   const nx=dx/dist,ny=dy/dist;
+   a.x+=nx*penetration*wa/(wa+wb);a.y+=ny*penetration*wa/(wa+wb);
+   b.x-=nx*penetration*wb/(wa+wb);b.y-=ny*penetration*wb/(wa+wb);
+  }
+  for(const n of set){
+   n.x=clamp(n.x,n.r+4,W-n.r-4);
+   n.y=clamp(n.y,n.r+4,H-n.r-4);
+  }
+  if(maxPenetration<.035)break;
+ }
+}
 function dragObject(pointerId,p,x,y,speed,now){
- const n=notes[p.id];let nx=clamp(x-p.offsetX,n.r+4,W-n.r-4);
- let ny=clamp(y-p.offsetY,n.r+4,H-n.r-4);
+ const n=notes[p.id];
+ const targetX=clamp(x-p.offsetX,n.r+4,W-n.r-4);
+ const targetY=clamp(y-p.offsetY,n.r+4,H-n.r-4);
+ const oldPositions=notes.map(v=>[v.x,v.y]);
+ const startX=n.x,startY=n.y;
+ const travel=Math.hypot(targetX-startX,targetY-startY);
+ const steps=Math.max(1,Math.min(28,Math.ceil(travel/Math.max(8,n.r*.36))));
+ const touched=new Set();
+ // Swept collision prevents a fast finger from passing through a neighbour.
+ // The destination of each short step is corrected by the constraint solver.
+ for(let step=1;step<=steps;step++){
+  const t=step/steps;
+  n.x=clamp(startX+(targetX-startX)*t,n.r+4,W-n.r-4);
+  n.y=clamp(startY+(targetY-startY)*t,n.r+4,H-n.r-4);
+  for(const other of notes){
+   if(other===n)continue;
+   if(Math.hypot(n.x-other.x,n.y-other.y)<n.r+other.r+COLLISION_GAP+.2)
+    touched.add(other.id);
+  }
+  separateObjects(notes,n,step===steps?26:9);
+ }
+ // The final collision distances determine whether a contact is re-armed.
  let nearest=null,nearestDist=Infinity;
  for(const other of notes){
-  if(other.id===n.id)continue;
-  let dx=nx-other.x,dy=ny-other.y,d=Math.hypot(dx,dy);
-  const minD=n.r+other.r+3;
-  if(d<nearestDist){nearestDist=d;nearest=other;}
-  if(d<minD){
-   if(state.collision&&state.feel&&speed>.10&&!p.contactWith.has(other.id)){
-    engine.contact(n,other,speed,notes);stats[state.count].bumps++;
+  if(other===n)continue;
+  const dist=Math.hypot(n.x-other.x,n.y-other.y);
+  if(dist<nearestDist){nearestDist=dist;nearest=other;}
+  if(dist<n.r+other.r+COLLISION_GAP+4)touched.add(other.id);
+ }
+ let chimed=0;
+ for(const other of notes){
+  if(other===n)continue;
+  const dist=Math.hypot(n.x-other.x,n.y-other.y);
+  const minD=n.r+other.r+COLLISION_GAP;
+  if(touched.has(other.id)){
+   if(state.collision&&state.feel&&speed>.10&&!p.contactWith.has(other.id)&&chimed<2){
+    engine.contact(n,other,speed,notes);stats[state.count].bumps++;chimed++;
     n.energy=Math.max(n.energy,.58);other.energy=Math.max(other.energy,.48);
     other.gesture=Math.max(other.gesture||0,.70);
    }
    p.contactWith.add(other.id);
-   if(d<.01){dx=n.x-other.x;dy=n.y-other.y;d=Math.hypot(dx,dy)||1;}
-   nx=other.x+dx/d*minD;ny=other.y+dy/d*minD;
-   nx=clamp(nx,n.r+4,W-n.r-4);ny=clamp(ny,n.r+4,H-n.r-4);
-  }else if(d>minD+10){p.contactWith.delete(other.id);}
+  }else if(dist>minD+13)p.contactWith.delete(other.id);
  }
- n.x=nx;n.y=ny;n.u=nx/W;n.v=ny/H;n.saved=true;n.dragged=true;
- state.dragging=true;
+ for(let i=0;i<notes.length;i++){
+  const obj=notes[i];
+  if(Math.hypot(obj.x-oldPositions[i][0],obj.y-oldPositions[i][1])>.08){
+   obj.u=obj.x/W;obj.v=obj.y/H;obj.saved=true;
+   if(obj!==n&&speed>.05)obj.gesture=Math.max(obj.gesture||0,.12+speed*.34);
+  }
+ }
+ n.dragged=true;state.dragging=true;
  if(now-lastLinkRefresh>55){engine.refreshLinks(notes);lastLinkRefresh=now;}
  if(state.feel&&state.moveSound&&params.expression>0){
   if(!p.gesture)p.gesture=engine.beginGesture(pointerId,n);
@@ -245,7 +307,7 @@ function updateButtons(){
  qsa('[data-feel]').forEach(b=>{b.setAttribute('aria-pressed',String(state.feel));b.textContent=state.feel?'ON':'OFF';});
  qsa('[data-move-sound]').forEach(b=>{b.setAttribute('aria-pressed',String(state.moveSound));b.textContent=state.moveSound?'ON':'OFF';});
  qsa('[data-quality]').forEach(s=>s.value=state.quality);
- $('touchHint').textContent=state.locked?'✦ POSITIONS LOCKED · TAP · GLIDE · HOLD':'✦ TAP TO PLAY · CENTER TO MOVE · RIM TO GLIDE';
+ $('touchHint').textContent=state.locked?'✦ POSITIONS LOCKED · TAP · GLIDE · HOLD':'✦ TAP TO PLAY · CENTER TO PUSH · RIM TO GLIDE';
  $('sceneName').textContent=({original:'Glass garden',cloud:'Blue hour',bright:'Little sun'})[state.scene]||'Custom';
 }
 function clearPointers(){for(const id of pointerMap.keys()){
@@ -297,11 +359,11 @@ function save(){
  try{const result={count:state.count,scale:state.scale,motion:state.motion,scene:state.scene,params,
   feel:state.feel,moveSound:state.moveSound,collision:state.collision,locked:state.locked,link:state.link,hold:state.hold,quality:state.quality,
   positions:Object.fromEntries([...sets].map(([k,set])=>[k,set.map(n=>({u:n.u,v:n.v,saved:n.saved}))]))};
-  localStorage.setItem('resonant-objects-v08',JSON.stringify(result));say('Saved on this device');
+  localStorage.setItem('resonant-objects-v081',JSON.stringify(result));say('Saved on this device');
  }catch(e){say('Storage unavailable');}
 }
 function restore(){
- try{const raw=localStorage.getItem('resonant-objects-v08')||localStorage.getItem('resonant-objects-v07')||localStorage.getItem('resonant-objects-v06')||localStorage.getItem('resonant-objects-v05')||localStorage.getItem('resonant-objects-v04');if(!raw)return;
+ try{const raw=localStorage.getItem('resonant-objects-v081')||localStorage.getItem('resonant-objects-v08')||localStorage.getItem('resonant-objects-v07')||localStorage.getItem('resonant-objects-v06')||localStorage.getItem('resonant-objects-v05')||localStorage.getItem('resonant-objects-v04');if(!raw)return;
   const v=JSON.parse(raw);if([7,9,11].includes(v.count))state.count=v.count;
   if(pitchBanks[v.scale])state.scale=v.scale;
   if(['still','float','orbit'].includes(v.motion))state.motion=v.motion;
