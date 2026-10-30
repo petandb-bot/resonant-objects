@@ -1,4 +1,4 @@
-/* RESONANT OBJECTS v0.11 — FOUR INDEPENDENT SOUND ENGINES
+/* RESONANT OBJECTS v0.11.2 — FIVE INDEPENDENT SOUND ENGINES
  * 共通のWeb Audio出力バスは使うが、発音原理とノード・グラフは素材ごとに独立。
  * JEWEL: modal partial synthesis / CANDY: dynamic FM
  * CERAMIC: excited short waveguide / METAL: inharmonic cross-frequency FM
@@ -117,6 +117,52 @@ class MetalInharmonicFMEngine {
    fm.connect(index).connect(carrier.frequency);
    const amp=e.gain();e.envelope(amp,v*(sympathetic?.38:1)*strength*[.15,.080,.038][i]*(impact?.5:1),.003+(.003*i),dur);
    carrier.connect(amp).connect(e.voice.bus);
+  });
+ }
+}
+
+// WAVE: a dedicated slowly breathing oscillator bank, not a re-skinned strike.
+// It deliberately has a gentle, immediately audible fundamental and evolving upper voices.
+// All oscillators have finite lifetimes. No noise excitation and no recursive DSP feedback.
+class WaveBreathingEngine {
+ constructor(host){this.host=host;this.name='WAVE / slow beating harmonic field';}
+ strike(note,velocity,{sympathetic=false,delay=0,radial=0,repeat=0,impact=false}={}){
+  const h=this.host,ctx=h.ctx,hz=soundHz(note.midi),v=bounded(velocity,0,1);
+  const e=new MaterialEvent(h,note,delay,!impact);
+  if(impact){
+   // A collision remains brief and quiet: a harmonic ping rather than a snare.
+   for(const [ratio,amp,dur] of [[2.012,.025,.17],[3.006,.014,.12]]){
+    const o=e.osc('sine',Math.min(9000,hz*ratio),dur+.028),g=e.gain();
+    e.envelope(g,amp*v,.004,dur);o.connect(g).connect(e.voice.bus);
+   }
+   return;
+  }
+  const tail=(2.4+3.9*h.decay)*(sympathetic?.58:1);
+  const level=(sympathetic?.35:1)*(note.waveAccent?.64:1)*v;
+  // Fine detuning creates a natural rolling wave, perceptible on phone speakers.
+  const components=[
+   [1, .128, .035, 1.00],
+   [1.0051,.061, .25, .91],
+   [2.003,.047, .40, .63],
+   [3.002,.017, .58, .49]
+  ];
+  const lfo=e.osc('sine',.23+(note.id%4)*.045,tail+.2);
+  const vibrato=e.gain(hz*.0015*(.65+.35*h.expression));
+  const breathing=e.gain(.095); // ±9.5% slow amplitude movement, never self-oscillating feedback
+  lfo.connect(vibrato);lfo.connect(breathing).connect(e.voice.bus.gain);
+  components.forEach(([ratio,amp,attack,factor],i)=>{
+   const duration=tail*factor,osc=e.osc('sine',Math.min(11500,hz*ratio),duration+attack+.04),gain=e.gain();
+   if(i<2)vibrato.connect(osc.frequency);
+   const brightness=i>=2?(.80+.38*radial*h.expression):1;
+   // Plateau + gentle multi-second release. The shared percussive exponential
+   // envelope would decay to near silence after just one second.
+   const peak=amp*level*brightness,p=gain.gain,t=e.t;
+   p.setValueAtTime(.000001,t);
+   p.linearRampToValueAtTime(peak,t+attack);
+   p.linearRampToValueAtTime(peak*.87,t+attack+Math.min(.48,duration*.22));
+   p.linearRampToValueAtTime(peak*.36,t+attack+duration*.70);
+   p.exponentialRampToValueAtTime(.000001,t+attack+duration);
+   osc.connect(gain).connect(e.voice.bus);
   });
  }
 }

@@ -1,4 +1,4 @@
-/* RESONANT OBJECTS v0.11 — four distinct acoustic engines. No external dependencies.
+/* RESONANT OBJECTS v0.11.2 — four distinct acoustic engines. No external dependencies.
  * 原音を維持しつつ、近接共鳴の「打撃時」と「音声信号経由」の2層を分離する。
  * Audio graph: per-voice modal synth -> dry bus -> compressor
  *                       \-> modal tanks <-> bounded damped coupling -> wet bus
@@ -10,8 +10,9 @@ class ResonantEngine {
   this.expression=.46;
   this.material=.36;this.materialType=0;this.decay=.67;this.bond=.75;this.space=0;this.bloom=0;this.level=.84;
   this.link=true;this.connections=[];this.tanks=[];this.edges=[];this.tankKey='';this.wetGains=[];
+  this.lastContact=new Map();
   this.synths=[new JewelModalEngine(this),new CandyElasticFMEngine(this),
-   new CeramicWaveguideEngine(this),new MetalInharmonicFMEngine(this)];
+   new CeramicWaveguideEngine(this),new MetalInharmonicFMEngine(this),new WaveBreathingEngine(this)];
  }
  init(){
   if(this.ctx)return;
@@ -55,7 +56,7 @@ class ResonantEngine {
  }
  setMaterial(v){this.material=v/100;}
  setMaterialType(type){
-  const selected=Math.max(0,Math.min(3,type|0));
+  const selected=Math.max(0,Math.min(4,type|0));
   if(this.materialType===selected)return;
   this.stopAllGestures();this.stopAllHolds();this.materialType=selected;
   // Changing body construction changes its sympathetic resonator as well.
@@ -80,7 +81,7 @@ class ResonantEngine {
  }
  syncTanks(notes){
   if(!this.ctx||!notes?.length)return;
-  const key=this.materialType+':'+notes.map(n=>n.midi).join(',');
+  const key=this.materialType+':'+notes.map(n=>n.midi+'/'+this.soundType(n)).join(',');
   if(key!==this.tankKey){
    this.clearTanks();const c=this.ctx;
    for(const n of notes){
@@ -91,9 +92,11 @@ class ResonantEngine {
       [[1,68,.32],[2.002,50,.22],[3.008,38,.13]],
       [[1,24,.29],[1.991,17,.18],[3.03,14,.075]],
       [[1,39,.35],[1.51,21,.12],[2.48,15,.08]],
-      [[1,48,.27],[2.17,33,.16],[3.79,26,.09]]
+      [[1,48,.27],[2.17,33,.16],[3.79,26,.09]],
+      [[1,31,.24],[2.006,23,.13],[3.005,13,.045]]
     ];
-    for(const [ratio,q,mix] of resonatorShapes[this.materialType]){
+    const type=this.soundType(n);
+    for(const [ratio,q,mix] of resonatorShapes[type]){
      const f=c.createBiquadFilter(),g=c.createGain();f.type='bandpass';f.frequency.value=Math.min(16000,hz*ratio);
      f.Q.value=q;g.gain.value=mix;input.connect(f).connect(g).connect(out);nodes.push(f,g);
     }
@@ -101,7 +104,7 @@ class ResonantEngine {
     // A short recirculation produces an audible decaying resonator, not an unbounded loop.
     const loopDelay=c.createDelay(.15),loopGain=c.createGain(),damp=c.createBiquadFilter();
     loopDelay.delayTime.value=.038+n.id*.0013;loopGain.gain.value=.18;
-    damp.type='lowpass';damp.frequency.value=[1750,1250,1900,2600][this.materialType];
+    damp.type='lowpass';damp.frequency.value=[1750,1250,1900,2600,2000][type];
     out.connect(loopDelay).connect(damp).connect(loopGain).connect(input);
     nodes.push(loopDelay,loopGain,damp);
     this.tanks.push({id:n.id,input,out,ret,loopGain,nodes});
@@ -129,7 +132,7 @@ class ResonantEngine {
   if(!n||n.length!==this.tanks.length)return;
   for(const t of this.tanks){
    t.ret.gain.setTargetAtTime(this.link?.23:0,now,.045);
-   t.loopGain.gain.setTargetAtTime(this.link?[.30,.22,.27,.24][this.materialType]:0,now,.055);
+   t.loopGain.gain.setTargetAtTime(this.link?[.30,.22,.27,.24,.17][this.soundType(n[t.id])]:0,now,.055);
   }
   const reach=Math.max(95,Math.min(n[0].stageW,n[0].stageH)*.82);
   // Each source sends to only the three nearest objects, normalized to avoid a gain explosion.
@@ -139,7 +142,7 @@ class ResonantEngine {
    const target=matrix[edge.from].find(v=>v.j===edge.to);
    const attached=this.connections.some(v=>(v.a===edge.from&&v.b===edge.to)||(v.a===edge.to&&v.b===edge.from));
    // Bounded total matrix gains; explicit links are audible but never runaway.
-   const materialMatrix=[1,.75,.90,1.05][this.materialType];
+   const materialMatrix=[1,.75,.90,1.05,.65][this.soundType(n[edge.from])];
    const coeff=(attached?.145:(target ? (.042+.06*(1-target.d/reach)) : 0))*materialMatrix;
    const amount=this.link?coeff*Math.pow(this.bond,1.15):0;
    edge.gain.gain.setTargetAtTime(amount,now,.045);
@@ -158,10 +161,11 @@ class ResonantEngine {
   for(const osc of v.oscillators){try{osc.stop(now+.065);}catch(_){}}
   const i=this.voices.indexOf(v);if(i>=0)this.voices.splice(i,1);
  }
- // Material DSP is delegated to four fundamentally different sound engines.
+ // The sound source is selected per object; wave accents can coexist with struck materials.
+ soundType(note){return note?.waveAccent?4:this.materialType;}
  tone(note,velocity,sympathetic=false,delay=0,radial=0,repeat=0){
   if(!this.ctx||this.ctx.state!=='running'||velocity<.012)return;
-  this.synths[this.materialType].strike(note,velocity,{sympathetic,delay,radial,repeat});
+  this.synths[this.soundType(note)].strike(note,velocity,{sympathetic,delay,radial,repeat});
  }
  strike(index,notes,velocity=1,radial=0){
   if(!this.ctx||this.ctx.state!=='running')return false;
@@ -190,31 +194,62 @@ class ResonantEngine {
   }
   return true;
  }
- // A real collision calls the material's own percussion model. No snare/noise burst.
+ // Collision = a short, gently excited resonator, not an electronic trigger.
+ // The chosen material affects harmonic intervals and decay, while pitch stays
+ // tied to the contacted body. Avoid waveform discontinuities and broadband noise.
  contact(source,target,speed,notes){
-  if(!this.ctx||this.ctx.state!=='running')return;
-  const impact=bounded((speed-.08)/.92,0,1);
-  if(impact<=0)return;
-  const gain=(.28+.45*impact)*[.65,.75,.52,.60][this.materialType];
-  this.synths[this.materialType].strike(target,gain,{impact:true});
-  target.energy=Math.min(1,target.energy+.22+.26*impact);
-  target.impact=Math.max(target.impact||0,.36+.64*impact);
-  source.impact=Math.max(source.impact||0,.25+.55*impact);
+  if(!this.ctx||this.ctx.state!=='running'||!source||!target)return false;
+  const strength=bounded((speed-.25)/.70,0,1);
+  if(strength<=0)return false;
+  const key=Math.min(source.id,target.id)+':'+Math.max(source.id,target.id);
+  const now=performance.now();
+  if(now-(this.lastContact.get(key)||-10000)<330)return false;
+  this.lastContact.set(key,now);
+  // Keep only bounded timestamps; no ever-growing contact history.
+  if(this.lastContact.size>90)for(const [k,t] of this.lastContact)
+   if(now-t>1800)this.lastContact.delete(k);
+  const type=this.soundType(target);
+  const profiles=[
+   {ratios:[1,1.502,2.004],amps:[.069,.025,.011],tail:.53,attack:.014,mult:2.0}, // JEWEL glass
+   {ratios:[1,2.005],amps:[.065,.015],tail:.28,attack:.013,mult:1.25},         // CANDY soft bead
+   {ratios:[1,1.996],amps:[.062,.012],tail:.22,attack:.010,mult:1.5},         // CERAMIC
+   {ratios:[1,1.48,2.18],amps:[.053,.018,.007],tail:.44,attack:.012,mult:2.0},// METAL
+   {ratios:[1,2.002],amps:[.044,.010],tail:.65,attack:.026,mult:1.45}        // WAVE
+  ];
+  const p=profiles[type],hz=Math.min(1750,Math.max(260,soundHz(target.midi)*p.mult));
+  const e=new MaterialEvent(this,target,0,false);
+  const amplitude=.24+.48*strength; // A collision stays quieter than a normal strike.
+  for(let i=0;i<p.ratios.length;i++){
+   const freq=Math.min(5600,hz*p.ratios[i]);
+   const decay=p.tail*(1-i*.16);
+   const osc=e.osc('sine',freq,p.attack+decay+.045),gain=e.gain();
+   e.envelope(gain,p.amps[i]*amplitude,p.attack+i*.003,decay);
+   osc.connect(gain).connect(e.voice.bus);
+  }
+  // A small amount of collision energy enters the existing sympathetic field.
+  if(this.link&&this.tanks[target.id]){
+   const coupling=e.gain(.035);e.voice.bus.connect(coupling).connect(this.tanks[target.id].input);
+   e.nodes.push(coupling);
+  }
+  target.energy=Math.min(1,target.energy+.13+.22*strength);
+  target.impact=Math.max(target.impact||0,.24+.52*strength);
+  source.impact=Math.max(source.impact||0,.16+.36*strength);
+  return true;
  }
  // Pointer gesture: bounded, speed-sensitive rubbing / glissando.
  // Independent from the six original modal partials. It never starts on an idle touch.
  beginGesture(pointerId,note){
   if(!this.ctx||this.ctx.state!=='running'||this.gestures.has(pointerId)||this.gestures.size>=7)return false;
-  const c=this.ctx,t=c.currentTime,hz=440*Math.pow(2,(note.midi-69)/12);
+  const c=this.ctx,t=c.currentTime,hz=440*Math.pow(2,(note.midi-69)/12),type=this.soundType(note);
   const bus=c.createGain();bus.gain.setValueAtTime(.00001,t);bus.connect(this.voiceBus);
   const main=c.createOscillator(),upper=c.createOscillator(),upperGain=c.createGain();
-  main.type=['sine','triangle','triangle','sine'][this.materialType];
-  upper.type=['sine','sine','sine','triangle'][this.materialType];
-  main.frequency.value=hz;upper.frequency.value=hz*[2.008,2.41,1.50,2.17][this.materialType];
+  main.type=['sine','triangle','triangle','sine','sine'][type];
+  upper.type=['sine','sine','sine','triangle','sine'][type];
+  main.frequency.value=hz;upper.frequency.value=hz*[2.008,2.41,1.50,2.17,2.003][type];
   upperGain.gain.value=.22;
   main.connect(bus);upper.connect(upperGain).connect(bus);
   main.start(t);upper.start(t);
-  this.gestures.set(pointerId,{bus,main,upper,upperGain,baseHz:hz,noteId:note.id});
+  this.gestures.set(pointerId,{bus,main,upper,upperGain,baseHz:hz,noteId:note.id,type});
   return true;
  }
  updateGesture(pointerId,note,{speed=0,radial=0,offset=0,proximity=0,move=false}={}){
@@ -224,14 +259,14 @@ class ResonantEngine {
   const hz=440*Math.pow(2,(note.midi-69)/12),bend=move?Math.min(4,Math.max(-4,offset*4)):Math.min(2,Math.max(-2,offset*2));
   const target=Math.min(4000,hz*Math.pow(2,bend*expr/12));
   g.main.frequency.setTargetAtTime(target,t,.035);
-  g.upper.frequency.setTargetAtTime(target*([2.004,2.41,1.51,2.17][this.materialType]+.017*rim),t,.055);
-  g.upperGain.gain.setTargetAtTime([.16,.11,.08,.23][this.materialType]+rim*.18+vel*.18,t,.035);
+  g.upper.frequency.setTargetAtTime(target*([2.004,2.41,1.51,2.17,2.003][g.type]+.017*rim),t,.055);
+  g.upperGain.gain.setTargetAtTime([.16,.11,.08,.23,.09][g.type]+rim*.18+vel*.18,t,.035);
   // Effects remain intentionally quiet next to normal struck notes.
-  const materialDrag=[1,1.30,.72,1.10][this.materialType];
-  const amount=(move?.014:.019)*materialDrag*expr*Math.pow(vel,.72)*(move?(.54+.46*proximity):(.70+.30*rim));
+  const materialDrag=[1,1.30,.72,1.10,.75][g.type];
+  const amount=(move?.006:.014)*materialDrag*expr*Math.pow(vel,.72)*(move?(.54+.46*proximity):(.70+.30*rim));
   g.bus.gain.cancelScheduledValues(t);
-  g.bus.gain.setTargetAtTime(Math.max(.00001,amount),t,.023);
-  g.bus.gain.setTargetAtTime(.00001,t+.065,.095); // stop naturally if pointer pauses
+  g.bus.gain.setTargetAtTime(Math.max(.00001,amount),t,.065);
+  g.bus.gain.setTargetAtTime(.00001,t+.085,.14); // stop naturally if pointer pauses
  }
  endGesture(pointerId){
   const g=this.gestures.get(pointerId);if(!g||!this.ctx)return;
@@ -250,10 +285,10 @@ class ResonantEngine {
   if(!this.ctx||this.ctx.state!=='running'||this.holds.has(pointerId)||this.holds.size>=5)return;
   const c=this.ctx,t=c.currentTime,hz=440*Math.pow(2,(note.midi-69)/12);
   const bus=c.createGain();bus.gain.setValueAtTime(.00001,t);
-  bus.gain.exponentialRampToValueAtTime(.014,t+.22);
+  bus.gain.exponentialRampToValueAtTime(this.soundType(note)===4?.021:.014,t+(this.soundType(note)===4?.44:.22));
   bus.connect(this.voiceBus);
   const oscillators=[];
-  const holdModes=[[[1,.7],[2.002,.3]],[[1,.85],[2.42,.15]],[[1,.88],[1.5,.12]],[[1,.66],[2.17,.34]]][this.materialType];
+  const holdModes=[[[1,.7],[2.002,.3]],[[1,.85],[2.42,.15]],[[1,.88],[1.5,.12]],[[1,.66],[2.17,.34]],[[1,.55],[1.005,.26],[2.003,.19]]][this.soundType(note)];
   for(const [ratio,amplitude] of holdModes){
    const osc=c.createOscillator(),gain=c.createGain();osc.type='sine';osc.frequency.value=hz*ratio;gain.gain.value=amplitude;
    osc.connect(gain).connect(bus);osc.start(t);oscillators.push({osc,gain});

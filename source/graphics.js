@@ -1,4 +1,4 @@
-/* RESONANT OBJECTS v0.11 — GPU field renderer
+/* RESONANT OBJECTS v0.11.2 — GPU field renderer
  * WebGL2 > WebGL1. Audio remains Web Audio (WebGL is graphics only).
  * Pass 1: native-resolution color field, geometry and GPU connection ribbons.
  * Pass 2: half-resolution double-buffered temporal resonance (GPU ping-pong).
@@ -29,10 +29,13 @@ const FIELD_GLSL = {
  }else if(uWorld<2.5){
   c=mix(vec3(.97,.91,.79),vec3(.81,.92,.88),p.x*.58+p.y*.18);
   c+=vec3(.055,.04,.08)*glow(p,vec2(.22,.83),4.2);
- }else{
+ }else if(uWorld<3.5){
   c=mix(vec3(.37,.58,.78),vec3(.51,.49,.71),p.x*.64+p.y*.12);
   c+=vec3(.11,.13,.13)*glow(p,vec2(.8,.22),4.5);
   c+=vec3(.09,.06,.12)*glow(p,vec2(.20,.80),3.2);
+ }else{
+  c=mix(vec3(.69,.91,.94),vec3(.74,.77,.98),p.y*.49+p.x*.31);
+  c+=vec3(.14,.13,.17)*glow(p,vec2(.27,.78),3.8);
  }
  float veil=sin(p.x*7.1+p.y*5.2+uTime*.035)*sin(p.x*2.1-p.y*5.3);
  c+=veil*.008;gl_FragColor=vec4(clamp(c,0.,1.),1.);}`,
@@ -62,19 +65,24 @@ const FIELD_GLSL = {
  }else if(uWorld<2.5){ // CERAMIC: restrained, matte rounded geometry.
   sd=mix(r,poly(p,5.+mod(uKind,3.)),.22)-.92+.007*uImpact*sin(a*5.+uTime*19.);
   ridge=exp(-pow((r-.78)/.16,2.))*.16;
- }else{ // METAL: specular rings and anodized shapes.
+ }else if(uWorld<3.5){ // METAL: specular rings and anodized shapes.
   sd=mix(r,poly(p,6.+mod(uKind,3.)),.54)-.93+.016*uImpact*sin(a*12.+uTime*29.);
   ridge=exp(-pow((r-.69)/.05,2.))*.96;
+ }else{ // WAVE: a breathing circular resonator with soft propagating bands.
+  float swell=.023*uEnergy*sin(uTime*2.6+uSeed);
+  sd=r-(.92+swell+.012*sin(a*6.+uTime*.9));
+  ridge=exp(-pow((r-(.55+.055*sin(uTime*.9+uSeed)))/.08,2.))*.52;
  }
  float body=1.-smoothstep(-.022,.022,sd);float edge=exp(-pow(sd/.032,2.));
  float shine=exp(-pow(length((p-vec2(-.34,.40))*vec2(.87,1.2))/.45,2.));
  if(uWorld>1.5 && uWorld<2.5)shine*=.27;
- if(uWorld>2.5)shine=pow(shine,.38)*.85;
+ if(uWorld>2.5 && uWorld<3.5)shine=pow(shine,.38)*.85;
+ if(uWorld>3.5)shine=.35+.35*exp(-pow((r-.46)/.33,2.));
  float interference=sin(p.x*8.6+p.y*5.2+uSeed)*sin(p.y*4.9-p.x*2.3);
  vec3 col=mix(uColor,vec3(.98,.997,1.),(uWorld>1.5&&uWorld<2.5?.09:.27)+.11*interference+.24*shine);
  col=mix(col,vec3(.36,.65,1.),(uWorld>1.5&&uWorld<2.5?.055:.16)*smoothstep(-.8,.8,p.x-p.y));
  float facets=exp(-pow(sin(10.*a+uSeed*2.8+r*12.)/.34,2.))*.13;
- float kineticGlow=(uWorld<.5?.33:uWorld<1.5?.24:uWorld<2.5?.10:.29)*uImpact;
+ float kineticGlow=(uWorld<.5?.33:uWorld<1.5?.24:uWorld<2.5?.10:uWorld<3.5?.29:.19)*uImpact;
  col+=body*(facets*vec3(.8,.95,1.)+.20*ridge+shine*.18)+uEnergy*.21+uGesture*vec3(.09,.15,.24)*ridge;
  col+=kineticGlow*vec3(1.,.94,.82)+uRepeat*.016*ridge;
  col=mix(col,vec3(1.),edge*.73);
@@ -266,8 +274,8 @@ class VisualRenderer{
   this.drawLinks(time,notes,state);
   g.useProgram(this.programs.obj);g.uniform2f(this.obj.uScreen,this.W,this.H);
   g.uniform1f(this.obj.uTime,time);
-  g.uniform1f(this.obj.uAura,this.aura);g.uniform1f(this.obj.uWorld,state.materialType||0);
-  for(const n of notes){g.uniform2f(this.obj.uCenter,n.x,n.y);g.uniform1f(this.obj.uRadius,n.r);
+  g.uniform1f(this.obj.uAura,this.aura);
+  for(const n of notes){g.uniform1f(this.obj.uWorld,n.waveAccent?4:(state.materialType||0));g.uniform2f(this.obj.uCenter,n.x,n.y);g.uniform1f(this.obj.uRadius,n.r);
    g.uniform3f(this.obj.uColor,...n.color);g.uniform1f(this.obj.uKind,n.kind);
    g.uniform1f(this.obj.uSeed,n.id*1.131+.7);g.uniform1f(this.obj.uEnergy,n.energy);
    g.uniform1f(this.obj.uGesture,n.gesture||0);
@@ -355,24 +363,24 @@ class VisualRenderer{
  // Compatibility only. It is *not* composited into the WebGL path.
  drawFallback(time,notes,state){const c=this.c2d,W=this.W,H=this.H,d=this.dpr;
   c.setTransform(d,0,0,d,0,0);const bg=c.createLinearGradient(0,0,W,H);
-  const ramps=[['#c2f6e8','#cedff9','#e7d3fc'],['#ffe5ea','#fcd6dd','#d9d4fc'],['#f7e8cf','#deebe2','#e6d4c4'],['#86acd1','#8298c4','#b1a8d1']][state.materialType||0];bg.addColorStop(0,ramps[0]);bg.addColorStop(.55,ramps[1]);bg.addColorStop(1,ramps[2]);
+  const ramps=[['#c2f6e8','#cedff9','#e7d3fc'],['#ffe5ea','#fcd6dd','#d9d4fc'],['#f7e8cf','#deebe2','#e6d4c4'],['#86acd1','#8298c4','#b1a8d1'],['#a6e8f3','#d1d7fd','#e8e7ff']][state.materialType||0];bg.addColorStop(0,ramps[0]);bg.addColorStop(.55,ramps[1]);bg.addColorStop(1,ramps[2]);
   c.fillStyle=bg;c.fillRect(0,0,W,H);
   for(const n of notes){c.save();c.translate(n.x,n.y);c.rotate(n.angle);
-   const hit=n.impact||0;
-   if(state.materialType===1)c.scale(1+.10*hit,1-.065*hit);
-   if(state.materialType===3)c.rotate(Math.sin(time*31+n.id)*.022*hit);
-   if(state.materialType===2)c.scale(1+.013*hit,1-.009*hit);
+   const hit=n.impact||0,type=n.waveAccent?4:state.materialType;
+   if(type===1)c.scale(1+.10*hit,1-.065*hit);
+   if(type===3)c.rotate(Math.sin(time*31+n.id)*.022*hit);
+   if(type===2)c.scale(1+.013*hit,1-.009*hit);
    const halo=c.createRadialGradient(0,0,n.r*.42,0,0,n.r*1.7);
    halo.addColorStop(0,n.hex+'45');halo.addColorStop(1,n.hex+'00');
    c.fillStyle=halo;c.beginPath();c.arc(0,0,n.r*1.7,0,Math.PI*2);c.fill();
    const grad=c.createLinearGradient(-n.r,-n.r,n.r,n.r);
    grad.addColorStop(0,'#ffffff');grad.addColorStop(.23,n.hex);grad.addColorStop(.56,'#c6efff');grad.addColorStop(1,n.hex);
    c.globalAlpha=.95;c.beginPath();
-   if((state.materialType===0||state.materialType===3)&&(n.kind===1||n.kind===2||n.kind===5||n.kind===6)){const sides=n.kind===1?3:n.kind===2?6:4;
+   if((type===0||type===3)&&(n.kind===1||n.kind===2||n.kind===5||n.kind===6)){const sides=n.kind===1?3:n.kind===2?6:4;
     for(let i=0;i<sides;i++){const a=Math.PI*2*i/sides-Math.PI/2;
      if(i===0)c.moveTo(Math.cos(a)*n.r*.92,Math.sin(a)*n.r*.92);
      else c.lineTo(Math.cos(a)*n.r*.92,Math.sin(a)*n.r*.92);}c.closePath();}
-   else if(state.materialType===1){
+   else if(type===1){
     // Rounded superellipse: sugar-glass body, no generic circular button.
     for(let j=0;j<=48;j++){
      const a=j/48*Math.PI*2,ct=Math.cos(a),st=Math.sin(a);
@@ -380,18 +388,25 @@ class VisualRenderer{
      const py=Math.sign(st)*Math.pow(Math.abs(st),.69)*n.r*.88;
      if(j===0)c.moveTo(px,py);else c.lineTo(px,py);
     }c.closePath();
-   }else if(state.materialType===2){
+   }else if(type===2){
     // Soft ceramic pentagon with shallow irregular bevel.
     for(let j=0;j<=50;j++){
      const a=j/50*Math.PI*2,rr=n.r*(.89+.035*Math.cos(5*a+n.id));
      if(j===0)c.moveTo(rr*Math.cos(a),rr*Math.sin(a));else c.lineTo(rr*Math.cos(a),rr*Math.sin(a));
     }c.closePath();
+   }else if(type===4){
+    for(let j=0;j<=64;j++){const a=j*Math.PI/32,rr=n.r*(.90+.015*Math.sin(6*a+time*1.4));
+     if(j===0)c.moveTo(rr*Math.cos(a),rr*Math.sin(a));else c.lineTo(rr*Math.cos(a),rr*Math.sin(a));}c.closePath();
    }else{c.arc(0,0,n.r*.94,0,Math.PI*2);}
-   c.fillStyle=state.materialType===2?n.hex:grad;
+   c.fillStyle=type===2?n.hex:grad;
    c.shadowBlur=12+n.energy*22+(n.gesture||0)*12+hit*23;
    c.shadowColor=n.hex;c.fill();
    c.shadowBlur=0;c.strokeStyle='#ffffffd9';c.lineWidth=2;c.stroke();
-   if(state.materialType===3){
+   if(type===4){
+    c.strokeStyle='rgba(255,255,255,.60)';c.lineWidth=1.6;
+    for(let j=0;j<2;j++){c.beginPath();c.arc(0,0,n.r*(.46+j*.20+n.energy*.025),0,Math.PI*2);c.stroke();}
+   }
+   if(type===3){
     // Radial scored metal surface, visible even without WebGL.
     c.strokeStyle='rgba(255,255,255,.52)';c.lineWidth=.9;
     for(let j=0;j<7;j++){const a=j*Math.PI*2/7+n.id*.10;
@@ -400,7 +415,7 @@ class VisualRenderer{
    }
    if(hit>.02){c.beginPath();c.arc(0,0,n.r*(1.05+.15*(1-hit)),0,Math.PI*2);
     c.strokeStyle=`rgba(255,255,255,${.7*hit})`;c.lineWidth=1.2+hit*2;c.stroke();}
-   if(state.materialType===0&&n.kind===3){c.globalCompositeOperation='destination-out';c.beginPath();c.arc(0,0,n.r*.48,0,Math.PI*2);c.fill();}
+   if(type===0&&n.kind===3){c.globalCompositeOperation='destination-out';c.beginPath();c.arc(0,0,n.r*.48,0,Math.PI*2);c.fill();}
    c.restore();}
  }
  drawFallbackLines(time,notes,state){const c=this.overlayCtx,d=this.dpr;

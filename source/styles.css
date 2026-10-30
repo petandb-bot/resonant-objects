@@ -177,6 +177,8 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;background:white;bord
 .material-icon[data-material-type="1"][aria-pressed=true]{color:#c5598a;background:linear-gradient(145deg,#fff4f8,#ffc9e4)}
 .material-icon[data-material-type="2"][aria-pressed=true]{color:#94705a;background:linear-gradient(145deg,#fff9ed,#e6cbb8)}
 .material-icon[data-material-type="3"][aria-pressed=true]{color:#36568f;background:linear-gradient(145deg,#effaff,#a7bacf)}
+.material-icon[data-material-type="4"][aria-pressed=true]{color:#4667c1;background:linear-gradient(145deg,#d8fff1,#a9c9ff)}
+[data-material="wave"]{--aqua:#a1e6f2;--violet:#b4bcff;}
 .kinetic-top .top-right{display:flex;gap:6px;align-items:center;margin-left:0;flex:0 0 auto}
 .kinetic-top .quick-count{display:flex;min-width:104px;gap:3px;background:rgba(255,255,255,.45);border:1px solid #fff9;border-radius:22px;padding:3px}
 .kinetic-top .quick-count button{height:31px;min-width:30px;padding:0 8px;border-radius:13px;box-shadow:none;background:transparent}

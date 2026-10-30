@@ -4,7 +4,7 @@
 <meta name="theme-color" content="#d8f1f2">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>RESONANT OBJECTS · v0.11</title>
+<title>RESONANT OBJECTS · v0.11.2 WAVE</title>
 <style>:root{
   --ink:#344f78; --muted:#7387a5; --aqua:#83e4e5; --violet:#9c9bfd;
   --cream:#fcfff9; --line:rgba(255,255,255,.72); --glaze:rgba(251,255,255,.50);
@@ -184,6 +184,8 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;background:white;bord
 .material-icon[data-material-type="1"][aria-pressed=true]{color:#c5598a;background:linear-gradient(145deg,#fff4f8,#ffc9e4)}
 .material-icon[data-material-type="2"][aria-pressed=true]{color:#94705a;background:linear-gradient(145deg,#fff9ed,#e6cbb8)}
 .material-icon[data-material-type="3"][aria-pressed=true]{color:#36568f;background:linear-gradient(145deg,#effaff,#a7bacf)}
+.material-icon[data-material-type="4"][aria-pressed=true]{color:#4667c1;background:linear-gradient(145deg,#d8fff1,#a9c9ff)}
+[data-material="wave"]{--aqua:#a1e6f2;--violet:#b4bcff;}
 .kinetic-top .top-right{display:flex;gap:6px;align-items:center;margin-left:0;flex:0 0 auto}
 .kinetic-top .quick-count{display:flex;min-width:104px;gap:3px;background:rgba(255,255,255,.45);border:1px solid #fff9;border-radius:22px;padding:3px}
 .kinetic-top .quick-count button{height:31px;min-width:30px;padding:0 8px;border-radius:13px;box-shadow:none;background:transparent}
@@ -233,6 +235,7 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;background:white;bord
  <button class="material-icon" data-material-type="1" type="button" aria-label="CANDY" title="CANDY" aria-pressed="false"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M11 8c-7 1-9 17 0 18 8 1 14-5 13-13S17 4 11 8Zm-2 5c4-3 13-1 13 6"/><path d="M5 12 2 9M24 25l5 4"/></svg></button>
  <button class="material-icon" data-material-type="2" type="button" aria-label="CERAMIC" title="CERAMIC" aria-pressed="false"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M6 11c0-9 20-9 20 0v10c0 7-20 7-20 0V11Zm0 0c0 5 20 5 20 0M10 21c3 2 9 2 12 0"/></svg></button>
  <button class="material-icon" data-material-type="3" type="button" aria-label="METAL" title="METAL" aria-pressed="false"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2 28 9v14l-12 7L4 23V9Zm0 0v28M4 9l12 8 12-8M4 23l12-6 12 6"/></svg></button>
+ <button class="material-icon" data-material-type="4" type="button" aria-label="WAVE" title="WAVE — slowly breathing tones" aria-pressed="false"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M3 14C8 5 13 23 18 14S27 5 29 14M3 21c5-9 10 9 15 0s9-9 11 0"/></svg></button>
  </div>
  <div class="top-right">
   <div class="quick-count piece-count" role="group" aria-label="Number of sound objects"><button data-count="7" type="button">7</button><button data-count="9" type="button">9</button><button data-count="11" type="button">11</button></div>
@@ -286,13 +289,15 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;background:white;bord
   <section class="panel expression-panel"><div class="panel-title"><span class="symbol">〰</span>PLAY FEEL <span class="newtag">v0.7</span></div>
     <div class="switchline"><span>Expressive touch</span><button data-feel type="button" class="switchbtn" aria-pressed="true">ON</button></div>
     <div class="graphics-grid"><label>FEEL <output data-value="expression">Gentle</output></label><input data-param="expression" aria-label="Expression amount" type="range" min="0" max="100" value="46"></div>
-    <div class="switchline"><span>Drag sound</span><button data-move-sound type="button" class="switchbtn" aria-pressed="true">ON</button></div>
-    <div class="switchline"><span>Glass contact ping</span><button data-collision type="button" class="switchbtn" aria-pressed="true">ON</button></div>
-    <p class="panel-desc">Touch: play · Centre: drag · Edge: glide · Contact: ring</p>
+    <div class="switchline"><span>Soft motion tone (optional)</span><button data-move-sound type="button" class="switchbtn" aria-pressed="false">OFF</button></div>
+    <div class="switchline"><span>Gentle material collision</span><button data-collision type="button" class="switchbtn" aria-pressed="true">ON</button></div>
+    <p class="panel-desc">Touch: play · Centre: push quietly · Edge: glide · Contact: soft ring</p>
   </section>
   <section class="panel"><div class="panel-title"><span class="symbol">✳</span>LIVE RESONANCE <span class="newtag">NEW</span></div>
     <div class="switchline"><span>Continuous coupling</span><button data-link type="button" class="switchbtn" aria-pressed="true">ON</button></div>
     <div class="switchline"><span>Touch & hold</span><button data-hold type="button" class="switchbtn" aria-pressed="true">ON</button></div>
+    <div class="switchline"><span>Wave accents (2 long tones)</span><button data-wave-accents type="button" class="switchbtn" aria-pressed="true">ON</button></div>
+    <p class="panel-desc">Two lighter blue objects sing longer inside other materials. Turn OFF for the original all-percussion set.</p>
   </section>
   <section class="panel"><div class="panel-title"><span class="symbol">✳</span>EXPLORE</div><div class="actionrow"><button id="shuffle" type="button">SHUFFLE</button><button id="save" type="button">SAVE</button></div></section>
   <section class="panel graphics-panel"><div class="panel-title"><span class="symbol">◇</span>GPU FIELD <span class="newtag">v0.6</span></div>
@@ -305,7 +310,7 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;background:white;bord
   </section>
 </aside>
 </div>
-<footer class="bottom"><span class="fine">✧  RESONANT OBJECTS · v0.11</span><span class="readout" id="status" role="status" aria-live="polite">Tap a shape to wake the instrument</span></footer>
+<footer class="bottom"><span class="fine">✧  RESONANT OBJECTS · v0.11.2</span><span class="readout" id="status" role="status" aria-live="polite">Tap a shape · drag to arrange silently</span></footer>
 </div>
 <section id="drawer" role="region" aria-label="Instrument controls">
  <div class="drawer-title">TUNE THE INSTRUMENT <button id="closeTune" type="button" class="flatbtn" aria-label="Close tuning">✕</button></div>
@@ -313,7 +318,7 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;background:white;bord
  <div class="drawer-grid">
   <div class="mini-field material-choice"><label>MATERIAL</label><div class="material-choices">
   <button data-material-type="0" type="button">JEWEL</button><button data-material-type="1" type="button">CANDY</button>
-  <button data-material-type="2" type="button">CERAMIC</button><button data-material-type="3" type="button">METAL</button></div></div>
+  <button data-material-type="2" type="button">CERAMIC</button><button data-material-type="3" type="button">METAL</button><button data-material-type="4" type="button">WAVE</button></div></div>
   <div class="mini-field"><label>Brightness <output data-value="material">Warm</output></label><input data-param="material" aria-label="Material" type="range" min="0" max="100" value="36"></div>
   <div class="mini-field"><label>Ring <output data-value="ring">Long</output></label><input data-param="ring" aria-label="Ring" type="range" min="0" max="100" value="67"></div>
   <div class="mini-field"><label>Space <output data-value="space">Dry</output></label><input data-param="space" aria-label="Space" type="range" min="0" max="100" value="0"></div>
@@ -322,10 +327,11 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;background:white;bord
   <div class="mini-field"><label>Play Feel</label><button data-feel type="button" class="switchbtn" aria-pressed="true">ON</button></div>
   <div class="mini-field"><label>Expression <output data-value="expression">Gentle</output></label><input data-param="expression" aria-label="Expression amount" type="range" min="0" max="100" value="46"></div>
   <div class="mini-field"><label>Drag Sound</label><button data-move-sound type="button" class="switchbtn" aria-pressed="true">ON</button></div>
-  <div class="mini-field"><label>Glass Contact Ping</label><button data-collision type="button" class="switchbtn" aria-pressed="true">ON</button></div>
+  <div class="mini-field"><label>Gentle Material Collision</label><button data-collision type="button" class="switchbtn" aria-pressed="true">ON</button></div>
   <div class="mini-field"><label>Lock Positions</label><button data-lock type="button" class="switchbtn" aria-pressed="false">UNLOCKED</button></div>
   <div class="mini-field"><label>Live Link</label><button data-link type="button" class="switchbtn" aria-pressed="true">ON</button></div>
   <div class="mini-field"><label>Hold to sing</label><button data-hold type="button" class="switchbtn" aria-pressed="true">ON</button></div>
+  <div class="mini-field"><label>Wave accents · two sustained notes</label><button data-wave-accents type="button" class="switchbtn" aria-pressed="true">ON</button></div>
   <div class="mini-field"><label>GPU Aura <output data-value="aura">Luminous</output></label><input data-param="aura" aria-label="GPU glow intensity" type="range" min="0" max="100" value="48"></div>
   <div class="mini-field"><label>GPU Trace <output data-value="trace">Gentle</output></label><input data-param="trace" aria-label="GPU resonance trail" type="range" min="0" max="100" value="38"></div>
  </div>
@@ -353,7 +359,7 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;background:white;bord
 </section>
 <div id="turn" aria-label="Rotate device"><div class="turn-geometry" aria-hidden="true">◇</div><strong>TURN SIDEWAYS</strong><small>This little instrument likes both hands.<br>Disable rotation lock if necessary.</small></div>
 
-<script>/* RESONANT OBJECTS v0.11 — FOUR INDEPENDENT SOUND ENGINES
+<script>/* RESONANT OBJECTS v0.11.2 — FIVE INDEPENDENT SOUND ENGINES
  * 共通のWeb Audio出力バスは使うが、発音原理とノード・グラフは素材ごとに独立。
  * JEWEL: modal partial synthesis / CANDY: dynamic FM
  * CERAMIC: excited short waveguide / METAL: inharmonic cross-frequency FM
@@ -475,7 +481,53 @@ class MetalInharmonicFMEngine {
   });
  }
 }
-/* RESONANT OBJECTS v0.11 — four distinct acoustic engines. No external dependencies.
+
+// WAVE: a dedicated slowly breathing oscillator bank, not a re-skinned strike.
+// It deliberately has a gentle, immediately audible fundamental and evolving upper voices.
+// All oscillators have finite lifetimes. No noise excitation and no recursive DSP feedback.
+class WaveBreathingEngine {
+ constructor(host){this.host=host;this.name='WAVE / slow beating harmonic field';}
+ strike(note,velocity,{sympathetic=false,delay=0,radial=0,repeat=0,impact=false}={}){
+  const h=this.host,ctx=h.ctx,hz=soundHz(note.midi),v=bounded(velocity,0,1);
+  const e=new MaterialEvent(h,note,delay,!impact);
+  if(impact){
+   // A collision remains brief and quiet: a harmonic ping rather than a snare.
+   for(const [ratio,amp,dur] of [[2.012,.025,.17],[3.006,.014,.12]]){
+    const o=e.osc('sine',Math.min(9000,hz*ratio),dur+.028),g=e.gain();
+    e.envelope(g,amp*v,.004,dur);o.connect(g).connect(e.voice.bus);
+   }
+   return;
+  }
+  const tail=(2.4+3.9*h.decay)*(sympathetic?.58:1);
+  const level=(sympathetic?.35:1)*(note.waveAccent?.64:1)*v;
+  // Fine detuning creates a natural rolling wave, perceptible on phone speakers.
+  const components=[
+   [1, .128, .035, 1.00],
+   [1.0051,.061, .25, .91],
+   [2.003,.047, .40, .63],
+   [3.002,.017, .58, .49]
+  ];
+  const lfo=e.osc('sine',.23+(note.id%4)*.045,tail+.2);
+  const vibrato=e.gain(hz*.0015*(.65+.35*h.expression));
+  const breathing=e.gain(.095); // ±9.5% slow amplitude movement, never self-oscillating feedback
+  lfo.connect(vibrato);lfo.connect(breathing).connect(e.voice.bus.gain);
+  components.forEach(([ratio,amp,attack,factor],i)=>{
+   const duration=tail*factor,osc=e.osc('sine',Math.min(11500,hz*ratio),duration+attack+.04),gain=e.gain();
+   if(i<2)vibrato.connect(osc.frequency);
+   const brightness=i>=2?(.80+.38*radial*h.expression):1;
+   // Plateau + gentle multi-second release. The shared percussive exponential
+   // envelope would decay to near silence after just one second.
+   const peak=amp*level*brightness,p=gain.gain,t=e.t;
+   p.setValueAtTime(.000001,t);
+   p.linearRampToValueAtTime(peak,t+attack);
+   p.linearRampToValueAtTime(peak*.87,t+attack+Math.min(.48,duration*.22));
+   p.linearRampToValueAtTime(peak*.36,t+attack+duration*.70);
+   p.exponentialRampToValueAtTime(.000001,t+attack+duration);
+   osc.connect(gain).connect(e.voice.bus);
+  });
+ }
+}
+/* RESONANT OBJECTS v0.11.2 — four distinct acoustic engines. No external dependencies.
  * 原音を維持しつつ、近接共鳴の「打撃時」と「音声信号経由」の2層を分離する。
  * Audio graph: per-voice modal synth -> dry bus -> compressor
  *                       \-> modal tanks <-> bounded damped coupling -> wet bus
@@ -487,8 +539,9 @@ class ResonantEngine {
   this.expression=.46;
   this.material=.36;this.materialType=0;this.decay=.67;this.bond=.75;this.space=0;this.bloom=0;this.level=.84;
   this.link=true;this.connections=[];this.tanks=[];this.edges=[];this.tankKey='';this.wetGains=[];
+  this.lastContact=new Map();
   this.synths=[new JewelModalEngine(this),new CandyElasticFMEngine(this),
-   new CeramicWaveguideEngine(this),new MetalInharmonicFMEngine(this)];
+   new CeramicWaveguideEngine(this),new MetalInharmonicFMEngine(this),new WaveBreathingEngine(this)];
  }
  init(){
   if(this.ctx)return;
@@ -532,7 +585,7 @@ class ResonantEngine {
  }
  setMaterial(v){this.material=v/100;}
  setMaterialType(type){
-  const selected=Math.max(0,Math.min(3,type|0));
+  const selected=Math.max(0,Math.min(4,type|0));
   if(this.materialType===selected)return;
   this.stopAllGestures();this.stopAllHolds();this.materialType=selected;
   // Changing body construction changes its sympathetic resonator as well.
@@ -557,7 +610,7 @@ class ResonantEngine {
  }
  syncTanks(notes){
   if(!this.ctx||!notes?.length)return;
-  const key=this.materialType+':'+notes.map(n=>n.midi).join(',');
+  const key=this.materialType+':'+notes.map(n=>n.midi+'/'+this.soundType(n)).join(',');
   if(key!==this.tankKey){
    this.clearTanks();const c=this.ctx;
    for(const n of notes){
@@ -568,9 +621,11 @@ class ResonantEngine {
       [[1,68,.32],[2.002,50,.22],[3.008,38,.13]],
       [[1,24,.29],[1.991,17,.18],[3.03,14,.075]],
       [[1,39,.35],[1.51,21,.12],[2.48,15,.08]],
-      [[1,48,.27],[2.17,33,.16],[3.79,26,.09]]
+      [[1,48,.27],[2.17,33,.16],[3.79,26,.09]],
+      [[1,31,.24],[2.006,23,.13],[3.005,13,.045]]
     ];
-    for(const [ratio,q,mix] of resonatorShapes[this.materialType]){
+    const type=this.soundType(n);
+    for(const [ratio,q,mix] of resonatorShapes[type]){
      const f=c.createBiquadFilter(),g=c.createGain();f.type='bandpass';f.frequency.value=Math.min(16000,hz*ratio);
      f.Q.value=q;g.gain.value=mix;input.connect(f).connect(g).connect(out);nodes.push(f,g);
     }
@@ -578,7 +633,7 @@ class ResonantEngine {
     // A short recirculation produces an audible decaying resonator, not an unbounded loop.
     const loopDelay=c.createDelay(.15),loopGain=c.createGain(),damp=c.createBiquadFilter();
     loopDelay.delayTime.value=.038+n.id*.0013;loopGain.gain.value=.18;
-    damp.type='lowpass';damp.frequency.value=[1750,1250,1900,2600][this.materialType];
+    damp.type='lowpass';damp.frequency.value=[1750,1250,1900,2600,2000][type];
     out.connect(loopDelay).connect(damp).connect(loopGain).connect(input);
     nodes.push(loopDelay,loopGain,damp);
     this.tanks.push({id:n.id,input,out,ret,loopGain,nodes});
@@ -606,7 +661,7 @@ class ResonantEngine {
   if(!n||n.length!==this.tanks.length)return;
   for(const t of this.tanks){
    t.ret.gain.setTargetAtTime(this.link?.23:0,now,.045);
-   t.loopGain.gain.setTargetAtTime(this.link?[.30,.22,.27,.24][this.materialType]:0,now,.055);
+   t.loopGain.gain.setTargetAtTime(this.link?[.30,.22,.27,.24,.17][this.soundType(n[t.id])]:0,now,.055);
   }
   const reach=Math.max(95,Math.min(n[0].stageW,n[0].stageH)*.82);
   // Each source sends to only the three nearest objects, normalized to avoid a gain explosion.
@@ -616,7 +671,7 @@ class ResonantEngine {
    const target=matrix[edge.from].find(v=>v.j===edge.to);
    const attached=this.connections.some(v=>(v.a===edge.from&&v.b===edge.to)||(v.a===edge.to&&v.b===edge.from));
    // Bounded total matrix gains; explicit links are audible but never runaway.
-   const materialMatrix=[1,.75,.90,1.05][this.materialType];
+   const materialMatrix=[1,.75,.90,1.05,.65][this.soundType(n[edge.from])];
    const coeff=(attached?.145:(target ? (.042+.06*(1-target.d/reach)) : 0))*materialMatrix;
    const amount=this.link?coeff*Math.pow(this.bond,1.15):0;
    edge.gain.gain.setTargetAtTime(amount,now,.045);
@@ -635,10 +690,11 @@ class ResonantEngine {
   for(const osc of v.oscillators){try{osc.stop(now+.065);}catch(_){}}
   const i=this.voices.indexOf(v);if(i>=0)this.voices.splice(i,1);
  }
- // Material DSP is delegated to four fundamentally different sound engines.
+ // The sound source is selected per object; wave accents can coexist with struck materials.
+ soundType(note){return note?.waveAccent?4:this.materialType;}
  tone(note,velocity,sympathetic=false,delay=0,radial=0,repeat=0){
   if(!this.ctx||this.ctx.state!=='running'||velocity<.012)return;
-  this.synths[this.materialType].strike(note,velocity,{sympathetic,delay,radial,repeat});
+  this.synths[this.soundType(note)].strike(note,velocity,{sympathetic,delay,radial,repeat});
  }
  strike(index,notes,velocity=1,radial=0){
   if(!this.ctx||this.ctx.state!=='running')return false;
@@ -667,31 +723,62 @@ class ResonantEngine {
   }
   return true;
  }
- // A real collision calls the material's own percussion model. No snare/noise burst.
+ // Collision = a short, gently excited resonator, not an electronic trigger.
+ // The chosen material affects harmonic intervals and decay, while pitch stays
+ // tied to the contacted body. Avoid waveform discontinuities and broadband noise.
  contact(source,target,speed,notes){
-  if(!this.ctx||this.ctx.state!=='running')return;
-  const impact=bounded((speed-.08)/.92,0,1);
-  if(impact<=0)return;
-  const gain=(.28+.45*impact)*[.65,.75,.52,.60][this.materialType];
-  this.synths[this.materialType].strike(target,gain,{impact:true});
-  target.energy=Math.min(1,target.energy+.22+.26*impact);
-  target.impact=Math.max(target.impact||0,.36+.64*impact);
-  source.impact=Math.max(source.impact||0,.25+.55*impact);
+  if(!this.ctx||this.ctx.state!=='running'||!source||!target)return false;
+  const strength=bounded((speed-.25)/.70,0,1);
+  if(strength<=0)return false;
+  const key=Math.min(source.id,target.id)+':'+Math.max(source.id,target.id);
+  const now=performance.now();
+  if(now-(this.lastContact.get(key)||-10000)<330)return false;
+  this.lastContact.set(key,now);
+  // Keep only bounded timestamps; no ever-growing contact history.
+  if(this.lastContact.size>90)for(const [k,t] of this.lastContact)
+   if(now-t>1800)this.lastContact.delete(k);
+  const type=this.soundType(target);
+  const profiles=[
+   {ratios:[1,1.502,2.004],amps:[.069,.025,.011],tail:.53,attack:.014,mult:2.0}, // JEWEL glass
+   {ratios:[1,2.005],amps:[.065,.015],tail:.28,attack:.013,mult:1.25},         // CANDY soft bead
+   {ratios:[1,1.996],amps:[.062,.012],tail:.22,attack:.010,mult:1.5},         // CERAMIC
+   {ratios:[1,1.48,2.18],amps:[.053,.018,.007],tail:.44,attack:.012,mult:2.0},// METAL
+   {ratios:[1,2.002],amps:[.044,.010],tail:.65,attack:.026,mult:1.45}        // WAVE
+  ];
+  const p=profiles[type],hz=Math.min(1750,Math.max(260,soundHz(target.midi)*p.mult));
+  const e=new MaterialEvent(this,target,0,false);
+  const amplitude=.24+.48*strength; // A collision stays quieter than a normal strike.
+  for(let i=0;i<p.ratios.length;i++){
+   const freq=Math.min(5600,hz*p.ratios[i]);
+   const decay=p.tail*(1-i*.16);
+   const osc=e.osc('sine',freq,p.attack+decay+.045),gain=e.gain();
+   e.envelope(gain,p.amps[i]*amplitude,p.attack+i*.003,decay);
+   osc.connect(gain).connect(e.voice.bus);
+  }
+  // A small amount of collision energy enters the existing sympathetic field.
+  if(this.link&&this.tanks[target.id]){
+   const coupling=e.gain(.035);e.voice.bus.connect(coupling).connect(this.tanks[target.id].input);
+   e.nodes.push(coupling);
+  }
+  target.energy=Math.min(1,target.energy+.13+.22*strength);
+  target.impact=Math.max(target.impact||0,.24+.52*strength);
+  source.impact=Math.max(source.impact||0,.16+.36*strength);
+  return true;
  }
  // Pointer gesture: bounded, speed-sensitive rubbing / glissando.
  // Independent from the six original modal partials. It never starts on an idle touch.
  beginGesture(pointerId,note){
   if(!this.ctx||this.ctx.state!=='running'||this.gestures.has(pointerId)||this.gestures.size>=7)return false;
-  const c=this.ctx,t=c.currentTime,hz=440*Math.pow(2,(note.midi-69)/12);
+  const c=this.ctx,t=c.currentTime,hz=440*Math.pow(2,(note.midi-69)/12),type=this.soundType(note);
   const bus=c.createGain();bus.gain.setValueAtTime(.00001,t);bus.connect(this.voiceBus);
   const main=c.createOscillator(),upper=c.createOscillator(),upperGain=c.createGain();
-  main.type=['sine','triangle','triangle','sine'][this.materialType];
-  upper.type=['sine','sine','sine','triangle'][this.materialType];
-  main.frequency.value=hz;upper.frequency.value=hz*[2.008,2.41,1.50,2.17][this.materialType];
+  main.type=['sine','triangle','triangle','sine','sine'][type];
+  upper.type=['sine','sine','sine','triangle','sine'][type];
+  main.frequency.value=hz;upper.frequency.value=hz*[2.008,2.41,1.50,2.17,2.003][type];
   upperGain.gain.value=.22;
   main.connect(bus);upper.connect(upperGain).connect(bus);
   main.start(t);upper.start(t);
-  this.gestures.set(pointerId,{bus,main,upper,upperGain,baseHz:hz,noteId:note.id});
+  this.gestures.set(pointerId,{bus,main,upper,upperGain,baseHz:hz,noteId:note.id,type});
   return true;
  }
  updateGesture(pointerId,note,{speed=0,radial=0,offset=0,proximity=0,move=false}={}){
@@ -701,14 +788,14 @@ class ResonantEngine {
   const hz=440*Math.pow(2,(note.midi-69)/12),bend=move?Math.min(4,Math.max(-4,offset*4)):Math.min(2,Math.max(-2,offset*2));
   const target=Math.min(4000,hz*Math.pow(2,bend*expr/12));
   g.main.frequency.setTargetAtTime(target,t,.035);
-  g.upper.frequency.setTargetAtTime(target*([2.004,2.41,1.51,2.17][this.materialType]+.017*rim),t,.055);
-  g.upperGain.gain.setTargetAtTime([.16,.11,.08,.23][this.materialType]+rim*.18+vel*.18,t,.035);
+  g.upper.frequency.setTargetAtTime(target*([2.004,2.41,1.51,2.17,2.003][g.type]+.017*rim),t,.055);
+  g.upperGain.gain.setTargetAtTime([.16,.11,.08,.23,.09][g.type]+rim*.18+vel*.18,t,.035);
   // Effects remain intentionally quiet next to normal struck notes.
-  const materialDrag=[1,1.30,.72,1.10][this.materialType];
-  const amount=(move?.014:.019)*materialDrag*expr*Math.pow(vel,.72)*(move?(.54+.46*proximity):(.70+.30*rim));
+  const materialDrag=[1,1.30,.72,1.10,.75][g.type];
+  const amount=(move?.006:.014)*materialDrag*expr*Math.pow(vel,.72)*(move?(.54+.46*proximity):(.70+.30*rim));
   g.bus.gain.cancelScheduledValues(t);
-  g.bus.gain.setTargetAtTime(Math.max(.00001,amount),t,.023);
-  g.bus.gain.setTargetAtTime(.00001,t+.065,.095); // stop naturally if pointer pauses
+  g.bus.gain.setTargetAtTime(Math.max(.00001,amount),t,.065);
+  g.bus.gain.setTargetAtTime(.00001,t+.085,.14); // stop naturally if pointer pauses
  }
  endGesture(pointerId){
   const g=this.gestures.get(pointerId);if(!g||!this.ctx)return;
@@ -727,10 +814,10 @@ class ResonantEngine {
   if(!this.ctx||this.ctx.state!=='running'||this.holds.has(pointerId)||this.holds.size>=5)return;
   const c=this.ctx,t=c.currentTime,hz=440*Math.pow(2,(note.midi-69)/12);
   const bus=c.createGain();bus.gain.setValueAtTime(.00001,t);
-  bus.gain.exponentialRampToValueAtTime(.014,t+.22);
+  bus.gain.exponentialRampToValueAtTime(this.soundType(note)===4?.021:.014,t+(this.soundType(note)===4?.44:.22));
   bus.connect(this.voiceBus);
   const oscillators=[];
-  const holdModes=[[[1,.7],[2.002,.3]],[[1,.85],[2.42,.15]],[[1,.88],[1.5,.12]],[[1,.66],[2.17,.34]]][this.materialType];
+  const holdModes=[[[1,.7],[2.002,.3]],[[1,.85],[2.42,.15]],[[1,.88],[1.5,.12]],[[1,.66],[2.17,.34]],[[1,.55],[1.005,.26],[2.003,.19]]][this.soundType(note)];
   for(const [ratio,amplitude] of holdModes){
    const osc=c.createOscillator(),gain=c.createGain();osc.type='sine';osc.frequency.value=hz*ratio;gain.gain.value=amplitude;
    osc.connect(gain).connect(bus);osc.start(t);oscillators.push({osc,gain});
@@ -753,7 +840,7 @@ class ResonantEngine {
 }
 
 
-/* RESONANT OBJECTS v0.11 — GPU field renderer
+/* RESONANT OBJECTS v0.11.2 — GPU field renderer
  * WebGL2 > WebGL1. Audio remains Web Audio (WebGL is graphics only).
  * Pass 1: native-resolution color field, geometry and GPU connection ribbons.
  * Pass 2: half-resolution double-buffered temporal resonance (GPU ping-pong).
@@ -784,10 +871,13 @@ const FIELD_GLSL = {
  }else if(uWorld<2.5){
   c=mix(vec3(.97,.91,.79),vec3(.81,.92,.88),p.x*.58+p.y*.18);
   c+=vec3(.055,.04,.08)*glow(p,vec2(.22,.83),4.2);
- }else{
+ }else if(uWorld<3.5){
   c=mix(vec3(.37,.58,.78),vec3(.51,.49,.71),p.x*.64+p.y*.12);
   c+=vec3(.11,.13,.13)*glow(p,vec2(.8,.22),4.5);
   c+=vec3(.09,.06,.12)*glow(p,vec2(.20,.80),3.2);
+ }else{
+  c=mix(vec3(.69,.91,.94),vec3(.74,.77,.98),p.y*.49+p.x*.31);
+  c+=vec3(.14,.13,.17)*glow(p,vec2(.27,.78),3.8);
  }
  float veil=sin(p.x*7.1+p.y*5.2+uTime*.035)*sin(p.x*2.1-p.y*5.3);
  c+=veil*.008;gl_FragColor=vec4(clamp(c,0.,1.),1.);}`,
@@ -817,19 +907,24 @@ const FIELD_GLSL = {
  }else if(uWorld<2.5){ // CERAMIC: restrained, matte rounded geometry.
   sd=mix(r,poly(p,5.+mod(uKind,3.)),.22)-.92+.007*uImpact*sin(a*5.+uTime*19.);
   ridge=exp(-pow((r-.78)/.16,2.))*.16;
- }else{ // METAL: specular rings and anodized shapes.
+ }else if(uWorld<3.5){ // METAL: specular rings and anodized shapes.
   sd=mix(r,poly(p,6.+mod(uKind,3.)),.54)-.93+.016*uImpact*sin(a*12.+uTime*29.);
   ridge=exp(-pow((r-.69)/.05,2.))*.96;
+ }else{ // WAVE: a breathing circular resonator with soft propagating bands.
+  float swell=.023*uEnergy*sin(uTime*2.6+uSeed);
+  sd=r-(.92+swell+.012*sin(a*6.+uTime*.9));
+  ridge=exp(-pow((r-(.55+.055*sin(uTime*.9+uSeed)))/.08,2.))*.52;
  }
  float body=1.-smoothstep(-.022,.022,sd);float edge=exp(-pow(sd/.032,2.));
  float shine=exp(-pow(length((p-vec2(-.34,.40))*vec2(.87,1.2))/.45,2.));
  if(uWorld>1.5 && uWorld<2.5)shine*=.27;
- if(uWorld>2.5)shine=pow(shine,.38)*.85;
+ if(uWorld>2.5 && uWorld<3.5)shine=pow(shine,.38)*.85;
+ if(uWorld>3.5)shine=.35+.35*exp(-pow((r-.46)/.33,2.));
  float interference=sin(p.x*8.6+p.y*5.2+uSeed)*sin(p.y*4.9-p.x*2.3);
  vec3 col=mix(uColor,vec3(.98,.997,1.),(uWorld>1.5&&uWorld<2.5?.09:.27)+.11*interference+.24*shine);
  col=mix(col,vec3(.36,.65,1.),(uWorld>1.5&&uWorld<2.5?.055:.16)*smoothstep(-.8,.8,p.x-p.y));
  float facets=exp(-pow(sin(10.*a+uSeed*2.8+r*12.)/.34,2.))*.13;
- float kineticGlow=(uWorld<.5?.33:uWorld<1.5?.24:uWorld<2.5?.10:.29)*uImpact;
+ float kineticGlow=(uWorld<.5?.33:uWorld<1.5?.24:uWorld<2.5?.10:uWorld<3.5?.29:.19)*uImpact;
  col+=body*(facets*vec3(.8,.95,1.)+.20*ridge+shine*.18)+uEnergy*.21+uGesture*vec3(.09,.15,.24)*ridge;
  col+=kineticGlow*vec3(1.,.94,.82)+uRepeat*.016*ridge;
  col=mix(col,vec3(1.),edge*.73);
@@ -1021,8 +1116,8 @@ class VisualRenderer{
   this.drawLinks(time,notes,state);
   g.useProgram(this.programs.obj);g.uniform2f(this.obj.uScreen,this.W,this.H);
   g.uniform1f(this.obj.uTime,time);
-  g.uniform1f(this.obj.uAura,this.aura);g.uniform1f(this.obj.uWorld,state.materialType||0);
-  for(const n of notes){g.uniform2f(this.obj.uCenter,n.x,n.y);g.uniform1f(this.obj.uRadius,n.r);
+  g.uniform1f(this.obj.uAura,this.aura);
+  for(const n of notes){g.uniform1f(this.obj.uWorld,n.waveAccent?4:(state.materialType||0));g.uniform2f(this.obj.uCenter,n.x,n.y);g.uniform1f(this.obj.uRadius,n.r);
    g.uniform3f(this.obj.uColor,...n.color);g.uniform1f(this.obj.uKind,n.kind);
    g.uniform1f(this.obj.uSeed,n.id*1.131+.7);g.uniform1f(this.obj.uEnergy,n.energy);
    g.uniform1f(this.obj.uGesture,n.gesture||0);
@@ -1110,24 +1205,24 @@ class VisualRenderer{
  // Compatibility only. It is *not* composited into the WebGL path.
  drawFallback(time,notes,state){const c=this.c2d,W=this.W,H=this.H,d=this.dpr;
   c.setTransform(d,0,0,d,0,0);const bg=c.createLinearGradient(0,0,W,H);
-  const ramps=[['#c2f6e8','#cedff9','#e7d3fc'],['#ffe5ea','#fcd6dd','#d9d4fc'],['#f7e8cf','#deebe2','#e6d4c4'],['#86acd1','#8298c4','#b1a8d1']][state.materialType||0];bg.addColorStop(0,ramps[0]);bg.addColorStop(.55,ramps[1]);bg.addColorStop(1,ramps[2]);
+  const ramps=[['#c2f6e8','#cedff9','#e7d3fc'],['#ffe5ea','#fcd6dd','#d9d4fc'],['#f7e8cf','#deebe2','#e6d4c4'],['#86acd1','#8298c4','#b1a8d1'],['#a6e8f3','#d1d7fd','#e8e7ff']][state.materialType||0];bg.addColorStop(0,ramps[0]);bg.addColorStop(.55,ramps[1]);bg.addColorStop(1,ramps[2]);
   c.fillStyle=bg;c.fillRect(0,0,W,H);
   for(const n of notes){c.save();c.translate(n.x,n.y);c.rotate(n.angle);
-   const hit=n.impact||0;
-   if(state.materialType===1)c.scale(1+.10*hit,1-.065*hit);
-   if(state.materialType===3)c.rotate(Math.sin(time*31+n.id)*.022*hit);
-   if(state.materialType===2)c.scale(1+.013*hit,1-.009*hit);
+   const hit=n.impact||0,type=n.waveAccent?4:state.materialType;
+   if(type===1)c.scale(1+.10*hit,1-.065*hit);
+   if(type===3)c.rotate(Math.sin(time*31+n.id)*.022*hit);
+   if(type===2)c.scale(1+.013*hit,1-.009*hit);
    const halo=c.createRadialGradient(0,0,n.r*.42,0,0,n.r*1.7);
    halo.addColorStop(0,n.hex+'45');halo.addColorStop(1,n.hex+'00');
    c.fillStyle=halo;c.beginPath();c.arc(0,0,n.r*1.7,0,Math.PI*2);c.fill();
    const grad=c.createLinearGradient(-n.r,-n.r,n.r,n.r);
    grad.addColorStop(0,'#ffffff');grad.addColorStop(.23,n.hex);grad.addColorStop(.56,'#c6efff');grad.addColorStop(1,n.hex);
    c.globalAlpha=.95;c.beginPath();
-   if((state.materialType===0||state.materialType===3)&&(n.kind===1||n.kind===2||n.kind===5||n.kind===6)){const sides=n.kind===1?3:n.kind===2?6:4;
+   if((type===0||type===3)&&(n.kind===1||n.kind===2||n.kind===5||n.kind===6)){const sides=n.kind===1?3:n.kind===2?6:4;
     for(let i=0;i<sides;i++){const a=Math.PI*2*i/sides-Math.PI/2;
      if(i===0)c.moveTo(Math.cos(a)*n.r*.92,Math.sin(a)*n.r*.92);
      else c.lineTo(Math.cos(a)*n.r*.92,Math.sin(a)*n.r*.92);}c.closePath();}
-   else if(state.materialType===1){
+   else if(type===1){
     // Rounded superellipse: sugar-glass body, no generic circular button.
     for(let j=0;j<=48;j++){
      const a=j/48*Math.PI*2,ct=Math.cos(a),st=Math.sin(a);
@@ -1135,18 +1230,25 @@ class VisualRenderer{
      const py=Math.sign(st)*Math.pow(Math.abs(st),.69)*n.r*.88;
      if(j===0)c.moveTo(px,py);else c.lineTo(px,py);
     }c.closePath();
-   }else if(state.materialType===2){
+   }else if(type===2){
     // Soft ceramic pentagon with shallow irregular bevel.
     for(let j=0;j<=50;j++){
      const a=j/50*Math.PI*2,rr=n.r*(.89+.035*Math.cos(5*a+n.id));
      if(j===0)c.moveTo(rr*Math.cos(a),rr*Math.sin(a));else c.lineTo(rr*Math.cos(a),rr*Math.sin(a));
     }c.closePath();
+   }else if(type===4){
+    for(let j=0;j<=64;j++){const a=j*Math.PI/32,rr=n.r*(.90+.015*Math.sin(6*a+time*1.4));
+     if(j===0)c.moveTo(rr*Math.cos(a),rr*Math.sin(a));else c.lineTo(rr*Math.cos(a),rr*Math.sin(a));}c.closePath();
    }else{c.arc(0,0,n.r*.94,0,Math.PI*2);}
-   c.fillStyle=state.materialType===2?n.hex:grad;
+   c.fillStyle=type===2?n.hex:grad;
    c.shadowBlur=12+n.energy*22+(n.gesture||0)*12+hit*23;
    c.shadowColor=n.hex;c.fill();
    c.shadowBlur=0;c.strokeStyle='#ffffffd9';c.lineWidth=2;c.stroke();
-   if(state.materialType===3){
+   if(type===4){
+    c.strokeStyle='rgba(255,255,255,.60)';c.lineWidth=1.6;
+    for(let j=0;j<2;j++){c.beginPath();c.arc(0,0,n.r*(.46+j*.20+n.energy*.025),0,Math.PI*2);c.stroke();}
+   }
+   if(type===3){
     // Radial scored metal surface, visible even without WebGL.
     c.strokeStyle='rgba(255,255,255,.52)';c.lineWidth=.9;
     for(let j=0;j<7;j++){const a=j*Math.PI*2/7+n.id*.10;
@@ -1155,7 +1257,7 @@ class VisualRenderer{
    }
    if(hit>.02){c.beginPath();c.arc(0,0,n.r*(1.05+.15*(1-hit)),0,Math.PI*2);
     c.strokeStyle=`rgba(255,255,255,${.7*hit})`;c.lineWidth=1.2+hit*2;c.stroke();}
-   if(state.materialType===0&&n.kind===3){c.globalCompositeOperation='destination-out';c.beginPath();c.arc(0,0,n.r*.48,0,Math.PI*2);c.fill();}
+   if(type===0&&n.kind===3){c.globalCompositeOperation='destination-out';c.beginPath();c.arc(0,0,n.r*.48,0,Math.PI*2);c.fill();}
    c.restore();}
  }
  drawFallbackLines(time,notes,state){const c=this.overlayCtx,d=this.dpr;
@@ -1174,7 +1276,7 @@ class VisualRenderer{
 }
 
 
-/* RESONANT OBJECTS v0.11 — One Playing Field / interaction layer.
+/* RESONANT OBJECTS v0.11.2 — One Playing Field / interaction layer.
  * 描画 / 音源 / 状態を分離。WebGL描画上の位置とタッチ領域は同一のモデルを参照。
  * Notes use stable IDs within each layout; no timer-driven animation when idle. */
 (()=>{
@@ -1187,7 +1289,8 @@ const MATERIALS=[
  {name:'JEWEL',colors:['#65ccf5','#d99cf7','#5fe5e0','#fdc6a7','#a4a6ff','#86dfff','#8ba8ff','#f7aacd','#8bdcc7','#ffd1b1','#b2b4ff']},
  {name:'CANDY',colors:['#ff8fbe','#ffc66a','#8dd5fb','#f9a36e','#c39cff','#b7e67f','#ffa0a1','#94cde7','#f4d886','#9ee9bd','#f3a4ed']},
  {name:'CERAMIC',colors:['#e9a7a1','#e5ca9a','#adc3c4','#e8bb89','#abcbbb','#d3afa9','#b6bddb','#e3c1a8','#b3d2c0','#d8c6a5','#bbc1d5']},
- {name:'METAL',colors:['#7fbded','#d1a9e9','#a3d9d5','#f0bc84','#88a7da','#b1d7eb','#91afcf','#c9b7e9','#a2d2c3','#e5afbf','#9facd8']}
+ {name:'METAL',colors:['#7fbded','#d1a9e9','#a3d9d5','#f0bc84','#88a7da','#b1d7eb','#91afcf','#c9b7e9','#a2d2c3','#e5afbf','#9facd8']},
+ {name:'WAVE',colors:['#83c8f5','#b4b4ff','#84e2db','#a4a3ed','#92dbe8','#9bb8ff','#80d2e9','#a2c3fa','#9db5ff','#90e7dc','#b6b6fd']}
 ];
 const hexRGB=h=>[parseInt(h.slice(1,3),16)/255,parseInt(h.slice(3,5),16)/255,parseInt(h.slice(5,7),16)/255];
 // D minor 9 pitches exactly as v0.3, with two added notes for 11-piece mode.
@@ -1198,7 +1301,7 @@ const pitchBanks={
 };
 const selects={7:[0,1,2,3,4,6,8],9:[0,1,2,3,4,5,6,7,8],11:[0,1,2,3,4,5,6,7,8,9,10]};
 const params={material:36,ring:67,space:0,bond:75,bloom:0,level:84,aura:48,trace:38,expression:46};
-const state={materialType:0,count:9,scale:'minor',motion:'still',locked:false,dragging:false,connect:true,showNotes:false,collision:true,scene:'original',drawer:false,link:true,hold:true,quality:'balanced',feel:true,moveSound:true};
+const state={waveAccents:true,materialType:0,count:9,scale:'minor',motion:'still',locked:false,dragging:false,connect:true,showNotes:false,collision:true,scene:'original',drawer:false,link:true,hold:true,quality:'balanced',feel:true,moveSound:false};
 const sets=new Map(),stats={7:{hits:0,empty:0,slides:0,rub:0,moves:0,bumps:0,multi:0},9:{hits:0,empty:0,slides:0,rub:0,moves:0,bumps:0,multi:0},11:{hits:0,empty:0,slides:0,rub:0,moves:0,bumps:0,multi:0}};
 const pointerMap=new Map();const connectionsByCount=new Map([[7,new Map()],[9,new Map()],[11,new Map()]]);
 const connected=()=>[...connectionsByCount.get(state.count).values()];
@@ -1219,11 +1322,11 @@ function say(msg){
 function pitches(count,scale){const source=pitchBanks[scale];const entries=source.concat([['G3',55],['C5',72]]);
  return selects[count].map(i=>entries[i]);}
 function makeSet(count){return Array.from({length:count},(_,id)=>({id,midi:50,name:'',kind:id===0?0:((id-1)%8),big:id===0,
-  color:hexRGB(colors[id]),hex:colors[id],u:.5,v:.5,saved:false,r:35,x:0,y:0,energy:0,angle:0,last:0,stageW:1,stageH:1,gesture:0,impact:0,streak:0}));}
+  color:hexRGB(colors[id]),hex:colors[id],u:.5,v:.5,saved:false,r:35,x:0,y:0,energy:0,angle:0,last:0,stageW:1,stageH:1,gesture:0,impact:0,streak:0,waveAccent:false}));}
 for(const k of [7,9,11])sets.set(k,makeSet(k));
 function setNotes(){clearPointers();notes=sets.get(state.count);engine.setConnections(connected());const names=pitches(state.count,state.scale);
  for(const [i,n] of notes.entries()){n.name=names[i][0];n.midi=names[i][1];}
- labels.replaceChildren();for(const n of notes){const el=document.createElement('div');el.className='note-label';el.dataset.note=n.id;el.textContent=n.name;labels.appendChild(el);n.label=el;}
+ updateWaveVoices();labels.replaceChildren();for(const n of notes){const el=document.createElement('div');el.className='note-label';el.dataset.note=n.id;el.textContent=n.name;labels.appendChild(el);n.label=el;}
  resize();updateButtons();engine.stopAllHolds();if(engine.ctx)engine.syncTanks(notes);}
 // Same physical screen size for all note counts: adding notes never shrinks an object.
 // A centered note and a fixed-size elliptical ring keep thumb access predictable.
@@ -1277,9 +1380,9 @@ function draw(t){requestId=0;
   }
   for(let i=0;i<notes.length;i++)notes[i].energy=clamp(notes[i].energy+transfer[i],0,1);
  }
- for(const n of notes){n.energy=Math.max(0,n.energy-dt*.64);
+ for(const n of notes){n.energy=Math.max(0,n.energy-dt*(n.waveAccent||state.materialType===4?.23:.64));
  n.gesture=Math.max(0,(n.gesture||0)-dt*2.7);
- n.impact=Math.max(0,(n.impact||0)-dt*[2.8,3.5,6.5,4.5][state.materialType]);
+ n.impact=Math.max(0,(n.impact||0)-dt*[2.8,3.5,6.5,4.5,1.4][n.waveAccent?4:state.materialType]);
  if(n.energy>.008||n.gesture>.008||n.impact>.008)any=true;
  // Geometry may subtly rotate, but touch centers NEVER drift during performance.
  if(state.motion==='orbit')n.angle+=dt*.14*(n.id%2===0?1:-1);
@@ -1314,15 +1417,20 @@ function pointerDown(e){
  if(i<0){stats[state.count].empty++;return;}
  try{canvas.setPointerCapture(e.pointerId);}catch(_){}
  const n=notes[i],radial=clamp(Math.hypot(x-n.x,y-n.y)/n.r,0,1);
- // Center-first drag, edge-first glide. They share the same immediate note onset.
+ // Center grabs stay silent until confirmed as a tap; rim plays immediately.
+ // This distinguishes an intentional strike from moving a body without a PLAY/MOVE switch.
  const alreadyGrabbed=[...pointerMap.values()].some(p=>p.id===i);
  const p={id:i,last:i,intent:'pending',canDrag:radial<.69&&!state.locked&&!alreadyGrabbed,
   holdTimer:0,x,y,startX:x,startY:y,when:performance.now(),moved:false,gesture:false,
   offsetX:x-n.x,offsetY:y-n.y,countedRub:false,countedMove:false,
-  contactWith:new Set(),lastSpeed:0,connectTimer:0,connectTarget:-1,previewStart:0};
+  contactWith:new Set(),lastSpeed:0,connectTimer:0,connectTarget:-1,previewStart:0,
+  played:false,held:false,initialRadial:radial};
  pointerMap.set(e.pointerId,p);
  stats[state.count].hits++;stats[state.count].multi=Math.max(stats[state.count].multi,pointerMap.size);
- play(i,clamp(1.03-.25*radial,.66,1),radial);
+ // Unlock audio on the first gesture even when the player only moves a body.
+ // This prepares the collision resonator without producing an unwanted pickup note.
+ if(p.canDrag)engine.unlock();
+ else{play(i,clamp(1.03-.25*radial,.66,1),radial);p.played=true;}
  scheduleHold(e.pointerId,i);
 }
 function cancelThread(p){if(p?.connectTimer){clearTimeout(p.connectTimer);p.connectTimer=0;}if(p){p.connectTarget=-1;p.previewStart=0;}state.threadPreview=null;}
@@ -1336,7 +1444,7 @@ function scheduleHold(pointerId,index){
  p.holdTimer=setTimeout(()=>{
   p.holdTimer=0;
   if(pointerMap.get(pointerId)===p&&p.last===index&&state.hold&&!p.moved){
-   engine.startHold(pointerId,notes[index]);notes[index].energy=Math.max(notes[index].energy,.34);drawRequest();
+   p.held=true;engine.startHold(pointerId,notes[index]);notes[index].energy=Math.max(notes[index].energy,.34);drawRequest();
   }
  },270);
 }
@@ -1462,10 +1570,12 @@ function dragObject(pointerId,p,x,y,speed,now){
   const dist=Math.hypot(n.x-other.x,n.y-other.y);
   const minD=n.r+other.r+COLLISION_GAP;
   if(touched.has(other.id)){
-   if(state.collision&&state.feel&&speed>.10&&!p.contactWith.has(other.id)&&chimed<2){
-    engine.contact(n,other,speed,notes);stats[state.count].bumps++;chimed++;
-    n.energy=Math.max(n.energy,.58);other.energy=Math.max(other.energy,.48);
-    other.gesture=Math.max(other.gesture||0,[.58,.92,.36,.66][state.materialType]);
+   if(state.collision&&speed>.25&&!p.contactWith.has(other.id)&&chimed<1){
+    if(engine.contact(n,other,speed,notes)){
+     stats[state.count].bumps++;chimed++;
+     n.energy=Math.max(n.energy,.42);other.energy=Math.max(other.energy,.39);
+     other.gesture=Math.max(other.gesture||0,[.38,.62,.24,.42,.35][other.waveAccent?4:state.materialType]);
+    }
    }
    p.contactWith.add(other.id);
   }else if(dist>minD+13)p.contactWith.delete(other.id);
@@ -1531,7 +1641,12 @@ canvas.addEventListener('pointerdown',pointerDown,{passive:false});
 canvas.addEventListener('pointermove',pointerMove,{passive:false});
 function pointerEnd(e){
  const p=pointerMap.get(e.pointerId);if(!p)return;
+ // A stationary central tap gets one pitched strike on finger release.
+ // Dragging / cancel / long hold must NOT add an accidental pickup or release hit.
+ const tap=e.type==='pointerup'&&p.intent==='pending'&&!p.moved&&!p.held&&!p.played;
+ const noteId=p.id,radial=p.initialRadial;
  cancelHold(e.pointerId);cancelThread(p);engine.endGesture(e.pointerId);pointerMap.delete(e.pointerId);
+ if(tap)play(noteId,clamp(1.03-.25*radial,.66,1),radial);
  if(p.intent==='drag'){
   notes[p.id].dragged=false;
   // Release is silent unless it physically contacts another object.
@@ -1555,6 +1670,7 @@ function updateButtons(){
  qsa('[data-scale]').forEach(s=>s.value=state.scale);
  qsa('[data-link]').forEach(b=>{b.setAttribute('aria-pressed',String(state.link));b.textContent=state.link?'ON':'OFF';});
  qsa('[data-hold]').forEach(b=>{b.setAttribute('aria-pressed',String(state.hold));b.textContent=state.hold?'ON':'OFF';});
+ qsa('[data-wave-accents]').forEach(b=>{b.setAttribute('aria-pressed',String(state.waveAccents));b.textContent=state.waveAccents?'ON':'OFF';});
  qsa('[data-feel]').forEach(b=>{b.setAttribute('aria-pressed',String(state.feel));b.textContent=state.feel?'ON':'OFF';});
  qsa('[data-move-sound]').forEach(b=>{b.setAttribute('aria-pressed',String(state.moveSound));b.textContent=state.moveSound?'ON':'OFF';});
  qsa('[data-quality]').forEach(s=>s.value=state.quality);
@@ -1569,11 +1685,24 @@ function setScale(s){if(!pitchBanks[s])return;state.scale=s;setNotes();say('New 
 function setLock(locked){clearPointers();state.locked=locked;updateButtons();say(locked?'Positions locked · sounds remain playable':'Drag centers to move, glide along edges');drawRequest();}
 function setMotion(m){if(!['still','float','orbit'].includes(m))return;
  state.motion=m;updateButtons();drawRequest();}
+// Select two stable, separated players as slow WAVE voices without adding a play mode.
+function updateWaveVoices(){
+ for(const set of sets.values()){
+  const last=set.length-2;
+  for(const n of set)n.waveAccent=state.waveAccents&&state.materialType!==4&&(n.id===2||n.id===last);
+ }
+ for(const set of sets.values())for(const n of set){
+  const type=n.waveAccent?4:state.materialType;
+  const palette=MATERIALS[type].colors;
+  n.hex=palette[n.id%palette.length];n.color=hexRGB(n.hex);
+ }
+ if(engine.ctx)engine.syncTanks(notes);
+ drawRequest();
+}
 function setMaterialType(k,announce=true){
- k=Number(k);if(!Number.isInteger(k)||k<0||k>3)return;
+ k=Number(k);if(!Number.isInteger(k)||k<0||k>4)return;
  state.materialType=k;engine.setMaterialType(k);
- const palette=MATERIALS[k].colors;
- for(const set of sets.values())for(const n of set){n.hex=palette[n.id%palette.length];n.color=hexRGB(n.hex);}
+ updateWaveVoices();
  document.documentElement.dataset.material=MATERIALS[k].name.toLowerCase();
  qsa('[data-material-type]').forEach(b=>b.setAttribute('aria-pressed',String(Number(b.dataset.materialType)===k)));
  if($('materialTag'))$('materialTag').textContent=MATERIALS[k].name;
@@ -1613,23 +1742,24 @@ function scene(s){if(!['original','cloud','bright'].includes(s))return;
 }
 function shuffle(){
  // Keep tuning and positions unchanged; randomize acoustic material and resonance.
- setMaterialType(Math.floor(Math.random()*4),false);
+ setMaterialType(Math.floor(Math.random()*5),false);
  for(const [k,lo,hi] of [['material',15,83],['ring',35,91],['space',0,43],['bond',30,98],['bloom',0,50]])setParam(k,Math.round(lo+Math.random()*(hi-lo)));
  state.scene='custom';updateButtons();say('A different resonance');
 }
 function reset(){connectionsByCount.get(state.count).clear();syncThreads();for(const n of notes)n.saved=false;layoutSet(notes);engine.refreshLinks(notes);updateLabels();drawRequest();say('Positions reset');}
 function save(){
  try{const result={count:state.count,scale:state.scale,motion:state.motion,scene:state.scene,params,
-  materialType:state.materialType,feel:state.feel,moveSound:state.moveSound,connect:state.connect,showNotes:state.showNotes,collision:state.collision,locked:state.locked,link:state.link,hold:state.hold,quality:state.quality,
+  materialType:state.materialType,waveAccents:state.waveAccents,feel:state.feel,moveSound:state.moveSound,connect:state.connect,showNotes:state.showNotes,collision:state.collision,locked:state.locked,link:state.link,hold:state.hold,quality:state.quality,
   connections:Object.fromEntries([...connectionsByCount].map(([k,map])=>[k,[...map.values()].map(e=>[e.a,e.b])])),
   positions:Object.fromEntries([...sets].map(([k,set])=>[k,set.map(n=>({u:n.u,v:n.v,saved:n.saved}))]))};
-  localStorage.setItem('resonant-objects-v011',JSON.stringify(result));say('Saved on this device');
+  localStorage.setItem('resonant-objects-v0112',JSON.stringify(result));say('Saved on this device');
  }catch(e){say('Storage unavailable');}
 }
 function restore(){
- try{const raw=localStorage.getItem('resonant-objects-v011')||localStorage.getItem('resonant-objects-v010')||localStorage.getItem('resonant-objects-v09')||localStorage.getItem('resonant-objects-v081')||localStorage.getItem('resonant-objects-v08')||localStorage.getItem('resonant-objects-v07')||localStorage.getItem('resonant-objects-v06')||localStorage.getItem('resonant-objects-v05')||localStorage.getItem('resonant-objects-v04');if(!raw)return;
+ try{const ownSave=localStorage.getItem('resonant-objects-v0112');const raw=ownSave||localStorage.getItem('resonant-objects-v0111')||localStorage.getItem('resonant-objects-v011')||localStorage.getItem('resonant-objects-v010')||localStorage.getItem('resonant-objects-v09')||localStorage.getItem('resonant-objects-v081')||localStorage.getItem('resonant-objects-v08')||localStorage.getItem('resonant-objects-v07')||localStorage.getItem('resonant-objects-v06')||localStorage.getItem('resonant-objects-v05')||localStorage.getItem('resonant-objects-v04');if(!raw)return;
   const v=JSON.parse(raw);if([7,9,11].includes(v.count))state.count=v.count;
-  if(Number.isInteger(v.materialType)&&v.materialType>=0&&v.materialType<=3)state.materialType=v.materialType;
+  if(Number.isInteger(v.materialType)&&v.materialType>=0&&v.materialType<=4)state.materialType=v.materialType;
+  if(typeof v.waveAccents==='boolean')state.waveAccents=v.waveAccents;
   if(pitchBanks[v.scale])state.scale=v.scale;
   if(['still','float','orbit'].includes(v.motion))state.motion=v.motion;
   if(['original','cloud','bright','custom'].includes(v.scene))state.scene=v.scene;
@@ -1637,7 +1767,9 @@ function restore(){
   if(typeof v.link==='boolean')state.link=v.link;
   if(typeof v.hold==='boolean')state.hold=v.hold;
   if(typeof v.feel==='boolean')state.feel=v.feel;
-  if(typeof v.moveSound==='boolean')state.moveSound=v.moveSound;
+  // Old versions enabled a sharp continuous move oscillator by default.
+  // Migrate old scenes to quiet dragging; honor only new explicit choices.
+  if(ownSave&&typeof v.moveSound==='boolean')state.moveSound=v.moveSound;
   if(typeof v.collision==='boolean')state.collision=v.collision;
   if(typeof v.connect==='boolean')state.connect=v.connect;
   if(typeof v.showNotes==='boolean')state.showNotes=v.showNotes;
@@ -1679,6 +1811,7 @@ $('clearConnections').addEventListener('click',()=>{connectionsByCount.get(state
 $('miniReset').addEventListener('click',()=>{reset();toggleDrawer(false);});
 $('miniLab').addEventListener('click',()=>lab(true));
 qsa('[data-material-type]').forEach(b=>b.addEventListener('click',()=>setMaterialType(Number(b.dataset.materialType))));
+ qsa('[data-wave-accents]').forEach(b=>b.addEventListener('click',()=>{clearPointers();state.waveAccents=!state.waveAccents;updateWaveVoices();updateButtons();say(state.waveAccents?'Two wave voices added':'Original material across all notes');}));
 qsa('[data-lock]').forEach(b=>b.addEventListener('click',()=>setLock(!state.locked)));
 qsa('[data-collision]').forEach(b=>b.addEventListener('click',()=>{state.collision=!state.collision;updateButtons();say(state.collision?'Gentle contact notes enabled':'Contact notes muted');}));
 qsa('[data-count]').forEach(b=>b.addEventListener('click',()=>setCount(Number(b.dataset.count))));
@@ -1692,7 +1825,7 @@ qsa('[data-feel]').forEach(b=>b.addEventListener('click',()=>{
 }));
 qsa('[data-move-sound]').forEach(b=>b.addEventListener('click',()=>{
  state.moveSound=!state.moveSound;if(!state.moveSound)engine.stopAllGestures();
- updateButtons();say(state.moveSound?'Move sound enabled':'Silent arrangement');
+ updateButtons();say(state.moveSound?'Soft motion tone enabled':'Quiet movement');
 }));
 qsa('[data-hold]').forEach(b=>b.addEventListener('click',()=>{
  state.hold=!state.hold;if(!state.hold){for(const id of pointerMap.keys())cancelHold(id);}
