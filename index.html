@@ -4,7 +4,7 @@
 <meta name="theme-color" content="#d8f1f2">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>RESONANT OBJECTS · v0.9</title>
+<title>RESONANT OBJECTS · v0.10</title>
 <style>:root{
   --ink:#344f78; --muted:#7387a5; --aqua:#83e4e5; --violet:#9c9bfd;
   --cream:#fcfff9; --line:rgba(255,255,255,.72); --glaze:rgba(251,255,255,.50);
@@ -168,23 +168,78 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;background:white;bord
 
 @media(max-width:720px) and (orientation:landscape){.stage-message{display:none}}
 [data-material="metal"] .note-label{color:#f5faff;text-shadow:0 1px 4px #233a7480}
+
+/* v0.10: ICON FIRST, single uninterrupted landscape performance field. */
+.drawer-tip{font-size:11px;line-height:1.3;color:#6486a9;margin:0 0 10px;max-width:520px}
+#app{background:radial-gradient(ellipse at 35% 45%,#e6ffff,#d3e5f8 58%,#f6def7)}
+.kinetic-top{height:57px;min-height:57px;gap:10px;padding:6px clamp(8px,1.5vw,20px);background:rgba(250,255,255,.70);z-index:7}
+.kinetic-top .brand{flex:1 1 auto;min-width:24px;gap:7px}
+.kinetic-top .brand-name{font-size:12px;white-space:nowrap;letter-spacing:.09em}
+.brandmark{width:32px;height:32px;display:grid;place-items:center;color:#6978c6}
+.brandmark svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linejoin:round}
+.material-strip{display:flex;gap:5px;justify-content:center;padding:3px;border-radius:30px;background:rgba(255,255,255,.45);border:1px solid #fff9;box-shadow:0 2px 16px #a9add530}
+.material-icon,.icon-control{width:37px;height:37px;min-width:37px;border-radius:14px;border:1px solid #fff9;background:rgba(255,255,255,.56);box-shadow:0 2px 9px #85a4c320;display:grid;place-items:center;padding:7px;color:#537caa;touch-action:manipulation}
+.material-icon svg,.icon-control svg{width:100%;height:100%;stroke:currentColor;stroke-width:1.7;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.material-icon[aria-pressed=true]{color:#3567a5;background:linear-gradient(145deg,#f8fcff,#b1e8ff);box-shadow:0 0 0 2px #ffffffc0,0 3px 18px #65badb75}
+.material-icon[data-material-type="1"][aria-pressed=true]{color:#c5598a;background:linear-gradient(145deg,#fff4f8,#ffc9e4)}
+.material-icon[data-material-type="2"][aria-pressed=true]{color:#94705a;background:linear-gradient(145deg,#fff9ed,#e6cbb8)}
+.material-icon[data-material-type="3"][aria-pressed=true]{color:#36568f;background:linear-gradient(145deg,#effaff,#a7bacf)}
+.kinetic-top .top-right{display:flex;gap:6px;align-items:center;margin-left:0;flex:0 0 auto}
+.kinetic-top .quick-count{display:flex;min-width:104px;gap:3px;background:rgba(255,255,255,.45);border:1px solid #fff9;border-radius:22px;padding:3px}
+.kinetic-top .quick-count button{height:31px;min-width:30px;padding:0 8px;border-radius:13px;box-shadow:none;background:transparent}
+.kinetic-top .quick-count button[aria-pressed=true]{background:linear-gradient(115deg,#97caf8,#91ebde);color:#2d598c}
+.icon-control[aria-pressed=true]{background:#d8ddff;color:#4d67a9}
+.kinetic-top #tuneBtn{display:grid}
+.visually-hidden-tools{display:none}
+.workspace{display:block;flex:1;min-height:0}
+.workspace .rail{display:none!important}
+.stage{width:100%;height:100%;min-height:0}
+.note-label{display:none}
+#app.show-notes .note-label{display:block}
+.stage-topline,.stage-message{display:none}
+.bottom{position:absolute;height:1px;width:1px;min-height:0;padding:0;overflow:hidden;clip-path:inset(100%);border:0}
+#drawer{z-index:18;max-width:780px;left:50%;right:auto;transform:translateX(-50%);width:calc(100% - 22px);border-radius:22px}
+#drawer .drawer-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+#drawer .mini-field{min-width:0}
+#drawer .drawer-title{margin-bottom:6px}
+#drawer .material-choice{grid-column:span 2}
+#drawer.open{display:block}
+@media (max-width:900px){
+ .kinetic-top{height:49px;min-height:49px;padding:3px 8px;gap:6px}
+ .brandmark{height:31px;width:31px}.kinetic-top .brand-name{font-size:10px;letter-spacing:.035em}
+ .kinetic-top .desktop-label{display:none}
+ .material-icon,.icon-control{width:34px;height:34px;min-width:34px;border-radius:12px;padding:7px}
+ .material-strip{gap:3px;padding:2px}
+ .kinetic-top .quick-count{min-width:86px;padding:2px}
+ .kinetic-top .quick-count button{min-width:24px;height:29px;padding:0 5px}
+ #drawer .drawer-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (max-width:690px){
+ .kinetic-top{height:46px;min-height:46px;padding:3px 5px;gap:5px}
+ .brandmark{width:28px;height:28px}
+ .kinetic-top .brand-name{display:none}
+ .material-icon,.icon-control{width:32px;height:32px;min-width:32px;padding:7px}
+ .kinetic-top .quick-count{min-width:81px}
+ .kinetic-top .top-right{gap:4px}
+ #drawer .drawer-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-height:420px) and (orientation:landscape){#drawer{max-height:calc(100dvh - 12px);top:6px;bottom:auto}}
 </style></head><body>
 <div id="app">
-<header class="top">
-  <div class="brand"><span class="brandmark" aria-hidden="true">✧</span><div class="brand-name">RESONANT OBJECTS<small>A LITTLE UNIVERSE OF SOUND</small></div></div>
-  <div class="top-center material-picker" aria-label="Choose resonant material" role="group">
-  <button data-material-type="0" aria-pressed="true" type="button">JEWEL</button>
-  <button data-material-type="1" aria-pressed="false" type="button">CANDY</button>
-  <button data-material-type="2" aria-pressed="false" type="button">CERAMIC</button>
-  <button data-material-type="3" aria-pressed="false" type="button">METAL</button>
-  </div>
-  <div class="top-right">
-    <div class="quick-count piece-count" aria-label="Number of notes"><button data-count="7" type="button">7</button><button data-count="9" type="button">9</button><button data-count="11" type="button">11</button></div>
-    <button data-lock class="flatbtn lock-btn" type="button" aria-pressed="false" title="Prevent dragging; keep playing">UNLOCKED</button>
-    <button id="reset" class="flatbtn" type="button" title="Restore the current layout">RESET</button>
-    <button id="tuneBtn" class="flatbtn" type="button" aria-expanded="false" aria-controls="drawer">TUNE</button>
-    <button id="labButton" class="flatbtn" type="button" title="Layout playability test">LAB</button>
-  </div>
+<header class="top kinetic-top" aria-label="Instrument tools">
+ <div class="brand" aria-label="Resonant Objects"><div class="brandmark"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 1 20 12 31 16 20 20 16 31 12 20 1 16 12 12z"/></svg></div><span class="brand-name">RESONANT <span class="desktop-label">OBJECTS</span></span></div>
+ <div class="material-strip" role="group" aria-label="Instrument material">
+ <button class="material-icon" data-material-type="0" type="button" aria-label="JEWEL" title="JEWEL" aria-pressed="true"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3 28 14 22 27H10L4 14zM4 14h24M16 3l-6 11 6 13 6-13-6-11Z"/></svg></button>
+ <button class="material-icon" data-material-type="1" type="button" aria-label="CANDY" title="CANDY" aria-pressed="false"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M11 8c-7 1-9 17 0 18 8 1 14-5 13-13S17 4 11 8Zm-2 5c4-3 13-1 13 6"/><path d="M5 12 2 9M24 25l5 4"/></svg></button>
+ <button class="material-icon" data-material-type="2" type="button" aria-label="CERAMIC" title="CERAMIC" aria-pressed="false"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M6 11c0-9 20-9 20 0v10c0 7-20 7-20 0V11Zm0 0c0 5 20 5 20 0M10 21c3 2 9 2 12 0"/></svg></button>
+ <button class="material-icon" data-material-type="3" type="button" aria-label="METAL" title="METAL" aria-pressed="false"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2 28 9v14l-12 7L4 23V9Zm0 0v28M4 9l12 8 12-8M4 23l12-6 12 6"/></svg></button>
+ </div>
+ <div class="top-right">
+  <div class="quick-count piece-count" role="group" aria-label="Number of sound objects"><button data-count="7" type="button">7</button><button data-count="9" type="button">9</button><button data-count="11" type="button">11</button></div>
+  <button data-lock class="icon-control" type="button" aria-pressed="false" title="Lock positions" aria-label="Lock positions"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M9 13V9a7 7 0 0 1 13-4M6 13h20v16H6zM16 19v5"/></svg></button>
+  <button id="tuneBtn" class="icon-control" type="button" aria-expanded="false" aria-controls="drawer" aria-label="Open instrument settings" title="Instrument settings"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="8" cy="8" r="2"/><circle cx="24" cy="8" r="2"/><circle cx="8" cy="24" r="2"/><circle cx="24" cy="24" r="2"/><circle cx="16" cy="16" r="3"/></svg></button>
+ </div>
+ <div class="visually-hidden-tools" aria-hidden="true"><button id="reset" type="button">RESET</button><button id="labButton" type="button">LAB</button></div>
 </header>
 <div class="workspace">
 <aside class="rail" aria-label="Sonic parameters">
@@ -212,7 +267,7 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;background:white;bord
 <main class="stage" id="stage" aria-label="Instrument performance area">
   <canvas id="instrument" tabindex="0" aria-label="Tap center or rim, glide or move a resonant shape"></canvas>
   <canvas id="overlay" aria-hidden="true"></canvas><div id="labels" aria-hidden="true"></div>
-  <div class="stage-topline">A FLOATING FIELD OF RESONANCE <span id="gpuMode" aria-label="Graphics renderer">GPU FIELD</span></div>
+  <div class="stage-topline">A FIELD OF TOUCH AND CONNECTION <span id="gpuMode" aria-label="Graphics renderer">GPU FIELD</span></div>
   <div class="stage-message" id="touchHint">✦ TAP TO PLAY · CENTER TO PUSH · RIM TO GLIDE</div>
 </main>
 <aside class="rail" aria-label="Instrument settings">
@@ -250,10 +305,11 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;background:white;bord
   </section>
 </aside>
 </div>
-<footer class="bottom"><span class="fine">✧  RESONANT OBJECTS · v0.9</span><span class="readout" id="status" role="status" aria-live="polite">Tap a shape to wake the instrument</span></footer>
+<footer class="bottom"><span class="fine">✧  RESONANT OBJECTS · v0.10</span><span class="readout" id="status" role="status" aria-live="polite">Tap a shape to wake the instrument</span></footer>
 </div>
 <section id="drawer" role="region" aria-label="Instrument controls">
  <div class="drawer-title">TUNE THE INSTRUMENT <button id="closeTune" type="button" class="flatbtn" aria-label="Close tuning">✕</button></div>
+ <p class="drawer-tip">Bring two shapes together. Hold for a moment to make a thread. Pull apart to dissolve it.</p>
  <div class="drawer-grid">
   <div class="mini-field material-choice"><label>MATERIAL</label><div class="material-choices">
   <button data-material-type="0" type="button">JEWEL</button><button data-material-type="1" type="button">CANDY</button>
@@ -280,6 +336,12 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;background:white;bord
   <div class="mini-field"><label>Motion</label><div class="rowbuttons"><button data-motion="still" type="button">Still</button><button data-motion="float" type="button">Float</button><button data-motion="orbit" type="button">Orbit</button></div></div>
   <div class="mini-field"><label>Scene</label><div class="actionrow"><button id="miniScenePrev" type="button">‹</button><button id="miniSceneNext" type="button">›</button></div></div>
   <div class="mini-field"><label>Explore</label><div class="actionrow"><button id="miniShuffle" type="button">Shuffle</button><button id="miniSave" type="button">Save</button></div></div>
+  <div class="mini-field"><label>THREAD / Link on hold</label><button data-connect type="button" class="switchbtn" aria-pressed="true">ON</button></div>
+  <div class="mini-field"><label>Note names</label><button data-show-notes type="button" class="switchbtn" aria-pressed="false">OFF</button></div>
+  <div class="mini-field"><label>Links</label><button id="clearConnections" class="switchbtn" type="button">Untie all</button></div>
+  <div class="mini-field"><label>Arrangement</label><button id="miniReset" class="switchbtn" type="button">Reset positions</button></div>
+  <div class="mini-field"><label>Test</label><button id="miniLab" class="switchbtn" type="button">Open Lab</button></div>
+
  </div>
 </section>
 <div id="shade" class="modal-shade"></div>
@@ -291,7 +353,7 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;background:white;bord
 </section>
 <div id="turn" aria-label="Rotate device"><div class="turn-geometry" aria-hidden="true">◇</div><strong>TURN SIDEWAYS</strong><small>This little instrument likes both hands.<br>Disable rotation lock if necessary.</small></div>
 
-<script>/* RESONANT OBJECTS v0.9 — material-aware modal synthesis. No external dependencies.
+<script>/* RESONANT OBJECTS v0.10 — material-aware modal synthesis. No external dependencies.
  * 原音を維持しつつ、近接共鳴の「打撃時」と「音声信号経由」の2層を分離する。
  * Audio graph: per-voice modal synth -> dry bus -> compressor
  *                       \-> modal tanks <-> bounded damped coupling -> wet bus
@@ -302,7 +364,7 @@ class ResonantEngine {
   this.onStatus=onStatus;this.ctx=null;this.voices=[];this.holds=new Map();this.gestures=new Map();
   this.expression=.46;
   this.material=.36;this.materialType=0;this.decay=.67;this.bond=.75;this.space=0;this.bloom=0;this.level=.84;
-  this.link=true;this.tanks=[];this.edges=[];this.tankKey='';this.wetGains=[];
+  this.link=true;this.connections=[];this.tanks=[];this.edges=[];this.tankKey='';this.wetGains=[];
  }
  init(){
   if(this.ctx)return;
@@ -350,6 +412,7 @@ class ResonantEngine {
  setDecay(v){this.decay=v/100;}
  setBond(v){this.bond=v/100;this.refreshLinks();}
  setLink(v){this.link=!!v;this.refreshLinks();}
+ setConnections(connections){this.connections=connections.map(e=>({a:e.a,b:e.b}));this.refreshLinks();}
  setBloom(v){this.bloom=v/100;if(this.ctx&&this.bloomWet)
   this.bloomWet.gain.setTargetAtTime(.22*Math.pow(this.bloom,1.45),this.ctx.currentTime,.045);}
  setSpace(v){this.space=v/100;if(!this.ctx)return;
@@ -415,7 +478,9 @@ class ResonantEngine {
    .filter(v=>v.j!==i&&v.d<reach).sort((a,b)=>a.d-b.d).slice(0,3));
   for(const edge of this.edges){
    const target=matrix[edge.from].find(v=>v.j===edge.to);
-   const coeff=target ? (.065+.11*(1-target.d/reach)) : 0;
+   const attached=this.connections.some(v=>(v.a===edge.from&&v.b===edge.to)||(v.a===edge.to&&v.b===edge.from));
+   // Bounded total matrix gains; explicit links are audible but never runaway.
+   const coeff=attached?.145:(target ? (.042+.06*(1-target.d/reach)) : 0);
    const amount=this.link?coeff*Math.pow(this.bond,1.15):0;
    edge.gain.gain.setTargetAtTime(amount,now,.045);
   }
@@ -500,6 +565,10 @@ class ResonantEngine {
    if(v<.045)continue;
    this.tone(n,v,true,.014+sent*.009);n.energy=Math.min(1,n.energy+v*.55);sent++;
   }
+  // One quiet sympathetic response per explicit thread; no extra attack noise.
+  const outgoing=this.connections.filter(e=>e.a===index||e.b===index).slice(0,2);
+  for(const [k,edge] of outgoing.entries()){const other=notes[edge.a===index?edge.b:edge.a];
+   if(!other)continue;const v=velocity*(.075+.11*this.bond);this.tone(other,v,true,.025+k*.010);other.energy=Math.min(1,other.energy+.23*v);}
   return true;
  }
  // A physical, high, brief glass-like collision with NO broadband noise.
@@ -509,16 +578,27 @@ class ResonantEngine {
   const c=this.ctx,t=c.currentTime+.003;
   const impact=Math.max(0,Math.min(1,(speed-.08)/.92));
   if(impact<=0)return;
-  const freq=Math.min(3100,Math.max(1550,1600+target.midi*12+this.materialType*85));
+  // Each impact is modal (pitched) rather than a snare-like noise impulse.
+  // Differences remain subtle enough to work through a phone's loudspeaker.
+  const types=[
+   {freq:1850,ratios:[[1,1],[1.72,.34],[2.38,.12]],peak:.019,tail:.18,bend:0}, // jewel
+   {freq:850,ratios:[[1,1],[2,.28],[3.03,.08]],peak:.020,tail:.13,bend:.032}, // candy
+   {freq:1140,ratios:[[1,1],[1.52,.20],[2.06,.10]],peak:.013,tail:.095,bend:0}, // ceramic
+   {freq:1650,ratios:[[1,1],[1.83,.40],[2.67,.18]],peak:.017,tail:.23,bend:.005} // metal
+  ];
+  const style=types[this.materialType];
+  const freq=Math.min(3200,style.freq+(target.midi-50)*8);
   const out=c.createGain();out.gain.setValueAtTime(.00001,t);
-  out.gain.linearRampToValueAtTime(.010+.022*impact,t+.003);
-  out.gain.exponentialRampToValueAtTime(.00001,t+.105+impact*.07);
+  out.gain.linearRampToValueAtTime(style.peak*(.35+impact*.65),t+.003);
+  out.gain.exponentialRampToValueAtTime(.00001,t+style.tail*(.75+impact*.3));
   out.connect(this.voiceBus);
   const oscillators=[];
-  for(const [ratio,amp] of [[1,1],[1.73,.42],[2.39,.17]]){
+  for(const [ratio,amp] of style.ratios){
    const osc=c.createOscillator(),g=c.createGain();osc.type='sine';
-   osc.frequency.setValueAtTime(Math.min(8500,freq*ratio),t);
-   g.gain.value=amp;osc.connect(g).connect(out);osc.start(t);osc.stop(t+.19+impact*.07);
+   const hz=Math.min(8800,freq*ratio);
+   if(style.bend){osc.frequency.setValueAtTime(hz*(1+style.bend*impact),t);osc.frequency.exponentialRampToValueAtTime(hz,t+.065);}
+   else osc.frequency.setValueAtTime(hz,t);
+   g.gain.value=amp;osc.connect(g).connect(out);osc.start(t);osc.stop(t+style.tail+.045);
    oscillators.push([osc,g]);
   }
   let left=oscillators.length;
@@ -550,9 +630,10 @@ class ResonantEngine {
   const target=Math.min(4000,hz*Math.pow(2,bend*expr/12));
   g.main.frequency.setTargetAtTime(target,t,.035);
   g.upper.frequency.setTargetAtTime(target*(2.004+.017*rim),t,.055);
-  g.upperGain.gain.setTargetAtTime(.16+rim*.18+vel*.18,t,.035);
+  g.upperGain.gain.setTargetAtTime([.16,.11,.08,.23][this.materialType]+rim*.18+vel*.18,t,.035);
   // Effects remain intentionally quiet next to normal struck notes.
-  const amount=(move?.014:.019)*expr*Math.pow(vel,.72)*(move?(.54+.46*proximity):(.70+.30*rim));
+  const materialDrag=[1,1.30,.72,1.10][this.materialType];
+  const amount=(move?.014:.019)*materialDrag*expr*Math.pow(vel,.72)*(move?(.54+.46*proximity):(.70+.30*rim));
   g.bus.gain.cancelScheduledValues(t);
   g.bus.gain.setTargetAtTime(Math.max(.00001,amount),t,.023);
   g.bus.gain.setTargetAtTime(.00001,t+.065,.095); // stop naturally if pointer pauses
@@ -599,7 +680,7 @@ class ResonantEngine {
 }
 
 
-/* RESONANT OBJECTS v0.9 — GPU field renderer
+/* RESONANT OBJECTS v0.10 — GPU field renderer
  * WebGL2 > WebGL1. Audio remains Web Audio (WebGL is graphics only).
  * Pass 1: native-resolution color field, geometry and GPU connection ribbons.
  * Pass 2: half-resolution double-buffered temporal resonance (GPU ping-pong).
@@ -778,7 +859,7 @@ class VisualRenderer{
    g.bufferData(g.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]),g.STATIC_DRAW);
    this.lineBuffer=g.createBuffer();this.target=null;this.history=[];this.historyIndex=0;
    g.disable(g.DEPTH_TEST);g.enable(g.BLEND);g.blendFunc(g.SRC_ALPHA,g.ONE_MINUS_SRC_ALPHA);
-   this.ready=true;this.post=true;this.overlay.style.display='none';
+   this.ready=true;this.post=true;this.overlay.style.display='block';
    if(this.fallbackCanvas){this.fallbackCanvas.remove();this.fallbackCanvas=null;}
    this.canvas.style.opacity='1';this.validateGPU=true;this.onStatus(this.mode.toUpperCase()+' · GPU pipeline');
   }catch(e){console.warn('WebGL pipeline:',e);this.enableFallback('Graphics compatibility mode');}
@@ -837,9 +918,9 @@ class VisualRenderer{
   g.enableVertexAttribArray(info.aCorner);g.vertexAttribPointer(info.aCorner,2,g.FLOAT,false,0,0);
   g.drawArrays(g.TRIANGLES,0,6);g.disableVertexAttribArray(info.aCorner);}
  draw(time,notes,state){if(!this.ready||this.lost)return;
-  if(this.mode==='canvas2d'){this.drawFallback(time,notes,state);this.drawFallbackLines(time,notes,state);return;}
+  if(this.mode==='canvas2d'){this.drawFallback(time,notes,state);this.drawFallbackLines(time,notes,state);this.drawThreads(time,notes,state);return;}
   try{
-   this.drawGPU(time,notes,state);
+   this.drawGPU(time,notes,state);this.drawThreads(time,notes,state);
    // On the first frame after (re)initialization, verify that the GPU wrote pixels.
    // A successful context acquisition alone does not guarantee a visible frame.
    if(this.validateGPU){
@@ -854,7 +935,7 @@ class VisualRenderer{
    console.error('GPU render failed; switching to Canvas 2D:',error);
    this.renderFailures++;
    this.enableFallback('2D graphics · automatic GPU recovery');
-   if(this.ready){this.drawFallback(time,notes,state);this.drawFallbackLines(time,notes,state);}
+   if(this.ready){this.drawFallback(time,notes,state);this.drawFallbackLines(time,notes,state);this.drawThreads(time,notes,state);}
   }
  }
  drawScene(time,notes,state){const g=this.gl;
@@ -877,7 +958,7 @@ class VisualRenderer{
    const a=notes[i];const nearest=notes.map((n,j)=>({n,j,d:Math.hypot(n.x-a.x,n.y-a.y)}))
     .filter(v=>v.j!==i&&v.d<reach).sort((x,y)=>x.d-y.d).slice(0,3);
    for(const {n:b,j,d} of nearest){if(j<i)continue;
-    const energy=Math.max(a.energy,b.energy),power=state.dragging?.54:(state.link?.10:.04)+energy*.68;
+    const energy=Math.max(a.energy,b.energy),power=.01+energy*.52;
     if(power<.035)continue;
     const dx=b.x-a.x,dy=b.y-a.y,nx=-dy/d,ny=dx/d,width=(1.3+energy*2.6+(state.dragging?1.6:0));
     const positions=[[0,0],[1,0],[0,1],[0,1],[1,0],[1,1]];
@@ -919,6 +1000,35 @@ class VisualRenderer{
   else if(this.trailFrames>0)this.trailFrames--;
   this.frame++;
  }
+ // 2D linework overlays the WebGL field; the geometric scene remains GPU-rendered.
+ // Persistent link curves carry an energy pulse from the most recently struck note.
+ drawThreads(time,notes,state){
+  const c=this.overlayCtx,d=this.dpr;if(!c)return;
+  c.setTransform(d,0,0,d,0,0);
+  if(this.mode!=='canvas2d')c.clearRect(0,0,this.W,this.H);
+  const all=state.connections||[];
+  for(const e of all){const a=notes[e.a],b=notes[e.b];if(!a||!b)continue;
+   const dx=b.x-a.x,dy=b.y-a.y,L=Math.hypot(dx,dy)||1;
+   const mag=Math.min(1,Math.max(a.energy,b.energy)*.65+e.flash*.75);
+   const bend=Math.min(13,L*.12)*(e.a%2?1:-1);
+   const mx=(a.x+b.x)/2-dy/L*bend,my=(a.y+b.y)/2+dx/L*bend;
+   c.beginPath();c.moveTo(a.x,a.y);c.quadraticCurveTo(mx,my,b.x,b.y);
+   c.strokeStyle=`rgba(255,255,255,${.62+mag*.34})`;c.lineWidth=4+mag*3;c.shadowColor='#92ddff';c.shadowBlur=7+mag*9;c.stroke();
+   c.shadowBlur=0;c.beginPath();c.moveTo(a.x,a.y);c.quadraticCurveTo(mx,my,b.x,b.y);
+   c.strokeStyle=`rgba(77,132,192,${.36+mag*.3})`;c.lineWidth=1.1;c.stroke();
+   if(e.flash>.025){const t=(time*.7+e.a*.17)%1;
+    const px=(1-t)*(1-t)*a.x+2*(1-t)*t*mx+t*t*b.x,py=(1-t)*(1-t)*a.y+2*(1-t)*t*my+t*t*b.y;
+    c.beginPath();c.arc(px,py,3+e.flash*2.5,0,Math.PI*2);c.fillStyle='rgba(255,255,255,.96)';c.shadowColor='#6bc4fd';c.shadowBlur=13;c.fill();c.shadowBlur=0;}
+  }
+  const candidate=state.threadPreview;
+  if(candidate){const a=notes[candidate.a],b=notes[candidate.b];if(a&&b){
+   c.beginPath();c.moveTo(a.x,a.y);c.lineTo(b.x,b.y);c.lineWidth=2.7;
+   c.setLineDash([5,7]);c.strokeStyle=`rgba(255,255,255,${.28+candidate.progress*.6})`;c.stroke();c.setLineDash([]);
+   const cx=(a.x+b.x)/2,cy=(a.y+b.y)/2;c.beginPath();c.arc(cx,cy,4+candidate.progress*6,-Math.PI/2,-Math.PI/2+candidate.progress*Math.PI*2);
+   c.lineWidth=2;c.strokeStyle='rgba(93,152,201,.84)';c.stroke();
+  }}
+ }
+
  // Compatibility only. It is *not* composited into the WebGL path.
  drawFallback(time,notes,state){const c=this.c2d,W=this.W,H=this.H,d=this.dpr;
   c.setTransform(d,0,0,d,0,0);const bg=c.createLinearGradient(0,0,W,H);
@@ -946,8 +1056,8 @@ class VisualRenderer{
   c.lineWidth=1;const reach=Math.min(260,Math.max(95,this.H*.8));
   for(let i=0;i<notes.length;i++)for(let j=i+1;j<notes.length;j++){
    const a=notes[i],b=notes[j],distance=Math.hypot(a.x-b.x,a.y-b.y);
-   if(distance>reach)continue;
-   c.strokeStyle=`rgba(255,255,255,${Math.min(.85,(state.dragging?.6:.08)+Math.max(a.energy,b.energy)*.5)})`;
+   if(distance>reach||Math.max(a.energy,b.energy)<.18)continue;
+   c.strokeStyle=`rgba(255,255,255,${Math.min(.66,Math.max(a.energy,b.energy)*.35)})`;
    c.beginPath();c.moveTo(a.x,a.y);c.lineTo(b.x,b.y);c.stroke();}
   for(const n of notes){if(n.dragged){
    c.lineWidth=2;c.strokeStyle="rgba(255,255,255,.85)";c.beginPath();c.arc(n.x,n.y,n.r*1.32,0,Math.PI*2);c.stroke();c.lineWidth=1;
@@ -957,7 +1067,7 @@ class VisualRenderer{
 }
 
 
-/* RESONANT OBJECTS v0.9 — One Playing Field / interaction layer.
+/* RESONANT OBJECTS v0.10 — One Playing Field / interaction layer.
  * 描画 / 音源 / 状態を分離。WebGL描画上の位置とタッチ領域は同一のモデルを参照。
  * Notes use stable IDs within each layout; no timer-driven animation when idle. */
 (()=>{
@@ -981,10 +1091,13 @@ const pitchBanks={
 };
 const selects={7:[0,1,2,3,4,6,8],9:[0,1,2,3,4,5,6,7,8],11:[0,1,2,3,4,5,6,7,8,9,10]};
 const params={material:36,ring:67,space:0,bond:75,bloom:0,level:84,aura:48,trace:38,expression:46};
-const state={materialType:0,count:9,scale:'minor',motion:'still',locked:false,dragging:false,collision:true,scene:'original',drawer:false,link:true,hold:true,quality:'balanced',feel:true,moveSound:true};
+const state={materialType:0,count:9,scale:'minor',motion:'still',locked:false,dragging:false,connect:true,showNotes:false,collision:true,scene:'original',drawer:false,link:true,hold:true,quality:'balanced',feel:true,moveSound:true};
 const sets=new Map(),stats={7:{hits:0,empty:0,slides:0,rub:0,moves:0,bumps:0,multi:0},9:{hits:0,empty:0,slides:0,rub:0,moves:0,bumps:0,multi:0},11:{hits:0,empty:0,slides:0,rub:0,moves:0,bumps:0,multi:0}};
-const pointerMap=new Map();let notes=[],W=1,H=1,requestId=0,lastTime=0,lastActive=0,viewReady=false;
-let lastTrigger=-1,lastLinkRefresh=0;
+const pointerMap=new Map();const connectionsByCount=new Map([[7,new Map()],[9,new Map()],[11,new Map()]]);
+const connected=()=>[...connectionsByCount.get(state.count).values()];
+const pairKey=(a,b)=>Math.min(a,b)+':'+Math.max(a,b);
+let notes=[],W=1,H=1,requestId=0,lastTime=0,lastActive=0,viewReady=false;
+let lastTrigger=-1,lastLinkRefresh=0,lastConnectionBeat=0;
 const engine=new ResonantEngine(msg=>say(msg)),renderer=new VisualRenderer(canvas,overlay,msg=>say(msg));
 function say(msg){
  readout.textContent=msg;
@@ -1001,7 +1114,7 @@ function pitches(count,scale){const source=pitchBanks[scale];const entries=sourc
 function makeSet(count){return Array.from({length:count},(_,id)=>({id,midi:50,name:'',kind:id===0?0:((id-1)%8),big:id===0,
   color:hexRGB(colors[id]),hex:colors[id],u:.5,v:.5,saved:false,r:35,x:0,y:0,energy:0,angle:0,last:0,stageW:1,stageH:1,gesture:0}));}
 for(const k of [7,9,11])sets.set(k,makeSet(k));
-function setNotes(){clearPointers();notes=sets.get(state.count);const names=pitches(state.count,state.scale);
+function setNotes(){clearPointers();notes=sets.get(state.count);engine.setConnections(connected());const names=pitches(state.count,state.scale);
  for(const [i,n] of notes.entries()){n.name=names[i][0];n.midi=names[i][1];}
  labels.replaceChildren();for(const n of notes){const el=document.createElement('div');el.className='note-label';el.dataset.note=n.id;el.textContent=n.name;labels.appendChild(el);n.label=el;}
  resize();updateButtons();engine.stopAllHolds();if(engine.ctx)engine.syncTanks(notes);}
@@ -1037,6 +1150,10 @@ function drawRequest(){if(!requestId)requestId=requestAnimationFrame(draw);}
 function draw(t){requestId=0;
  if(state.motion!=='still' && !notes.some(n=>n.energy>.02||(n.gesture||0)>.02) && lastTime && t/1000-lastTime<.031){drawRequest();return;}
  const now=t/1000,dt=lastTime?Math.min(.06,now-lastTime):.016;lastTime=now;
+ for(const e of connected())e.flash=Math.max(0,(e.flash||0)-dt*1.2);
+ state.connections=connected();
+ const previewPointer=[...pointerMap.values()].find(p=>p.connectTarget>=0);
+ if(previewPointer&&state.threadPreview)state.threadPreview.progress=clamp((performance.now()-previewPointer.previewStart)/490,0,1);
  let any=false;
  // Visual coupling: conservative energy transfer. The underlying acoustic coupling
  // is implemented independently in the Audio engine, not synthesized from frames.
@@ -1061,7 +1178,7 @@ function draw(t){requestId=0;
  else if(state.motion==='float')n.angle=Math.sin(now*.33+n.id*1.3)*.055;
  }
  updateLabels();renderer.draw(now,notes,state);
- if(any||renderer.needsFrame()||state.motion!=='still')drawRequest();
+ if(any||renderer.needsFrame()||state.motion!=='still'||connected().some(e=>e.flash>.01)||state.threadPreview)drawRequest();
 }
 function hit(x,y){let best=-1,dist=Infinity;
  for(const n of notes){const d=Math.hypot(n.x-x,n.y-y);
@@ -1077,6 +1194,7 @@ function play(index,velocity=1,radial=0){
   if(!ok){say('Tap again to enable sound');return;}
   if(current!==notes)return;
   if(engine.strike(index,current,velocity,state.feel?radial:0)){
+   for(const e of connected())if(e.a===index||e.b===index)e.flash=Math.max(e.flash||0,.95);
    say(`✦ ${note.name} · ${radial>.62&&state.feel?'bright rim':'resonating'}`);drawRequest();
   }
  });
@@ -1093,12 +1211,13 @@ function pointerDown(e){
  const p={id:i,last:i,intent:'pending',canDrag:radial<.69&&!state.locked&&!alreadyGrabbed,
   holdTimer:0,x,y,startX:x,startY:y,when:performance.now(),moved:false,gesture:false,
   offsetX:x-n.x,offsetY:y-n.y,countedRub:false,countedMove:false,
-  contactWith:new Set(),lastSpeed:0};
+  contactWith:new Set(),lastSpeed:0,connectTimer:0,connectTarget:-1,previewStart:0};
  pointerMap.set(e.pointerId,p);
  stats[state.count].hits++;stats[state.count].multi=Math.max(stats[state.count].multi,pointerMap.size);
  play(i,clamp(1.03-.25*radial,.66,1),radial);
  scheduleHold(e.pointerId,i);
 }
+function cancelThread(p){if(p?.connectTimer){clearTimeout(p.connectTimer);p.connectTimer=0;}if(p){p.connectTarget=-1;p.previewStart=0;}state.threadPreview=null;}
 function cancelHold(pointerId){
  const p=pointerMap.get(pointerId);if(p?.holdTimer){clearTimeout(p.holdTimer);p.holdTimer=0;}
  engine.stopHold(pointerId);
@@ -1113,6 +1232,60 @@ function scheduleHold(pointerId,index){
   }
  },270);
 }
+
+// Explicit physical threads are separate from ambient proximity coupling.
+// Dwell while actively dragging near another body; release and ordinary taps do not tie.
+function countDegree(id){return connected().filter(e=>e.a===id||e.b===id).length;}
+function syncThreads(){engine.setConnections(connected());drawRequest();}
+function tie(a,b){
+ if(a===b||!state.connect||countDegree(a)>=2||countDegree(b)>=2)return false;
+ const k=pairKey(a,b),map=connectionsByCount.get(state.count);
+ if(map.has(k))return false;
+ map.set(k,{a:Math.min(a,b),b:Math.max(a,b),flash:1,created:performance.now()});
+ notes[a].energy=Math.max(notes[a].energy,.28);notes[b].energy=Math.max(notes[b].energy,.28);
+ syncThreads();say('Two shapes are resonating together');return true;
+}
+function removeThread(a,b,show=true){
+ if(!connectionsByCount.get(state.count).delete(pairKey(a,b)))return false;
+ syncThreads();if(show)say('The thread dissolved');return true;
+}
+function evaluateThread(pointerId,p){
+ if(!state.connect||state.locked||p.intent!=='drag')return cancelThread(p);
+ const n=notes[p.id],near=notes.filter(v=>v!==n)
+  .map(v=>({v,d:Math.hypot(v.x-n.x,v.y-n.y)}))
+  .filter(v=>v.d<=n.r+v.v.r+22 && v.d>=n.r+v.v.r-2)
+  .sort((a,b)=>a.d-b.d)[0];
+ const candidate=near?.v;
+ if(!candidate||connectionsByCount.get(state.count).has(pairKey(n.id,candidate.id))||countDegree(n.id)>=2||countDegree(candidate.id)>=2){
+  return cancelThread(p);
+ }
+ if(p.connectTarget===candidate.id){
+  state.threadPreview={a:n.id,b:candidate.id,progress:Math.min(1,(performance.now()-p.previewStart)/490)};
+  return;
+ }
+ cancelThread(p);p.connectTarget=candidate.id;p.previewStart=performance.now();
+ state.threadPreview={a:n.id,b:candidate.id,progress:0};
+ p.connectTimer=setTimeout(()=>{
+  p.connectTimer=0;
+  if(pointerMap.get(pointerId)!==p||p.intent!=='drag'||!state.connect)return;
+  const other=notes[p.connectTarget];
+  if(other&&Math.hypot(n.x-other.x, n.y-other.y)<n.r+other.r+23)tie(n.id,other.id);
+  cancelThread(p);
+ },490);
+ drawRequest();
+}
+function breakDistantThreads(){
+ const maxDist=Math.max(145,Math.min(W,H)*.52);
+ let changed=false;
+ for(const e of connected()){
+  const a=notes[e.a],b=notes[e.b];
+  if(!a||!b||Math.hypot(a.x-b.x,a.y-b.y)>maxDist){
+   connectionsByCount.get(state.count).delete(pairKey(e.a,e.b));changed=true;
+  }
+ }
+ if(changed){syncThreads();say('The thread stretched and disappeared');}
+}
+
 // Position-based collisions: contact can push neighbours, including chains.
 // Every body is a disc with the same radius across 7/9/11 modes. A soft grab
 // correction lets the selected body yield when its neighbours hit a wall.
@@ -1184,7 +1357,7 @@ function dragObject(pointerId,p,x,y,speed,now){
    if(state.collision&&state.feel&&speed>.10&&!p.contactWith.has(other.id)&&chimed<2){
     engine.contact(n,other,speed,notes);stats[state.count].bumps++;chimed++;
     n.energy=Math.max(n.energy,.58);other.energy=Math.max(other.energy,.48);
-    other.gesture=Math.max(other.gesture||0,.70);
+    other.gesture=Math.max(other.gesture||0,[.58,.92,.36,.66][state.materialType]);
    }
    p.contactWith.add(other.id);
   }else if(dist>minD+13)p.contactWith.delete(other.id);
@@ -1198,6 +1371,7 @@ function dragObject(pointerId,p,x,y,speed,now){
  }
  n.dragged=true;state.dragging=true;
  if(now-lastLinkRefresh>55){engine.refreshLinks(notes);lastLinkRefresh=now;}
+ breakDistantThreads();evaluateThread(pointerId,p);
  if(state.feel&&state.moveSound&&params.expression>0){
   if(!p.gesture)p.gesture=engine.beginGesture(pointerId,n);
   if(p.gesture){
@@ -1249,7 +1423,7 @@ canvas.addEventListener('pointerdown',pointerDown,{passive:false});
 canvas.addEventListener('pointermove',pointerMove,{passive:false});
 function pointerEnd(e){
  const p=pointerMap.get(e.pointerId);if(!p)return;
- cancelHold(e.pointerId);engine.endGesture(e.pointerId);pointerMap.delete(e.pointerId);
+ cancelHold(e.pointerId);cancelThread(p);engine.endGesture(e.pointerId);pointerMap.delete(e.pointerId);
  if(p.intent==='drag'){
   notes[p.id].dragged=false;
   // Release is silent unless it physically contacts another object.
@@ -1260,7 +1434,14 @@ function pointerEnd(e){
 for(const ev of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(ev,pointerEnd);
 function updateButtons(){
  qsa('[data-count]').forEach(b=>b.setAttribute('aria-pressed',String(Number(b.dataset.count)===state.count)));
- qsa('[data-lock]').forEach(b=>{b.setAttribute('aria-pressed',String(state.locked));b.textContent=state.locked?'LOCKED':'UNLOCKED';});
+ qsa('[data-connect]').forEach(b=>{b.setAttribute('aria-pressed',String(state.connect));b.textContent=state.connect?'ON':'OFF';});
+ qsa('[data-show-notes]').forEach(b=>{b.setAttribute('aria-pressed',String(state.showNotes));b.textContent=state.showNotes?'ON':'OFF';});
+ $('app').classList.toggle('show-notes',state.showNotes);
+
+ qsa('[data-lock]').forEach(b=>{b.setAttribute('aria-pressed',String(state.locked));
+  b.setAttribute('aria-label',state.locked?'Unlock object positions':'Lock object positions');
+  if(b.classList.contains('icon-control'))b.innerHTML=state.locked?`<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M9 13V9a7 7 0 0 1 14 0v4M6 13h20v16H6zM16 19v5"/></svg>`:`<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M9 13V9a7 7 0 0 1 13-4M6 13h20v16H6zM16 19v5"/></svg>`;
+  else b.textContent=state.locked?'LOCKED':'UNLOCKED';});
  qsa('[data-collision]').forEach(b=>{b.setAttribute('aria-pressed',String(state.collision));b.textContent=state.collision?'ON':'OFF';});
  qsa('[data-motion]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.motion===state.motion)));
  qsa('[data-scale]').forEach(s=>s.value=state.scale);
@@ -1273,9 +1454,9 @@ function updateButtons(){
  $('sceneName').textContent=({original:'Glass garden',cloud:'Blue hour',bright:'Little sun'})[state.scene]||'Custom';
 }
 function clearPointers(){for(const id of pointerMap.keys()){
-  cancelHold(id);engine.endGesture(id);
+  cancelHold(id);cancelThread(pointerMap.get(id));engine.endGesture(id);
  }pointerMap.clear();for(const n of notes)n.dragged=false;state.dragging=false;}
-function setCount(n){if(![7,9,11].includes(n))return;clearPointers();state.count=n;setNotes();say(`${n} resonators ready`);}
+function setCount(n){if(![7,9,11].includes(n))return;clearPointers();state.count=n;state.threadPreview=null;setNotes();say(`${n} resonators ready`);}
 function setScale(s){if(!pitchBanks[s])return;state.scale=s;setNotes();say('New tuning · '+({minor:'D minor',penta:'Pentatonic',lydian:'F Lydian'})[s]);}
 function setLock(locked){clearPointers();state.locked=locked;updateButtons();say(locked?'Positions locked · sounds remain playable':'Drag centers to move, glide along edges');drawRequest();}
 function setMotion(m){if(!['still','float','orbit'].includes(m))return;
@@ -1328,16 +1509,17 @@ function shuffle(){
  for(const [k,lo,hi] of [['material',15,83],['ring',35,91],['space',0,43],['bond',30,98],['bloom',0,50]])setParam(k,Math.round(lo+Math.random()*(hi-lo)));
  state.scene='custom';updateButtons();say('A different resonance');
 }
-function reset(){for(const n of notes)n.saved=false;layoutSet(notes);engine.refreshLinks(notes);updateLabels();drawRequest();say('Positions reset');}
+function reset(){connectionsByCount.get(state.count).clear();syncThreads();for(const n of notes)n.saved=false;layoutSet(notes);engine.refreshLinks(notes);updateLabels();drawRequest();say('Positions reset');}
 function save(){
  try{const result={count:state.count,scale:state.scale,motion:state.motion,scene:state.scene,params,
-  materialType:state.materialType,feel:state.feel,moveSound:state.moveSound,collision:state.collision,locked:state.locked,link:state.link,hold:state.hold,quality:state.quality,
+  materialType:state.materialType,feel:state.feel,moveSound:state.moveSound,connect:state.connect,showNotes:state.showNotes,collision:state.collision,locked:state.locked,link:state.link,hold:state.hold,quality:state.quality,
+  connections:Object.fromEntries([...connectionsByCount].map(([k,map])=>[k,[...map.values()].map(e=>[e.a,e.b])])),
   positions:Object.fromEntries([...sets].map(([k,set])=>[k,set.map(n=>({u:n.u,v:n.v,saved:n.saved}))]))};
-  localStorage.setItem('resonant-objects-v09',JSON.stringify(result));say('Saved on this device');
+  localStorage.setItem('resonant-objects-v010',JSON.stringify(result));say('Saved on this device');
  }catch(e){say('Storage unavailable');}
 }
 function restore(){
- try{const raw=localStorage.getItem('resonant-objects-v09')||localStorage.getItem('resonant-objects-v081')||localStorage.getItem('resonant-objects-v08')||localStorage.getItem('resonant-objects-v07')||localStorage.getItem('resonant-objects-v06')||localStorage.getItem('resonant-objects-v05')||localStorage.getItem('resonant-objects-v04');if(!raw)return;
+ try{const raw=localStorage.getItem('resonant-objects-v010')||localStorage.getItem('resonant-objects-v09')||localStorage.getItem('resonant-objects-v081')||localStorage.getItem('resonant-objects-v08')||localStorage.getItem('resonant-objects-v07')||localStorage.getItem('resonant-objects-v06')||localStorage.getItem('resonant-objects-v05')||localStorage.getItem('resonant-objects-v04');if(!raw)return;
   const v=JSON.parse(raw);if([7,9,11].includes(v.count))state.count=v.count;
   if(Number.isInteger(v.materialType)&&v.materialType>=0&&v.materialType<=3)state.materialType=v.materialType;
   if(pitchBanks[v.scale])state.scale=v.scale;
@@ -1349,6 +1531,15 @@ function restore(){
   if(typeof v.feel==='boolean')state.feel=v.feel;
   if(typeof v.moveSound==='boolean')state.moveSound=v.moveSound;
   if(typeof v.collision==='boolean')state.collision=v.collision;
+  if(typeof v.connect==='boolean')state.connect=v.connect;
+  if(typeof v.showNotes==='boolean')state.showNotes=v.showNotes;
+  if(v.connections)for(const [k,list] of Object.entries(v.connections)){
+   const N=Number(k),map=connectionsByCount.get(N);if(!map||!Array.isArray(list))continue;
+   for(const pair of list){if(!Array.isArray(pair)||pair.length!==2)continue;const [a,b]=pair;
+    if(!Number.isInteger(a)||!Number.isInteger(b)||a===b||a<0||b<0||a>=N||b>=N)continue;
+    const degree=id=>[...map.values()].filter(e=>e.a===id||e.b===id).length;
+    if(degree(a)<2&&degree(b)<2)map.set(pairKey(a,b),{a:Math.min(a,b),b:Math.max(a,b),flash:0,created:0});}
+  }
   if(typeof v.locked==='boolean')state.locked=v.locked;
   if(v.positions)for(const [key,ps] of Object.entries(v.positions)){
    const set=sets.get(Number(key));if(!set||!Array.isArray(ps))continue;
@@ -1373,6 +1564,12 @@ function lab(open){$('lab').classList.toggle('open',open);$('shade').classList.t
    tr.innerHTML=`<td>${k}${k===state.count?' ●':''}</td><td>${m.diameter}px</td><td>${m.gap}px</td><td>${s.hits}</td><td>${s.empty}</td><td>${s.slides}</td><td>${s.rub}</td><td>${s.moves}</td><td>${s.bumps}</td><td>${s.multi}</td>`;
    rows.appendChild(tr);}}
 }
+qsa('[data-connect]').forEach(b=>b.addEventListener('click',()=>{state.connect=!state.connect;
+ for(const p of pointerMap.values())cancelThread(p);updateButtons();say(state.connect?'Connection gestures on':'Connection gestures off');}));
+qsa('[data-show-notes]').forEach(b=>b.addEventListener('click',()=>{state.showNotes=!state.showNotes;updateButtons();drawRequest();}));
+$('clearConnections').addEventListener('click',()=>{connectionsByCount.get(state.count).clear();syncThreads();say('Threads cleared');});
+$('miniReset').addEventListener('click',()=>{reset();toggleDrawer(false);});
+$('miniLab').addEventListener('click',()=>lab(true));
 qsa('[data-material-type]').forEach(b=>b.addEventListener('click',()=>setMaterialType(Number(b.dataset.materialType))));
 qsa('[data-lock]').forEach(b=>b.addEventListener('click',()=>setLock(!state.locked)));
 qsa('[data-collision]').forEach(b=>b.addEventListener('click',()=>{state.collision=!state.collision;updateButtons();say(state.collision?'Gentle contact notes enabled':'Contact notes muted');}));
@@ -1418,7 +1615,7 @@ window.addEventListener('orientationchange',()=>setTimeout(resize,150));
 document.addEventListener('visibilitychange',()=>{if(document.hidden){clearPointers();engine.suspend();}else{lastTime=0;resize();}});
 window.addEventListener('pagehide',()=>engine.suspend());
 // Deliberately initialize without audio; first gesture must create/resume its context.
-viewReady=true;restore();setMaterialType(state.materialType,false);renderer.setQuality(state.quality);for(const k of Object.keys(params))setParam(k,params[k]);engine.setExpression(state.feel?params.expression:0);engine.setLink(state.link);setNotes();say('Touch to play · drag the centre · glide at the rim');
+viewReady=true;restore();setMaterialType(state.materialType,false);renderer.setQuality(state.quality);for(const k of Object.keys(params))setParam(k,params[k]);engine.setExpression(state.feel?params.expression:0);engine.setLink(state.link);setNotes();say('Touch, move, and keep two pieces close to make a thread');
 })();
 
 </script></body></html>
