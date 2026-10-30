@@ -1,10 +1,10 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<meta name="theme-color" content="#d8f1f2">
+<meta name="theme-color" content="#07090d">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>RESONANT OBJECTS · v0.12.4</title>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>RESONANT OBJECTS · v0.14.0</title>
 <style>:root{
   --ink:#344f78; --muted:#7387a5; --aqua:#83e4e5; --violet:#9c9bfd;
   --cream:#fcfff9; --line:rgba(255,255,255,.72); --glaze:rgba(251,255,255,.50);
@@ -237,6 +237,64 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;background:white;bord
 #drawer .reverb-hint{font-size:9px;font-weight:400;color:#6889a6}
 #drawer .reverb-footnote{font-size:9px;color:#6487a4;margin:6px 0 0}
 @media(max-width:680px){#drawer .reverb-field{grid-column:span 2}#drawer .reverb-choices button{min-height:44px}#drawer .reverb-choices button span{font-size:17px}}
+
+/* v0.13 BLACK SIGNAL — deliberately vector-like, not glassmorphism. */
+:root{color-scheme:dark;--ink:#d5dee8;--muted:#7c8b9e;--glaze:#11151d;--line:#303744;--drop:none}
+html,body{background:#07090e!important;color:#d4dfeb}
+#app{background:#07090e!important;color:#d4dfeb}
+#app::before{display:none!important}
+.kinetic-top{background:#080b11!important;border-bottom:1px solid #232b38!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+.brandmark{background:none!important;color:#9ce0f4!important;border:1px solid #3c596a!important;border-radius:9px!important;box-shadow:none!important}
+.brand-name{color:#bdcada;letter-spacing:.20em!important;font-weight:600!important;font-size:11px!important}
+.material-strip{background:#0e121a!important;border:1px solid #28313d!important;border-radius:11px!important;box-shadow:none!important}
+.material-icon,.icon-control{background:#0b1018!important;color:#7d8da0!important;border:1px solid #273240!important;box-shadow:none!important;border-radius:8px!important}
+.material-icon svg,.icon-control svg{stroke-width:1.45!important}
+.material-icon[aria-pressed=true]{background:#121e26!important;border-color:#56cfe6!important;color:#62dce9!important;box-shadow:inset 0 0 0 1px #306878!important}
+.material-icon[data-material-type="1"][aria-pressed=true]{background:#24121d!important;color:#ff7da7!important;border-color:#d76897!important;box-shadow:inset 0 0 0 1px #783a57!important}
+.material-icon[data-material-type="2"][aria-pressed=true]{background:#241e18!important;color:#e6bd90!important;border-color:#bb956b!important;box-shadow:inset 0 0 0 1px #69533d!important}
+.material-icon[data-material-type="3"][aria-pressed=true]{background:#191a30!important;color:#a2b7ff!important;border-color:#8192d1!important;box-shadow:inset 0 0 0 1px #474968!important}
+.material-icon[data-material-type="4"][aria-pressed=true]{background:#101d32!important;color:#7bbdfa!important;border-color:#629ed0!important;box-shadow:inset 0 0 0 1px #3c6079!important}
+.kinetic-top .quick-count{background:#0e121a!important;border:1px solid #28313d!important;border-radius:9px!important;box-shadow:none!important}
+.kinetic-top .quick-count button{color:#8495aa!important;border-radius:6px!important}
+.kinetic-top .quick-count button[aria-pressed=true]{background:#223447!important;color:#d9f7ff!important;box-shadow:none!important}
+.icon-control[aria-pressed=true]{background:#213044!important;border-color:#6887b4!important;color:#a9d9f2!important}
+.stage{background:#07090e!important}
+.note-label{color:#96a9bc!important;text-shadow:none!important;font-weight:550!important;letter-spacing:.10em!important}
+.note-label.active{color:#d9effb!important}
+#drawer{background:#11151d!important;color:#dce6f3!important;border:1px solid #354052!important;border-radius:11px!important;box-shadow:0 14px 60px #000b!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+#drawer .drawer-title{color:#c0d6e7!important}
+.drawer-tip,.panel-desc,#drawer .reverb-hint,#drawer .reverb-footnote{color:#8d9cb1!important}
+#drawer .mini-field label{color:#b8c8d8!important}
+#drawer .mini-field output{color:#7bbdda!important}
+#drawer .flatbtn,#drawer .actionrow button,#drawer button.switchbtn,#drawer .material-choices button,#drawer .rowbuttons button,#drawer .piece-count button,#drawer .reverb-choices button{background:#171e29!important;border:1px solid #38465b!important;color:#bed0e1!important;border-radius:7px!important;box-shadow:none!important}
+#drawer button[aria-pressed=true]{background:#263b50!important;border-color:#6aa8bd!important;color:#e2f6fa!important}
+#drawer select{background:#141b25!important;border:1px solid #36475a!important;color:#d8e5f2!important;border-radius:7px!important}
+input[type=range]::-webkit-slider-runnable-track{background:#283e4b!important;border:0!important;height:3px!important}
+input[type=range]::-webkit-slider-thumb{background:#73c9dd!important;border:1px solid #cceafa!important;box-shadow:none!important;width:15px!important;height:15px!important;margin-top:-6px!important}
+#shade{background:#0009!important}
+#lab{background:#111821!important;color:#dae5f0!important;border:1px solid #435269!important;border-radius:12px!important}
+#lab p,#lab th{color:#8fa4bb!important}
+#lab td,#lab th{border-color:#263747!important}
+#turn{background:#07090e!important;color:#a6d6ec!important}
+#turn .turn-geometry{color:#67d9e9!important;filter:none!important}
+@media(max-width:690px){.brandmark{display:none!important}.kinetic-top{gap:3px!important;padding:2px 5px!important}.material-strip{gap:1px!important;padding:2px!important}.material-icon,.icon-control{width:30px!important;height:30px!important;min-width:30px!important;border-radius:6px!important}.kinetic-top .quick-count{padding:2px!important;min-width:75px!important}.kinetic-top .top-right{gap:3px!important}}
+
+/* v0.14 / GLYPH FIELD — graphic hierarchy without ornament. */
+.kinetic-top{border-bottom:1px solid #20232c!important}
+.material-strip{gap:5px!important;background:transparent!important;border:0!important;padding:1px!important}
+.material-icon{border-color:#3b414d!important;background:#11151c!important;border-radius:9px!important}
+.material-icon[data-material-type="0"]{color:#70e5ee!important}
+.material-icon[data-material-type="1"]{color:#ff88ae!important}
+.material-icon[data-material-type="2"]{color:#ebc286!important}
+.material-icon[data-material-type="3"]{color:#b5a2ff!important}
+.material-icon[data-material-type="4"]{color:#78b8ff!important}
+.material-icon[aria-pressed=true]{border-color:currentColor!important;background:#202532!important;box-shadow:inset 0 0 0 1px currentColor!important}
+.brandmark{border:0!important;background:none!important}
+.brand-name{font-size:10px!important;letter-spacing:.16em!important}
+.stage{background:#07090d!important}
+.stage-topline,.stage-message{opacity:.45!important}
+.bottom{background:#080a0e!important;border-top:1px solid #1a212c!important}
+@media(max-width:690px){.material-strip{gap:3px!important}.material-icon{min-width:32px!important;width:32px!important}}
 </style></head><body>
 <div id="app">
 <header class="top kinetic-top" aria-label="Instrument tools">
@@ -281,8 +339,8 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;background:white;bord
 <main class="stage" id="stage" aria-label="Instrument performance area">
   <canvas id="instrument" tabindex="0" aria-label="Tap center or rim, glide or move a resonant shape"></canvas>
   <canvas id="overlay" aria-hidden="true"></canvas><div id="labels" aria-hidden="true"></div>
-  <div class="stage-topline">A FIELD OF TOUCH AND CONNECTION <span id="gpuMode" aria-label="Graphics renderer">GPU FIELD</span></div>
-  <div class="stage-message" id="touchHint">✦ SURFACE: SOUND · CORE: MOVE OR TAP · EDGE: GLIDE</div>
+  <div class="stage-topline"> <span id="gpuMode" aria-label="Graphics renderer">GPU FIELD</span></div>
+  <div class="stage-message" id="touchHint"></div>
 </main>
 <aside class="rail" aria-label="Instrument settings">
   <section class="panel"><div class="panel-title"><span class="symbol">⁙</span>OBJECTS</div>
@@ -321,11 +379,11 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;background:white;bord
   </section>
 </aside>
 </div>
-<footer class="bottom"><span class="fine">✧  RESONANT OBJECTS · v0.12.4</span><span class="readout" id="status" role="status" aria-live="polite">Tap a shape · drag to arrange silently</span></footer>
+<footer class="bottom"><span class="fine">✧  RESONANT OBJECTS · v0.14.0</span><span class="readout" id="status" role="status" aria-live="polite">Tap a shape · drag to arrange silently</span></footer>
 </div>
 <section id="drawer" role="region" aria-label="Instrument controls">
- <div class="drawer-title">TUNE THE INSTRUMENT <button id="closeTune" type="button" class="flatbtn" aria-label="Close tuning">✕</button></div>
- <p class="drawer-tip">Bring two shapes together. Hold for a moment to make a thread. Pull apart to dissolve it.</p>
+ <div class="drawer-title">SOUND / SPACE <button id="closeTune" type="button" class="flatbtn" aria-label="Close tuning">✕</button></div>
+ <p class="drawer-tip">Drag to connect. Hold near another shape; pull away to release.</p>
  <div class="drawer-grid">
   <div class="mini-field material-choice"><label>MATERIAL</label><div class="material-choices">
   <button data-material-type="0" type="button">JEWEL</button><button data-material-type="1" type="button">CANDY</button>
@@ -345,7 +403,7 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;background:white;bord
   <div class="mini-field"><label>Bloom <output data-value="bloom">Off</output></label><input data-param="bloom" aria-label="Bloom" type="range" min="0" max="100" value="0"></div>
   <div class="mini-field"><label>Play Feel</label><button data-feel type="button" class="switchbtn" aria-pressed="true">ON</button></div>
   <div class="mini-field"><label>Expression <output data-value="expression">Gentle</output></label><input data-param="expression" aria-label="Expression amount" type="range" min="0" max="100" value="46"></div>
-  <div class="mini-field"><label>Drag Sound</label><button data-move-sound type="button" class="switchbtn" aria-pressed="true">ON</button></div>
+  <div class="mini-field"><label>Drag Sound</label><button data-move-sound type="button" class="switchbtn" aria-pressed="false">OFF</button></div>
   <div class="mini-field"><label>Gentle Material Collision</label><button data-collision type="button" class="switchbtn" aria-pressed="true">ON</button></div>
   <div class="mini-field"><label>Lock Positions</label><button data-lock type="button" class="switchbtn" aria-pressed="false">UNLOCKED</button></div>
   <div class="mini-field"><label>Live Link</label><button data-link type="button" class="switchbtn" aria-pressed="true">ON</button></div>
@@ -378,7 +436,7 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;background:white;bord
 </section>
 <div id="turn" aria-label="Rotate device"><div class="turn-geometry" aria-hidden="true">◇</div><strong>TURN SIDEWAYS</strong><small>This little instrument likes both hands.<br>Disable rotation lock if necessary.</small></div>
 
-<script>/* RESONANT OBJECTS v0.12.4 — FIVE INDEPENDENT SOUND ENGINES
+<script>/* RESONANT OBJECTS v0.14.0 — FIVE INDEPENDENT SOUND ENGINES
  * 共通のWeb Audio出力バスは使うが、発音原理とノード・グラフは素材ごとに独立。
  * JEWEL: modal partial synthesis / CANDY: dynamic FM
  * CERAMIC: excited short waveguide / METAL: inharmonic cross-frequency FM
@@ -546,7 +604,7 @@ class WaveBreathingEngine {
   });
  }
 }
-/* RESONANT OBJECTS v0.12.4 — five independent acoustic engines. No external dependencies.
+/* RESONANT OBJECTS v0.14.0 — five independent acoustic engines. No external dependencies.
  * 原音を維持しつつ、近接共鳴の「打撃時」と「音声信号経由」の2層を分離する。
  * Audio graph: per-voice modal synth -> dry bus -> compressor
  *                       \-> modal tanks <-> bounded damped coupling -> wet bus
@@ -995,7 +1053,7 @@ class ResonantEngine {
 }
 
 
-/* RESONANT OBJECTS v0.12.4 — GPU field renderer
+/* RESONANT OBJECTS v0.14.0 — GPU field renderer
  * WebGL2 > WebGL1. Audio remains Web Audio (WebGL is graphics only).
  * Pass 1: native-resolution color field, geometry and GPU connection ribbons.
  * Pass 2: half-resolution double-buffered temporal resonance (GPU ping-pong).
@@ -1012,140 +1070,135 @@ const FIELD_GLSL = {
  vec2 xy=uCenter+q*uRadius;vec2 uv=xy/uScreen;
  gl_Position=vec4(uv.x*2.-1.,1.-uv.y*2.,0.,1.);}`,
  bgFS:`precision mediump float;varying vec2 vUV;uniform float uTime,uWorld;
- float glow(vec2 p,vec2 c, float k){return exp(-length((p-c)*vec2(1.25,1.15))*k);}
- void main(){vec2 p=vec2(vUV.x,1.-vUV.y);
- vec3 c;
- if(uWorld<.5){
-  c=mix(vec3(.72,.95,.96),vec3(.83,.82,.98),p.x*.53+p.y*.19);
-  c+=vec3(.14,.13,.15)*glow(p,vec2(.15,.82),4.5);
-  c+=vec3(.08,.15,.15)*glow(p,vec2(.82,.22),3.8);
- }else if(uWorld<1.5){
-  c=mix(vec3(1.,.87,.91),vec3(.89,.88,1.),p.x*.4+p.y*.2);
-  c+=vec3(.02,.10,.02)*glow(p,vec2(.15,.72),4.2);
-  c+=vec3(.12,.09,.04)*glow(p,vec2(.88,.22),4.2);
- }else if(uWorld<2.5){
-  c=mix(vec3(.97,.91,.79),vec3(.81,.92,.88),p.x*.58+p.y*.18);
-  c+=vec3(.055,.04,.08)*glow(p,vec2(.22,.83),4.2);
- }else if(uWorld<3.5){
-  c=mix(vec3(.37,.58,.78),vec3(.51,.49,.71),p.x*.64+p.y*.12);
-  c+=vec3(.11,.13,.13)*glow(p,vec2(.8,.22),4.5);
-  c+=vec3(.09,.06,.12)*glow(p,vec2(.20,.80),3.2);
- }else{
-  c=mix(vec3(.69,.91,.94),vec3(.74,.77,.98),p.y*.49+p.x*.31);
-  c+=vec3(.14,.13,.17)*glow(p,vec2(.27,.78),3.8);
- }
- float veil=sin(p.x*7.1+p.y*5.2+uTime*.035)*sin(p.x*2.1-p.y*5.3);
- c+=veil*.008;gl_FragColor=vec4(clamp(c,0.,1.),1.);}`,
+ void main(){
+  vec2 p=vUV;
+  float vignette=1.-.22*length(p-vec2(.5));
+  vec3 base=vec3(.023,.026,.038)*vignette;
+  float haze=exp(-pow(length((p-vec2(.51,.48))*vec2(1.,1.4))/.65,2.));
+  vec3 ink=vec3(.022,.030,.048)*(haze*.12);
+  gl_FragColor=vec4(base+ink,1.);
+ }`,
  objectFS:`precision highp float;varying vec2 vP;
- uniform float uKind,uSeed,uEnergy,uGesture,uImpact,uRepeat,uTime,uMove,uAura,uWorld,uWaveLayer;uniform vec3 uColor;
- const float PI=3.14159265359;
- float poly(vec2 p,float N){float a=atan(p.y,p.x)+PI*.5;float s=2.*PI/N;
- return length(p)*cos(mod(a+s*.5,s)-s*.5)-cos(PI/N)*.92;}
- void main(){vec2 p=vP;float r=length(p),a=atan(p.y,p.x);
- float sd=r-.96,ridge=0.;
- if(uWorld<.5){ // JEWEL: facet shimmer launched by each impact.
-  p+=.009*uImpact*vec2(cos(a*7.+uTime*18.),sin(a*5.-uTime*16.));r=length(p);
-  if(uKind<.5){sd=r-.96;ridge=exp(-pow((r-.78)/.07,2.));}
-  else if(uKind<1.5){sd=poly(p,3.);ridge=exp(-pow((abs(p.x)*.72+abs(p.y)*.55-.35)/.065,2.))*.6;}
-  else if(uKind<2.5){sd=poly(p,6.);ridge=exp(-pow((r-.55)/.060,2.));}
-  else if(uKind<3.5){sd=abs(r-.72)-.20;ridge=exp(-pow((r-.72)/.07,2.));}
-  else if(uKind<4.5){sd=length(vec2(p.x/1.11,p.y/.60))-.93;ridge=exp(-pow((p.y+p.x*.16)/.09,2.));}
-  else if(uKind<5.5){sd=poly(p,4.);ridge=exp(-pow((abs(p.x)+abs(p.y)-.59)/.08,2.));}
-  else if(uKind<6.5){sd=max(abs(p.x*.88)+abs(p.y*.36),abs(p.y*.92)+abs(p.x*.18))-.83;ridge=exp(-pow((abs(p.y*.42+p.x*.35)-.20)/.065,2.));}
-  else {sd=r-(.78+.19*cos(6.*a));ridge=exp(-pow((sin(a*3.)*r)/.09,2.))*.5;}
- }else if(uWorld<1.5){ // CANDY: elastic soft geometric bodies.
-  float bounce=(.025*uEnergy+.070*uImpact+.027*uGesture)*sin(a*4.+uTime*13.+uSeed);
-  p*=1.-.045*uImpact;r=length(p);
-  float superRadius=pow(pow(abs(p.x),3.8)+pow(abs(p.y),3.8),1./3.8);
-  sd=mix(r,superRadius,.28+.22*mod(uKind,3.))-.93+bounce;
-  ridge=exp(-pow((r-.62)/.25,2.))*.3;
- }else if(uWorld<2.5){ // CERAMIC: restrained, matte rounded geometry.
-  sd=mix(r,poly(p,5.+mod(uKind,3.)),.22)-.92+.007*uImpact*sin(a*5.+uTime*19.);
-  ridge=exp(-pow((r-.78)/.16,2.))*.16;
- }else if(uWorld<3.5){ // METAL: specular rings and anodized shapes.
-  sd=mix(r,poly(p,6.+mod(uKind,3.)),.54)-.93+.016*uImpact*sin(a*12.+uTime*29.);
-  ridge=exp(-pow((r-.69)/.05,2.))*.96;
- }else{ // WAVE: a breathing circular resonator with soft propagating bands.
-  float swell=.023*uEnergy*sin(uTime*2.6+uSeed);
-  sd=r-(.92+swell+.012*sin(a*6.+uTime*.9));
-  ridge=exp(-pow((r-(.55+.055*sin(uTime*.9+uSeed)))/.08,2.))*.52;
- }
- float body=1.-smoothstep(-.022,.022,sd);float edge=exp(-pow(sd/.032,2.));
- float shine=exp(-pow(length((p-vec2(-.34,.40))*vec2(.87,1.2))/.45,2.));
- if(uWorld>1.5 && uWorld<2.5)shine*=.27;
- if(uWorld>2.5 && uWorld<3.5)shine=pow(shine,.38)*.85;
- if(uWorld>3.5)shine=.35+.35*exp(-pow((r-.46)/.33,2.));
- float interference=sin(p.x*8.6+p.y*5.2+uSeed)*sin(p.y*4.9-p.x*2.3);
- vec3 col=mix(uColor,vec3(.98,.997,1.),(uWorld>1.5&&uWorld<2.5?.08:.16)+.07*interference+.15*shine);
- col=mix(col,vec3(.36,.65,1.),(uWorld>1.5&&uWorld<2.5?.035:.10)*smoothstep(-.8,.8,p.x-p.y));
- float facets=exp(-pow(sin(10.*a+uSeed*2.8+r*12.)/.34,2.))*.13;
- float kineticGlow=(uWorld<.5?.33:uWorld<1.5?.24:uWorld<2.5?.10:uWorld<3.5?.29:.19)*uImpact;
- col+=body*(facets*vec3(.8,.95,1.)+.12*ridge+shine*.12)+uEnergy*.21+uGesture*vec3(.09,.15,.24)*ridge;
- col+=kineticGlow*vec3(1.,.94,.82)+uRepeat*.016*ridge;
- // Subtle optical second voice: original solid body stays fully visible.
- float veilRing=exp(-pow((r-(1.10+.017*uEnergy))/.045,2.));
- float innerVeil=exp(-pow((r-(.52+.018*uEnergy))/.038,2.));
- col+=uWaveLayer*(veilRing*.27+innerVeil*.12)*vec3(.50,.80,1.);
- col=mix(col,mix(uColor,vec3(1.),.78),edge*.72);
- float halo=exp(-pow(max(sd,0.)/.24,1.15))*(.12+.12*uAura);
- float ring=(uEnergy*.77+uImpact*.7)*exp(-pow((r-1.16-uEnergy*.09)/.040,2.));
- float moved=uMove*exp(-pow((r-1.11)/.033,2.))*.68;
- float rubbing=uGesture*exp(-pow((r-1.25)/.060,2.))*.65;
- float trace=clamp(ring+moved+rubbing+uWaveLayer*veilRing*(.19+.26*uEnergy),0.,1.);
- col=mix(col,vec3(.93,.99,1.),trace*.9);
- float alpha=clamp(body*.94+edge*.37+halo+trace*.88,0.,1.);
- gl_FragColor=vec4(col,alpha);}`,
+ uniform float uKind,uSeed,uEnergy,uGesture,uImpact,uRepeat,uTime,uMove,uAura,uWorld,uWaveLayer,uVisualScale;
+ uniform vec3 uColor;
+ const float PI=3.141592653589793;
+ float sdPoly(vec2 p,float n,float radius){float a=atan(p.y,p.x)+PI/2.;float stepA=2.*PI/n;
+  return length(p)*cos(mod(a+stepA*.5,stepA)-stepA*.5)-radius*cos(PI/n);}
+ float sdBox(vec2 p,vec2 b,float rad){vec2 q=abs(p)-b+rad;return length(max(q,0.))+min(max(q.x,q.y),0.)-rad;}
+ float sdCapsule(vec2 p,vec2 a,vec2 b,float radius){vec2 pa=p-a,ba=b-a;
+  return length(pa-ba*clamp(dot(pa,ba)/dot(ba,ba),0.,1.))-radius;}
+ float band(float d,float w){return 1.-smoothstep(w*.35,w*1.4,abs(d));}
+ float ring(float r,float radius,float w){return band(r-radius,w);}
+ void main(){
+  vec2 pos=vP/max(.65,uVisualScale);
+  float t=uTime,impact=uImpact,energy=clamp(uEnergy+uGesture*.25+impact*.70,0.,1.);
+  float k=mod(floor(uKind+.5),11.);
+  float a=atan(pos.y,pos.x),r=length(pos);
+  // Small, material-specific movement without changing the silhouette language.
+  if(uWorld>0.5&&uWorld<1.5){pos*=1.-impact*.053;r=length(pos);}
+  if(uWorld>2.5&&uWorld<3.5)pos.x+=impact*.009*sin(pos.y*24.+t*26.);
+  float d=r-.75,detail=0.,cut=0.,solid=.0;
+  if(k<.5){ // 0 — double disc, anchor / soft white
+   d=r-.735;detail=ring(r,.40,.022)*.80;cut=ring(r,.13,.026)*.92;solid=.15;
+  }else if(k<1.5){ // 1 — sharp triangular stone
+   d=sdPoly(pos,3.,.84);detail=band(sdPoly(pos,3.,.46),.023)*.88;solid=.06;
+  }else if(k<2.5){ // 2 — round-corner square with diagonal incision
+   d=sdBox(pos,vec2(.64,.62),.22);
+   detail=band(pos.x*.67+pos.y*.72,.025)*(1.-smoothstep(.25,.85,r))*.77;
+   solid=.47;
+  }else if(k<3.5){ // 3 — slender upright pill
+   d=sdCapsule(pos,vec2(0.,-.40),vec2(0.,.40),.31);
+   detail=band(pos.y,.020)*(1.-smoothstep(.12,.58,r))*.75;solid=.38;
+  }else if(k<4.5){ // 4 — open diamond / rhombus
+   d=sdPoly(pos,4.,.78);detail=band(abs(pos.x)-.15,.016)*(1.-smoothstep(.34,.68,r))*.60;solid=.08;
+  }else if(k<5.5){ // 5 — rounded cross
+   d=min(sdBox(pos,vec2(.27,.74),.12),sdBox(pos,vec2(.74,.27),.12));
+   cut=ring(r,.18,.025)*.85;solid=.32;
+  }else if(k<6.5){ // 6 — pentagon with offset point
+   d=sdPoly(pos,5.,.80);detail=band(pos.y+.15,.020)*smoothstep(.15,.32,abs(pos.x))*.63;solid=.18;
+  }else if(k<7.5){ // 7 — wide horizontal capsule
+   d=sdCapsule(pos,vec2(-.37,0.),vec2(.37,0.),.33);
+   detail=ring(r,.27,.018)*.85;solid=.45;
+  }else if(k<8.5){ // 8 — octagon with slashed interior
+   d=sdPoly(pos,8.,.78);
+   detail=band(pos.y-pos.x*.65,.025)*.71*(1.-smoothstep(.4,.75,r));solid=.08;
+  }else if(k<9.5){ // 9 — segmented hollow circle
+   d=r-.75;
+   float arc=abs(sin(a*2.4+.7));
+   detail=ring(r,.49,.022)*(.24+.76*step(.27,arc));
+   cut=ring(r,.19,.022)*.72;solid=.08;
+  }else{ // 10 — kite with a central notch
+   vec2 p=pos;p.y*=1.13;
+   d=sdPoly(p,4.,.76);
+   detail=band(p.x-p.y*.32,.022)*(1.-smoothstep(.32,.67,r))*.62;solid=.35;
+  }
+  // Material remains audible first; visually it's expressed through the response envelope.
+  float strokeWidth=(uWorld<.5?.027:uWorld<1.5?.036:uWorld<2.5?.041:uWorld<3.5?.024:.026);
+  float boundary=band(d,strokeWidth);
+  float inside=1.-smoothstep(-.006,.025,d);
+  float inner=inside*(solid+detail*.72+cut*.44);
+  float bright=.76+.25*energy+.14*impact;
+  vec3 ink=uColor;
+  // Layered pigment, not transparent plastic. High-contrast strokes and subtle solid areas.
+  float mask=boundary+inner;
+  vec3 col=ink*(boundary*bright+inner*(.63+.28*energy));
+  // Silent at rest. During playing, the glyph breathes with the sound energy.
+  float beat=ring(r,.87+.12*energy,.018)*(.52*uEnergy+.23*impact);
+  float touch=ring(r,1.02,.014)*uGesture*.38;
+  col+=ink*(beat+touch)*.58;
+  float wave=(ring(r,1.10+.016*energy,.016)+ring(r,1.17,.012)*.46)*uWaveLayer;
+  col+=vec3(.62,.86,.99)*wave*(.26+.24*energy);
+  float alpha=clamp(mask*.95+beat*.7+touch*.6+wave*.75,0.,.96);
+  if(alpha<.008)discard;
+  gl_FragColor=vec4(clamp(col/max(alpha,.05),0.,1.),alpha);
+ }`,
  ribbonVS:`attribute vec2 aPos;attribute vec2 aRibbon;attribute float aPower;
  uniform vec2 uScreen;varying vec2 vRibbon;varying float vPower;
  void main(){vRibbon=aRibbon;vPower=aPower;vec2 uv=aPos/uScreen;
  gl_Position=vec4(uv.x*2.-1.,1.-uv.y*2.,0.,1.);}`,
  ribbonFS:`precision mediump float;varying vec2 vRibbon;varying float vPower;
  uniform float uTime;
- void main(){float core=exp(-pow((vRibbon.y-.5)*4.2,2.));
- float z=fract(uTime*.38+vRibbon.x*.71);float point=exp(-pow((vRibbon.x-z)/.036,2.));
- float a=(core*.52+point*core*.7)*vPower;
- gl_FragColor=vec4(mix(vec3(.40,.68,.95),vec3(.99,.99,1.),point*.7),clamp(a,0.,.8));}`,
+ void main(){float y=abs(vRibbon.y-.5);float core=1.-smoothstep(.11,.32,y);
+ float a=core*clamp(vPower*.52,0.,.38);
+ gl_FragColor=vec4(.32,.47,.62,a);}`,
  temporalFS:`precision highp float;varying vec2 vUV;
  uniform sampler2D uPrev;uniform vec2 uSize;uniform vec4 uNodes[11];
  uniform float uCount,uTime,uTrace;
- void main(){vec3 fresh=vec3(0.);vec2 flow=vec2(0.);
+ void main(){vec3 fresh=vec3(0.);
  for(int i=0;i<11;i++){
   if(float(i)>=uCount)break;
-  vec4 n=uNodes[i];float energy=n.w;
-  vec2 delta=(vUV-n.xy)*uSize;float d=length(delta);float radius=n.z;
-  float waveRadius=radius*(1.25+mod(uTime*1.07+float(i)*.34,1.4));
-  float wave=exp(-pow((d-waveRadius)/max(2.5,radius*.14),2.))*energy;
-  float core=exp(-d/max(6.,radius*.85))*energy;
-  vec3 hue=mix(vec3(.26,.63,.99),vec3(.96,.58,.89),mod(float(i)*.27,1.));
-  fresh+=hue*(wave*.11+core*.015);
-  flow+=normalize(delta+vec2(.0001))*(.00008+energy*.00023)*exp(-d/max(2.,radius*2.));
+  vec4 n=uNodes[i];float en=n.w;
+  float d=length((vUV-n.xy)*uSize);
+  float rr=n.z*(1.25+mod(uTime*.52+float(i)*.31,1.1));
+  float wave=exp(-pow((d-rr)/max(2.5,n.z*.12),2.))*en;
+  vec3 hue=mix(vec3(.04,.46,.67),vec3(.57,.23,.67),mod(float(i)*.27,1.));
+  fresh+=hue*wave*.026;
  }
- vec3 old=texture2D(uPrev,clamp(vUV-flow,0.,1.)).rgb;
- vec3 color=clamp(old*.914+fresh*uTrace,0.,1.);
- gl_FragColor=vec4(color,1.);}`,
+ vec3 old=texture2D(uPrev,vUV).rgb;
+ gl_FragColor=vec4(min(old*.86+fresh*uTrace,vec3(.30)),1.);
+ }`,
  compositeFS:`precision mediump float;varying vec2 vUV;
  uniform sampler2D uScene,uHistory;uniform vec2 uPixel;
  uniform float uAura,uTrace;
  void main(){vec3 scene=texture2D(uScene,vUV).rgb;
- vec3 glow=vec3(0.);
- glow+=texture2D(uScene,vUV+vec2(4.,0.)*uPixel).rgb;
- glow+=texture2D(uScene,vUV-vec2(4.,0.)*uPixel).rgb;
- glow+=texture2D(uScene,vUV+vec2(0.,4.)*uPixel).rgb;
- glow+=texture2D(uScene,vUV-vec2(0.,4.)*uPixel).rgb;
- glow*=.25;
- vec3 highlight=max(glow-scene*.86-vec3(.10),0.);
- vec3 field=texture2D(uHistory,vUV).rgb;
- vec3 combined=scene+highlight*uAura*.46+field*uTrace*.82;
- // Gentle tone-map prevents repeated feedback from making the field pure white.
- combined=combined/(vec3(1.)+max(combined-vec3(.88),0.)*.75);
- gl_FragColor=vec4(clamp(combined,0.,1.),1.);}`
+ vec3 blur=vec3(0.);
+ blur+=texture2D(uScene,vUV+vec2(3.,0.)*uPixel).rgb;
+ blur+=texture2D(uScene,vUV-vec2(3.,0.)*uPixel).rgb;
+ blur+=texture2D(uScene,vUV+vec2(0.,3.)*uPixel).rgb;
+ blur+=texture2D(uScene,vUV-vec2(0.,3.)*uPixel).rgb;
+ blur*=.25;
+ vec3 highlights=max(blur-vec3(.055),vec3(0.));
+ vec3 trail=texture2D(uHistory,vUV).rgb;
+ vec3 color=scene+highlights*uAura*.14+trail*uTrace*.58;
+ gl_FragColor=vec4(clamp(color,0.,1.),1.);
+ }`
 };
 class VisualRenderer{
  constructor(canvas,overlay,onStatus=()=>{}){
   this.canvas=canvas;this.overlay=overlay;this.overlayCtx=overlay.getContext('2d');
   this.onStatus=onStatus;this.W=1;this.H=1;this.dpr=1;
   this.gl=null;this.ready=false;this.mode='none';this.lost=false;
-  this.aura=.48;this.trace=.38;this.quality='balanced';this.post=true;
+  this.aura=.20;this.trace=.22;this.quality='balanced';this.post=true;
   this.trailFrames=0;this.fallbackCanvas=null;this.frame=0;this.validateGPU=true;this.renderFailures=0;
   this.init();
   canvas.addEventListener('webglcontextlost',e=>{
@@ -1182,7 +1235,7 @@ class VisualRenderer{
     compose:this.program(FIELD_GLSL.quadVS,FIELD_GLSL.compositeFS)
    };
    this.bg=this.locate(this.programs.bg,['aCorner'],['uTime','uWorld']);
-   this.obj=this.locate(this.programs.obj,['aCorner'],['uCenter','uScreen','uRadius','uAngle','uKind','uSeed','uEnergy','uGesture','uImpact','uRepeat','uTime','uMove','uAura','uColor','uWorld','uWaveLayer']);
+   this.obj=this.locate(this.programs.obj,['aCorner'],['uCenter','uScreen','uRadius','uAngle','uKind','uSeed','uEnergy','uGesture','uImpact','uRepeat','uTime','uMove','uAura','uColor','uWorld','uWaveLayer','uVisualScale']);
    this.line=this.locate(this.programs.line,['aPos','aRibbon','aPower'],['uScreen','uTime']);
    this.trail=this.locate(this.programs.trail,['aCorner'],['uPrev','uNodes[0]','uCount','uTime','uSize','uTrace']);
    this.compose=this.locate(this.programs.compose,['aCorner'],['uScene','uHistory','uPixel','uAura','uTrace']);
@@ -1259,7 +1312,7 @@ class VisualRenderer{
     const g=this.gl,pixel=new Uint8Array(4);
     g.readPixels(Math.floor(this.canvas.width*.5),Math.floor(this.canvas.height*.5),1,1,g.RGBA,g.UNSIGNED_BYTE,pixel);
     const error=g.getError();
-    if(error!==g.NO_ERROR || pixel[0]+pixel[1]+pixel[2]<28)
+    if(error!==g.NO_ERROR || pixel[0]+pixel[1]+pixel[2]<3)
      throw Error('GPU frame validation failed (error '+error+', pixel '+Array.from(pixel).join(',')+')');
    }
   }catch(error){
@@ -1277,7 +1330,7 @@ class VisualRenderer{
   g.uniform1f(this.obj.uTime,time);
   g.uniform1f(this.obj.uAura,this.aura);
   for(const n of notes){g.uniform1f(this.obj.uWorld,(state.materialType||0));g.uniform2f(this.obj.uCenter,n.x,n.y);g.uniform1f(this.obj.uRadius,n.r);
-   g.uniform3f(this.obj.uColor,...n.color);g.uniform1f(this.obj.uKind,n.kind);
+   g.uniform3f(this.obj.uColor,...n.color);g.uniform1f(this.obj.uKind,n.id);g.uniform1f(this.obj.uVisualScale,n.visualScale||1);
    g.uniform1f(this.obj.uSeed,n.id*1.131+.7);g.uniform1f(this.obj.uEnergy,n.energy);
    g.uniform1f(this.obj.uGesture,n.gesture||0);
    g.uniform1f(this.obj.uImpact,n.impact||0);g.uniform1f(this.obj.uRepeat,n.streak||0);
@@ -1340,161 +1393,97 @@ class VisualRenderer{
   c.setTransform(d,0,0,d,0,0);
   if(this.mode!=='canvas2d')c.clearRect(0,0,this.W,this.H);
   const now=performance.now();
+  const palette=['#59dfec','#ff78ac','#e5c092','#9eafff','#72b9fc'];
+  const color=palette[state.materialType||0];
   for(const edge of state.connections||[]){
    const a=notes[edge.a],b=notes[edge.b];if(!a||!b)continue;
-   const dx=b.x-a.x,dy=b.y-a.y,L=Math.hypot(dx,dy)||1;
-   const nx=dx/L,ny=dy/L,perpx=-ny,perpy=nx;
-   const bend=Math.min(19,L*.125)*((edge.a+edge.b)%2?1:-1);
-   const sx=a.x+nx*a.r*.70,sy=a.y+ny*a.r*.70;
-   const ex=b.x-nx*b.r*.70,ey=b.y-ny*b.r*.70;
-   const mx=(sx+ex)*.5+perpx*bend,my=(sy+ey)*.5+perpy*bend;
-   const energy=Math.min(1,Math.max(a.energy,b.energy)*.60+(edge.flash||0)*.52);
+   const dx=b.x-a.x,dy=b.y-a.y,L=Math.hypot(dx,dy)||1,nx=dx/L,ny=dy/L;
+   const px=-ny,py=nx,bend=Math.min(13,L*.075)*((edge.a+edge.b)%2?1:-1);
+   const sx=a.x+nx*a.r*.86,sy=a.y+ny*a.r*.86;
+   const ex=b.x-nx*b.r*.86,ey=b.y-ny*b.r*.86;
+   const mx=(sx+ex)*.5+px*bend,my=(sy+ey)*.5+py*bend;
+   const energy=Math.min(1,Math.max(a.energy,b.energy)*.5+(edge.flash||0)*.7);
    const path=()=>{c.beginPath();c.moveTo(sx,sy);c.quadraticCurveTo(mx,my,ex,ey);};
    c.save();c.lineCap='round';
-   // Contrast-first optical fibre: dark underlay separates it from pastel scenery.
-   path();c.strokeStyle=`rgba(45,72,115,${.26+.14*energy})`;
-   c.lineWidth=13+energy*2;c.shadowBlur=5;c.shadowColor='rgba(45,72,115,.22)';c.stroke();
-   c.shadowBlur=0;
-   path();c.strokeStyle=`rgba(118,202,245,${.54+.20*energy})`;
-   c.lineWidth=8+energy*2;c.stroke();
+   // Thin colored core remains legible against black without full-width blooming.
+   path();c.lineWidth=4.8;c.strokeStyle='rgba(8,11,18,.96)';c.stroke();
+   path();c.lineWidth=2.05+.45*energy;
    const gradient=c.createLinearGradient(sx,sy,ex,ey);
-   gradient.addColorStop(0,'rgba(36,93,157,.96)');
-   gradient.addColorStop(.48,`rgba(58,114,174,${.92+.06*energy})`);
-   gradient.addColorStop(1,'rgba(114,65,159,.95)');
-   path();c.strokeStyle=gradient;c.lineWidth=3.5+energy*.8;c.stroke();
-   path();c.strokeStyle=`rgba(241,252,255,${.68+.22*energy})`;c.lineWidth=.8;c.stroke();
-   // Small attachment rings: connected, not just overlapping graphic strokes.
-   for(const [px,py] of [[sx,sy],[ex,ey]]){
-    c.beginPath();c.arc(px,py,3.3+1.2*energy,0,Math.PI*2);
-    c.lineWidth=2;c.strokeStyle=`rgba(45,83,145,${.85+.12*energy})`;c.stroke();
+   gradient.addColorStop(0,a.hex);gradient.addColorStop(1,b.hex);
+   c.strokeStyle=gradient;c.globalAlpha=.66+.29*energy;c.stroke();
+   c.globalAlpha=1;
+   for(const [x,y] of [[sx,sy],[ex,ey]]){
+    c.beginPath();c.arc(x,y,3.1,0,Math.PI*2);c.fillStyle='#070a10';c.fill();
+    c.lineWidth=1.45;c.strokeStyle=(x===sx&&y===sy)?a.hex:b.hex;c.stroke();
    }
-   const curve=t=>({
-    x:(1-t)*(1-t)*sx+2*(1-t)*t*mx+t*t*ex,
-    y:(1-t)*(1-t)*sy+2*(1-t)*t*my+t*t*ey
-   });
+   const curve=t=>({x:(1-t)*(1-t)*sx+2*(1-t)*t*mx+t*t*ex,y:(1-t)*(1-t)*sy+2*(1-t)*t*my+t*t*ey});
    for(const pulse of edge.pulses||[]){
-    const age=(now-pulse.at)/pulse.duration;
-    if(age<0||age>=1)continue;
-    const raw=Math.min(1,age/.80),t=pulse.from===edge.a?raw:1-raw;
-    const p=curve(t),opacity=Math.min(1,age/.09,(1-age)/.22)*pulse.strength;
-    // Light has a short taper; avoid confetti particles and permanently moving dots.
-    for(let k=5;k>=0;k--){
-     const back=Math.max(0,Math.min(1,t+(pulse.from===edge.a?-1:1)*k*.017));
-     const q=curve(back);c.beginPath();c.arc(q.x,q.y,1.2+(5-k)*.30,0,Math.PI*2);
-     c.fillStyle=`rgba(235,255,255,${opacity*(1-k/6)*.26})`;c.fill();
-    }
-    c.beginPath();c.arc(p.x,p.y,2.2+2.5*opacity,0,Math.PI*2);
-    c.shadowBlur=14;c.shadowColor='#e2fbff';c.fillStyle=`rgba(255,255,255,${opacity*.90})`;c.fill();c.shadowBlur=0;
-    // The receiving end glows in proportion to the arrival, not constantly.
+    const age=(now-pulse.at)/pulse.duration;if(age<0||age>=1)continue;
+    const tt=Math.min(1,age/.85),t=pulse.from===edge.a?tt:1-tt;
+    const loc=curve(t),amp=Math.min(1,age/.11,(1-age)/.25)*pulse.strength;
+    c.beginPath();c.arc(loc.x,loc.y,3.2+1.9*amp,0,Math.PI*2);
+    c.fillStyle='#dffaff';c.globalAlpha=amp;c.fill();c.globalAlpha=1;
    }
    c.restore();
   }
-  // Delicate dual halo announces the second acoustic engine without changing the body.
-  // When idle it is static; the extra ring expands only with an actual sound.
-  if(this.mode!=='canvas2d')for(const n of notes){if(!n.waveLayer)continue;
-   const r=n.r*(1.17+.075*n.energy);
-   c.save();c.beginPath();c.arc(n.x,n.y,r,0,Math.PI*2);
-   c.lineWidth=1.5;c.strokeStyle=`rgba(236,255,255,${.36+.33*n.energy})`;
-   c.shadowColor='#80d9fa';c.shadowBlur=6+8*n.energy;c.stroke();
-   c.shadowBlur=0;c.beginPath();c.arc(n.x,n.y,r+3.7,0,Math.PI*2);
-   c.lineWidth=.55;c.strokeStyle=`rgba(150,206,243,${.16+.20*n.energy})`;c.stroke();c.restore();
+  // Quiet WAVE overlay, not an extra object.
+  for(const n of notes){if(!n.waveLayer)continue;
+   c.save();c.strokeStyle='#78b9f9';c.globalAlpha=.49+.27*n.energy;c.lineWidth=1.15;
+   c.setLineDash([1.7,5.2]);c.beginPath();c.arc(n.x,n.y,n.r*1.18,0,Math.PI*2);c.stroke();c.restore();
   }
   const candidate=state.threadPreview;
   if(candidate){const a=notes[candidate.a],b=notes[candidate.b];if(a&&b){
-   const dx=b.x-a.x,dy=b.y-a.y,L=Math.hypot(dx,dy)||1,p=candidate.progress||0;
-   const sx=a.x+dx/L*a.r*.72,sy=a.y+dy/L*a.r*.72;
-   const ex=b.x-dx/L*b.r*.72,ey=b.y-dy/L*b.r*.72;
-   c.save();c.lineCap='round';c.setLineDash([3.5,6]);
-   c.beginPath();c.moveTo(sx,sy);c.quadraticCurveTo((sx+ex)*.5-dy/L*12,(sy+ey)*.5+dx/L*12,ex,ey);
-   c.strokeStyle=`rgba(54,100,163,${.60+p*.35})`;c.lineWidth=2.4+p*.5;c.stroke();c.setLineDash([]);
-   const cx=(sx+ex)*.5,cy=(sy+ey)*.5;
-   c.beginPath();c.arc(cx,cy,4.5,-Math.PI/2,-Math.PI/2+p*Math.PI*2);
-   c.strokeStyle='rgba(79,139,190,.82)';c.lineWidth=1.65;c.stroke();c.restore();
+   const dx=b.x-a.x,dy=b.y-a.y,L=Math.hypot(dx,dy)||1,prog=candidate.progress||0;
+   const sx=a.x+dx/L*a.r*.82,sy=a.y+dy/L*a.r*.82;
+   const ex=b.x-dx/L*b.r*.82,ey=b.y-dy/L*b.r*.82;
+   c.save();c.strokeStyle=color;c.globalAlpha=.26+.60*prog;c.lineWidth=1.4;
+   c.setLineDash([2,5]);c.beginPath();c.moveTo(sx,sy);c.lineTo(ex,ey);c.stroke();c.restore();
   }}
  }
 
  // Compatibility only. It is *not* composited into the WebGL path.
- drawFallback(time,notes,state){const c=this.c2d,W=this.W,H=this.H,d=this.dpr;
-  c.setTransform(d,0,0,d,0,0);const bg=c.createLinearGradient(0,0,W,H);
-  const ramps=[['#c2f6e8','#cedff9','#e7d3fc'],['#ffe5ea','#fcd6dd','#d9d4fc'],['#f7e8cf','#deebe2','#e6d4c4'],['#86acd1','#8298c4','#b1a8d1'],['#a6e8f3','#d1d7fd','#e8e7ff']][state.materialType||0];bg.addColorStop(0,ramps[0]);bg.addColorStop(.55,ramps[1]);bg.addColorStop(1,ramps[2]);
-  c.fillStyle=bg;c.fillRect(0,0,W,H);
-  for(const n of notes){c.save();c.translate(n.x,n.y);c.rotate(n.angle);
-   const hit=n.impact||0,type=state.materialType;
-   if(type===1)c.scale(1+.10*hit,1-.065*hit);
-   if(type===3)c.rotate(Math.sin(time*31+n.id)*.022*hit);
-   if(type===2)c.scale(1+.013*hit,1-.009*hit);
-   const halo=c.createRadialGradient(0,0,n.r*.42,0,0,n.r*1.7);
-   halo.addColorStop(0,n.hex+'45');halo.addColorStop(1,n.hex+'00');
-   c.fillStyle=halo;c.beginPath();c.arc(0,0,n.r*1.7,0,Math.PI*2);c.fill();
-   const grad=c.createLinearGradient(-n.r,-n.r,n.r,n.r);
-   grad.addColorStop(0,'#ffffff');grad.addColorStop(.23,n.hex);grad.addColorStop(.56,'#c6efff');grad.addColorStop(1,n.hex);
-   c.globalAlpha=.95;c.beginPath();
-   if((type===0||type===3)&&(n.kind===1||n.kind===2||n.kind===5||n.kind===6)){const sides=n.kind===1?3:n.kind===2?6:4;
-    for(let i=0;i<sides;i++){const a=Math.PI*2*i/sides-Math.PI/2;
-     if(i===0)c.moveTo(Math.cos(a)*n.r*.92,Math.sin(a)*n.r*.92);
-     else c.lineTo(Math.cos(a)*n.r*.92,Math.sin(a)*n.r*.92);}c.closePath();}
-   else if(type===1){
-    // Rounded superellipse: sugar-glass body, no generic circular button.
-    for(let j=0;j<=48;j++){
-     const a=j/48*Math.PI*2,ct=Math.cos(a),st=Math.sin(a);
-     const px=Math.sign(ct)*Math.pow(Math.abs(ct),.69)*n.r*.88;
-     const py=Math.sign(st)*Math.pow(Math.abs(st),.69)*n.r*.88;
-     if(j===0)c.moveTo(px,py);else c.lineTo(px,py);
-    }c.closePath();
-   }else if(type===2){
-    // Soft ceramic pentagon with shallow irregular bevel.
-    for(let j=0;j<=50;j++){
-     const a=j/50*Math.PI*2,rr=n.r*(.89+.035*Math.cos(5*a+n.id));
-     if(j===0)c.moveTo(rr*Math.cos(a),rr*Math.sin(a));else c.lineTo(rr*Math.cos(a),rr*Math.sin(a));
-    }c.closePath();
-   }else if(type===4){
-    for(let j=0;j<=64;j++){const a=j*Math.PI/32,rr=n.r*(.90+.015*Math.sin(6*a+time*1.4));
-     if(j===0)c.moveTo(rr*Math.cos(a),rr*Math.sin(a));else c.lineTo(rr*Math.cos(a),rr*Math.sin(a));}c.closePath();
-   }else{c.arc(0,0,n.r*.94,0,Math.PI*2);}
-   c.fillStyle=type===2?n.hex:grad;
-   c.shadowBlur=12+n.energy*22+(n.gesture||0)*12+hit*23;
-   c.shadowColor=n.hex;c.fill();
-   c.shadowBlur=0;c.strokeStyle='#ffffffd9';c.lineWidth=2;c.stroke();
-   if(n.waveLayer){
-    c.beginPath();c.arc(0,0,n.r*(1.12+.015*n.energy),0,Math.PI*2);
-    c.lineWidth=1.75;c.strokeStyle=`rgba(218,252,255,${.56+.27*n.energy})`;
-    c.shadowColor='#83d4fc';c.shadowBlur=9+10*n.energy;c.stroke();c.shadowBlur=0;
-    c.beginPath();c.arc(0,0,n.r*.53,0,Math.PI*2);
-    c.lineWidth=.9;c.strokeStyle='rgba(245,255,255,.38)';c.stroke();
-   }
-   if(type===4){
-    c.strokeStyle='rgba(255,255,255,.60)';c.lineWidth=1.6;
-    for(let j=0;j<2;j++){c.beginPath();c.arc(0,0,n.r*(.46+j*.20+n.energy*.025),0,Math.PI*2);c.stroke();}
-   }
-   if(type===3){
-    // Radial scored metal surface, visible even without WebGL.
-    c.strokeStyle='rgba(255,255,255,.52)';c.lineWidth=.9;
-    for(let j=0;j<7;j++){const a=j*Math.PI*2/7+n.id*.10;
-     c.beginPath();c.moveTo(Math.cos(a)*n.r*.42,Math.sin(a)*n.r*.42);
-     c.lineTo(Math.cos(a)*n.r*.79,Math.sin(a)*n.r*.79);c.stroke();}
-   }
-   if(hit>.02){c.beginPath();c.arc(0,0,n.r*(1.05+.15*(1-hit)),0,Math.PI*2);
-    c.strokeStyle=`rgba(255,255,255,${.7*hit})`;c.lineWidth=1.2+hit*2;c.stroke();}
-   if(type===0&&n.kind===3){c.globalCompositeOperation='destination-out';c.beginPath();c.arc(0,0,n.r*.48,0,Math.PI*2);c.fill();}
-   c.restore();}
+ drawFallback(time,notes,state){
+  const c=this.c2d,W=this.W,H=this.H,d=this.dpr;
+  c.setTransform(d,0,0,d,0,0);c.fillStyle='#07090d';c.fillRect(0,0,W,H);
+  for(const n of notes){
+   const x=n.x,y=n.y,r=n.r*.77*(n.visualScale||1),e=n.energy||0,imp=n.impact||0;
+   const k=n.id%11;c.save();c.translate(x,y);c.rotate(n.angle||0);
+   c.lineJoin='round';c.lineCap='round';c.strokeStyle=n.hex;c.fillStyle=n.hex;
+   c.lineWidth=2.25+e*.8;c.globalAlpha=.85+.13*Math.min(1,e+imp);
+   c.beginPath();
+   const polygon=(N,angle=0)=>{for(let j=0;j<=N;j++){
+    const a=angle+j*2*Math.PI/N-Math.PI/2;
+    if(j===0)c.moveTo(Math.cos(a)*r,Math.sin(a)*r);else c.lineTo(Math.cos(a)*r,Math.sin(a)*r);}};
+   if(k===0||k===9)c.arc(0,0,r,0,Math.PI*2);
+   else if(k===1)polygon(3);
+   else if(k===2)c.roundRect(-r*.78,-r*.78,r*1.56,r*1.56,r*.29);
+   else if(k===3)c.roundRect(-r*.48,-r,r*.96,r*2,r*.45);
+   else if(k===4||k===10)polygon(4,k===10?.10:0);
+   else if(k===5){c.moveTo(-r*.35,-r);c.lineTo(r*.35,-r);c.lineTo(r*.35,-r*.35);c.lineTo(r,-r*.35);c.lineTo(r,r*.35);c.lineTo(r*.35,r*.35);c.lineTo(r*.35,r);c.lineTo(-r*.35,r);c.lineTo(-r*.35,r*.35);c.lineTo(-r,r*.35);c.lineTo(-r,-r*.35);c.lineTo(-r*.35,-r*.35);}
+   else if(k===6)polygon(5);
+   else if(k===7)c.roundRect(-r,-r*.49,r*2,r*.98,r*.46);
+   else polygon(8);
+   c.closePath();c.save();c.globalAlpha=.13+.08*e;c.fill();c.restore();c.stroke();
+   c.globalAlpha=.42+.4*e;c.lineWidth=1.15;c.beginPath();
+   if(k===0||k===7||k===9)c.arc(0,0,r*.51,0,Math.PI*2);
+   else if(k===1||k===6)polygon(k===1?3:5);
+   else if(k===3){c.moveTo(-r*.35,0);c.lineTo(r*.35,0);}
+   else if(k===5)c.arc(0,0,r*.18,0,Math.PI*2);
+   else {c.moveTo(-r*.37,r*.32);c.lineTo(r*.35,-r*.31);}
+   c.stroke();
+   if(e>.045){c.beginPath();c.arc(0,0,r*1.18,0,Math.PI*2);c.globalAlpha=e*.44;c.stroke();}
+   c.restore();
+  }
  }
- drawFallbackLines(time,notes,state){const c=this.overlayCtx,d=this.dpr;
-  c.setTransform(d,0,0,d,0,0);c.clearRect(0,0,this.W,this.H);
-  c.lineWidth=1;const reach=Math.min(260,Math.max(95,this.H*.8));
-  for(let i=0;i<notes.length;i++)for(let j=i+1;j<notes.length;j++){
-   const a=notes[i],b=notes[j],distance=Math.hypot(a.x-b.x,a.y-b.y);
-   if(distance>reach||Math.max(a.energy,b.energy)<.18)continue;
-   c.strokeStyle=`rgba(255,255,255,${Math.min(.66,Math.max(a.energy,b.energy)*.35)})`;
-   c.beginPath();c.moveTo(a.x,a.y);c.lineTo(b.x,b.y);c.stroke();}
-  for(const n of notes){if(n.dragged){
-   c.lineWidth=2;c.strokeStyle="rgba(255,255,255,.85)";c.beginPath();c.arc(n.x,n.y,n.r*1.32,0,Math.PI*2);c.stroke();c.lineWidth=1;
-  }c.strokeStyle=`rgba(255,255,255,${.25+n.energy*.65})`;
-   c.beginPath();c.arc(n.x,n.y,n.r*(1.20+n.energy*.3+(n.gesture||0)*.15),0,Math.PI*2);c.stroke();}
+
+ drawFallbackLines(time,notes,state){
+  const c=this.overlayCtx,d=this.dpr;c.setTransform(d,0,0,d,0,0);c.clearRect(0,0,this.W,this.H);
+  for(const n of notes)if(n.dragged){c.beginPath();c.arc(n.x,n.y,n.r*1.15,0,Math.PI*2);c.strokeStyle='rgba(184,201,223,.38)';c.lineWidth=1;c.stroke();}
  }
 }
 
 
-/* RESONANT OBJECTS v0.12.4 — One Playing Field / interaction layer.
+/* RESONANT OBJECTS v0.14.0 — One Playing Field / interaction layer.
  * 描画 / 音源 / 状態を分離。WebGL描画上の位置とタッチ領域は同一のモデルを参照。
  * Notes use stable IDs within each layout; no timer-driven animation when idle. */
 (()=>{
@@ -1502,13 +1491,15 @@ class VisualRenderer{
 const $=id=>document.getElementById(id), qsa=s=>[...document.querySelectorAll(s)];
 const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
 const field=$('stage'),canvas=$('instrument'),overlay=$('overlay'),labels=$('labels'),readout=$('status');
-const colors=['#4cd7ed','#f48ad0','#4bd9c5','#f6b57e','#839cff','#84c9f4','#65c5eb','#f28faa','#72e2cc','#e6a5f2','#85bafa'];
+// Every sound object has a stable hue/identity across materials.
+// Changing engines changes timbre and animation, never the player's learned note identity.
+const colors=['#F3ECDD','#5BE2F1','#FF7397','#D8EE60','#BDA1FF','#FFAE66','#70DAB4','#EAF4FC','#638FFF','#FFD36D','#F27ADC'];
 const MATERIALS=[
- {name:'JEWEL',colors:['#65ccf5','#d99cf7','#5fe5e0','#fdc6a7','#a4a6ff','#86dfff','#8ba8ff','#f7aacd','#8bdcc7','#ffd1b1','#b2b4ff']},
- {name:'CANDY',colors:['#ff8fbe','#ffc66a','#8dd5fb','#f9a36e','#c39cff','#b7e67f','#ffa0a1','#94cde7','#f4d886','#9ee9bd','#f3a4ed']},
- {name:'CERAMIC',colors:['#e9a7a1','#e5ca9a','#adc3c4','#e8bb89','#abcbbb','#d3afa9','#b6bddb','#e3c1a8','#b3d2c0','#d8c6a5','#bbc1d5']},
- {name:'METAL',colors:['#7fbded','#d1a9e9','#a3d9d5','#f0bc84','#88a7da','#b1d7eb','#91afcf','#c9b7e9','#a2d2c3','#e5afbf','#9facd8']},
- {name:'WAVE',colors:['#83c8f5','#b4b4ff','#84e2db','#a4a3ed','#92dbe8','#9bb8ff','#80d2e9','#a2c3fa','#9db5ff','#90e7dc','#b6b6fd']}
+ {name:'JEWEL',colors},
+ {name:'CANDY',colors},
+ {name:'CERAMIC',colors},
+ {name:'METAL',colors},
+ {name:'WAVE',colors}
 ];
 const hexRGB=h=>[parseInt(h.slice(1,3),16)/255,parseInt(h.slice(3,5),16)/255,parseInt(h.slice(5,7),16)/255];
 // D minor 9 pitches exactly as v0.3, with two added notes for 11-piece mode.
@@ -1528,6 +1519,8 @@ const pointerMap=new Map();const connectionsByCount=new Map([[7,new Map()],[9,ne
 const connected=()=>[...connectionsByCount.get(state.count).values()];
 const pairKey=(a,b)=>Math.min(a,b)+':'+Math.max(a,b);
 let notes=[],W=1,H=1,requestId=0,lastTime=0,lastActive=0,viewReady=false;
+// Deliberately unequal printed glyphs; physical hit/collision radii remain equal.
+const VISUAL_SCALES=[1.03,.89,1.07,.95,1.00,.88,1.08,.93,1.01,.91,1.07];
 let lastTrigger=-1,lastLinkRefresh=0,lastConnectionBeat=0;
 const engine=new ResonantEngine(msg=>say(msg)),renderer=new VisualRenderer(canvas,overlay,msg=>say(msg));
 function say(msg){
@@ -1542,7 +1535,7 @@ function say(msg){
 }
 function pitches(count,scale){const source=pitchBanks[scale];const entries=source.concat([['G3',55],['C5',72]]);
  return selects[count].map(i=>entries[i]);}
-function makeSet(count){return Array.from({length:count},(_,id)=>({id,midi:50,name:'',kind:id===0?0:((id-1)%8),big:id===0,
+function makeSet(count){return Array.from({length:count},(_,id)=>({id,midi:50,name:'',kind:id,visualScale:VISUAL_SCALES[id%VISUAL_SCALES.length],big:id===0,
   color:hexRGB(colors[id]),hex:colors[id],u:.5,v:.5,saved:false,r:35,x:0,y:0,energy:0,angle:0,last:0,stageW:1,stageH:1,gesture:0,impact:0,streak:0,waveLayer:false}));}
 for(const k of [7,9,11])sets.set(k,makeSet(k));
 function setNotes(){clearPointers();notes=sets.get(state.count);engine.setConnections(connected());const names=pitches(state.count,state.scale);
@@ -1931,7 +1924,7 @@ function updateButtons(){
  qsa('[data-feel]').forEach(b=>{b.setAttribute('aria-pressed',String(state.feel));b.textContent=state.feel?'ON':'OFF';});
  qsa('[data-move-sound]').forEach(b=>{b.setAttribute('aria-pressed',String(state.moveSound));b.textContent=state.moveSound?'ON':'OFF';});
  qsa('[data-quality]').forEach(s=>s.value=state.quality);
- $('touchHint').textContent=state.locked?'✦ POSITIONS LOCKED · TAP · GLIDE · HOLD':'✦ SURFACE: SOUND · CORE: MOVE OR TAP · EDGE: GLIDE';
+ $('touchHint').textContent=state.locked?'✦ POSITIONS LOCKED · TAP · GLIDE · HOLD':'';
  $('sceneName').textContent=({original:'Glass garden',cloud:'Blue hour',bright:'Little sun'})[state.scene]||'Custom';
 }
 function clearPointers(){for(const [id,p] of pointerMap){

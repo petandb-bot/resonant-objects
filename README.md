@@ -1,45 +1,15 @@
-# RESONANT OBJECTS v0.12.4 — Touch Integrity
+# RESONANT OBJECTS v0.14.0 — GLYPH FIELD
 
-この版は **v0.12.3 のタイマー発音を撤去し、操作判定を修正した版**です。
-旧HTMLをそのまま再梱包したものではありません。`CHANGES.diff` で JavaScript の変更箇所を確認できます。
+## Design revision
+- 11 stable note identities: each note has a separate silhouette and a high-contrast color.
+- Slight difference in **visual sizes** while physical touch target, collision radius, and sound pitch remain unchanged.
+- Note identity/color persists when changing JEWEL/CANDY/CERAMIC/METAL/WAVE.
+- Clean graphite background, restrained bloom; colored two-ended Connect lines.
+- 2D fallback shares the same geometric identities.
+- Existing audio engine, WAVE layering, reverbs, gesture handling, lock, Connect, and 7/9/11 mode are retained.
 
-## 一画面の操作
+## Deploy
+Place `index.html` at repository root for GitHub Pages. No external libraries.
 
-- 発音体の**外側（半径の52%より外、円の面積の約73%）**：指が触れた瞬間に打音。滑らせるとGLIDE。
-- **中心の小さな領域（半径の52%以内）**：掴む位置。12 CSS px以上動かしたらドラッグに切替。指を離すまで動かさなければその場で一音鳴る。
-- 中心の長押し：打撃音ではなく、約270ms後から持続音へ。指を離したら停止。
-- LOCK時：中心を含む全域で触れた瞬間に発音。位置は動かない。
-- 移動中：単に掴む・離すだけでは音を追加しない。衝突音は従来どおり衝突条件が成立した場合だけ。
-
-**トレードオフ：** 同じ一点をタップするのかドラッグするのかは、指が接触した瞬間には確定できません。今回、センター部の即時発音を犠牲にして不要な掴み音をなくし、演奏面の大部分を即時発音にする方式を選びました。
-
-## 実装・維持
-
-- 85msの発音予約 (`attackTimer`) を完全に削除。長押しで意図せず打撃音が重なる経路を除去。
-- AudioContextがすでに稼働している場合は Promise の往復なしに発音を開始。
-- タップキャンセル、指を離す、モード／音数変更時のPointer状態を整理。
-- JEWEL / CANDY / CERAMIC / METAL / WAVEの5エンジン、9音とWAVE重ね合わせ、7/9/11音、Connect、衝突、WebGL描画、4種リバーブは変更なし。
-- CANDY / CERAMIC の前バージョンの音源チューニングはそのままです。この版で音色そのものを「改善した」とは主張しません。
-
-## 自動検証（Chromium）
-
-- JavaScript構文：`node --check source.js` 通過
-- 844×390で外周タップは即時1音、中心タップは指を離すと1音
-- 指を置いて155ms後に始めるドラッグで不要なタップ音が発生しない
-- 中心長押しは打撃音なしで持続音のみ、指離し時に停止
-- 2本指演奏で2音、キャンセル時に0音
-- 入力中の7/9/11切替で入力状態が残らない
-- 全モードで半径32pxを維持、5エンジンとWAVEレイヤーは維持
-- 実WebGL2描画はChromium + SwiftShaderで成功、JavaScript例外なし
-
-**未検証：** iPhone Safari実機でのタッチ応答、音声出力レイテンシー、音色の聴感・連続演奏時の熱/負荷。これらはPCブラウザのシミュレーションでは評価できません。
-
-## ファイル
-
-- `index.html`: GitHub Pagesへ置く完成済み単体HTML（こちらが正）。
-- `source.js`: index.htmlに埋め込まれたJavaScriptの参照用コピー。**これ単体の編集はindex.htmlに反映されません。**
-- `CHANGES.diff`: v0.12.3からのJavaScript差分。
-- `tests/`: ブラウザ自動テスト（Python playwright + Chromium、GPUテストは xvfb-run を使用）。
-- `screen_webgl_844.png`: 実WebGL2描画で取得した画面。
-
-GitHub Pagesへは `index.html` の置換のみで動作します。HTTPSで公開後、Safariで音が有効になるよう画面上の発音体に触れてください。
+## Testing
+See tests and visual previews. Browser GPU emulation is not an iPhone performance test.
