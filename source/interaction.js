@@ -1,4 +1,4 @@
-/* RESONANT OBJECTS v0.10 — One Playing Field / interaction layer.
+/* RESONANT OBJECTS v0.11 — One Playing Field / interaction layer.
  * 描画 / 音源 / 状態を分離。WebGL描画上の位置とタッチ領域は同一のモデルを参照。
  * Notes use stable IDs within each layout; no timer-driven animation when idle. */
 (()=>{
@@ -43,7 +43,7 @@ function say(msg){
 function pitches(count,scale){const source=pitchBanks[scale];const entries=source.concat([['G3',55],['C5',72]]);
  return selects[count].map(i=>entries[i]);}
 function makeSet(count){return Array.from({length:count},(_,id)=>({id,midi:50,name:'',kind:id===0?0:((id-1)%8),big:id===0,
-  color:hexRGB(colors[id]),hex:colors[id],u:.5,v:.5,saved:false,r:35,x:0,y:0,energy:0,angle:0,last:0,stageW:1,stageH:1,gesture:0}));}
+  color:hexRGB(colors[id]),hex:colors[id],u:.5,v:.5,saved:false,r:35,x:0,y:0,energy:0,angle:0,last:0,stageW:1,stageH:1,gesture:0,impact:0,streak:0}));}
 for(const k of [7,9,11])sets.set(k,makeSet(k));
 function setNotes(){clearPointers();notes=sets.get(state.count);engine.setConnections(connected());const names=pitches(state.count,state.scale);
  for(const [i,n] of notes.entries()){n.name=names[i][0];n.midi=names[i][1];}
@@ -103,7 +103,8 @@ function draw(t){requestId=0;
  }
  for(const n of notes){n.energy=Math.max(0,n.energy-dt*.64);
  n.gesture=Math.max(0,(n.gesture||0)-dt*2.7);
- if(n.energy>.008||n.gesture>.008)any=true;
+ n.impact=Math.max(0,(n.impact||0)-dt*[2.8,3.5,6.5,4.5][state.materialType]);
+ if(n.energy>.008||n.gesture>.008||n.impact>.008)any=true;
  // Geometry may subtly rotate, but touch centers NEVER drift during performance.
  if(state.motion==='orbit')n.angle+=dt*.14*(n.id%2===0?1:-1);
  else if(state.motion==='float')n.angle=Math.sin(now*.33+n.id*1.3)*.055;
@@ -446,11 +447,11 @@ function save(){
   materialType:state.materialType,feel:state.feel,moveSound:state.moveSound,connect:state.connect,showNotes:state.showNotes,collision:state.collision,locked:state.locked,link:state.link,hold:state.hold,quality:state.quality,
   connections:Object.fromEntries([...connectionsByCount].map(([k,map])=>[k,[...map.values()].map(e=>[e.a,e.b])])),
   positions:Object.fromEntries([...sets].map(([k,set])=>[k,set.map(n=>({u:n.u,v:n.v,saved:n.saved}))]))};
-  localStorage.setItem('resonant-objects-v010',JSON.stringify(result));say('Saved on this device');
+  localStorage.setItem('resonant-objects-v011',JSON.stringify(result));say('Saved on this device');
  }catch(e){say('Storage unavailable');}
 }
 function restore(){
- try{const raw=localStorage.getItem('resonant-objects-v010')||localStorage.getItem('resonant-objects-v09')||localStorage.getItem('resonant-objects-v081')||localStorage.getItem('resonant-objects-v08')||localStorage.getItem('resonant-objects-v07')||localStorage.getItem('resonant-objects-v06')||localStorage.getItem('resonant-objects-v05')||localStorage.getItem('resonant-objects-v04');if(!raw)return;
+ try{const raw=localStorage.getItem('resonant-objects-v011')||localStorage.getItem('resonant-objects-v010')||localStorage.getItem('resonant-objects-v09')||localStorage.getItem('resonant-objects-v081')||localStorage.getItem('resonant-objects-v08')||localStorage.getItem('resonant-objects-v07')||localStorage.getItem('resonant-objects-v06')||localStorage.getItem('resonant-objects-v05')||localStorage.getItem('resonant-objects-v04');if(!raw)return;
   const v=JSON.parse(raw);if([7,9,11].includes(v.count))state.count=v.count;
   if(Number.isInteger(v.materialType)&&v.materialType>=0&&v.materialType<=3)state.materialType=v.materialType;
   if(pitchBanks[v.scale])state.scale=v.scale;

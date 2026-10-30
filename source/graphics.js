@@ -1,4 +1,4 @@
-/* RESONANT OBJECTS v0.10 — GPU field renderer
+/* RESONANT OBJECTS v0.11 — GPU field renderer
  * WebGL2 > WebGL1. Audio remains Web Audio (WebGL is graphics only).
  * Pass 1: native-resolution color field, geometry and GPU connection ribbons.
  * Pass 2: half-resolution double-buffered temporal resonance (GPU ping-pong).
@@ -37,13 +37,14 @@ const FIELD_GLSL = {
  float veil=sin(p.x*7.1+p.y*5.2+uTime*.035)*sin(p.x*2.1-p.y*5.3);
  c+=veil*.008;gl_FragColor=vec4(clamp(c,0.,1.),1.);}`,
  objectFS:`precision highp float;varying vec2 vP;
- uniform float uKind,uSeed,uEnergy,uGesture,uTime,uMove,uAura,uWorld;uniform vec3 uColor;
+ uniform float uKind,uSeed,uEnergy,uGesture,uImpact,uRepeat,uTime,uMove,uAura,uWorld;uniform vec3 uColor;
  const float PI=3.14159265359;
  float poly(vec2 p,float N){float a=atan(p.y,p.x)+PI*.5;float s=2.*PI/N;
  return length(p)*cos(mod(a+s*.5,s)-s*.5)-cos(PI/N)*.92;}
  void main(){vec2 p=vP;float r=length(p),a=atan(p.y,p.x);
  float sd=r-.96,ridge=0.;
- if(uWorld<.5){ // JEWEL: facets, clear and refractive.
+ if(uWorld<.5){ // JEWEL: facet shimmer launched by each impact.
+  p+=.009*uImpact*vec2(cos(a*7.+uTime*18.),sin(a*5.-uTime*16.));r=length(p);
   if(uKind<.5){sd=r-.96;ridge=exp(-pow((r-.78)/.07,2.));}
   else if(uKind<1.5){sd=poly(p,3.);ridge=exp(-pow((abs(p.x)*.72+abs(p.y)*.55-.35)/.065,2.))*.6;}
   else if(uKind<2.5){sd=poly(p,6.);ridge=exp(-pow((r-.55)/.060,2.));}
@@ -53,15 +54,16 @@ const FIELD_GLSL = {
   else if(uKind<6.5){sd=max(abs(p.x*.88)+abs(p.y*.36),abs(p.y*.92)+abs(p.x*.18))-.83;ridge=exp(-pow((abs(p.y*.42+p.x*.35)-.20)/.065,2.));}
   else {sd=r-(.78+.19*cos(6.*a));ridge=exp(-pow((sin(a*3.)*r)/.09,2.))*.5;}
  }else if(uWorld<1.5){ // CANDY: elastic soft geometric bodies.
-  float bounce=.035*(uEnergy+uGesture)*sin(a*4.+uTime*15.+uSeed);
+  float bounce=(.025*uEnergy+.070*uImpact+.027*uGesture)*sin(a*4.+uTime*13.+uSeed);
+  p*=1.-.045*uImpact;r=length(p);
   float superRadius=pow(pow(abs(p.x),3.8)+pow(abs(p.y),3.8),1./3.8);
   sd=mix(r,superRadius,.28+.22*mod(uKind,3.))-.93+bounce;
   ridge=exp(-pow((r-.62)/.25,2.))*.3;
  }else if(uWorld<2.5){ // CERAMIC: restrained, matte rounded geometry.
-  sd=mix(r,poly(p,5.+mod(uKind,3.)),.22)-.92;
+  sd=mix(r,poly(p,5.+mod(uKind,3.)),.22)-.92+.007*uImpact*sin(a*5.+uTime*19.);
   ridge=exp(-pow((r-.78)/.16,2.))*.16;
  }else{ // METAL: specular rings and anodized shapes.
-  sd=mix(r,poly(p,6.+mod(uKind,3.)),.54)-.93;
+  sd=mix(r,poly(p,6.+mod(uKind,3.)),.54)-.93+.016*uImpact*sin(a*12.+uTime*29.);
   ridge=exp(-pow((r-.69)/.05,2.))*.96;
  }
  float body=1.-smoothstep(-.022,.022,sd);float edge=exp(-pow(sd/.032,2.));
@@ -72,10 +74,12 @@ const FIELD_GLSL = {
  vec3 col=mix(uColor,vec3(.98,.997,1.),(uWorld>1.5&&uWorld<2.5?.09:.27)+.11*interference+.24*shine);
  col=mix(col,vec3(.36,.65,1.),(uWorld>1.5&&uWorld<2.5?.055:.16)*smoothstep(-.8,.8,p.x-p.y));
  float facets=exp(-pow(sin(10.*a+uSeed*2.8+r*12.)/.34,2.))*.13;
+ float kineticGlow=(uWorld<.5?.33:uWorld<1.5?.24:uWorld<2.5?.10:.29)*uImpact;
  col+=body*(facets*vec3(.8,.95,1.)+.20*ridge+shine*.18)+uEnergy*.21+uGesture*vec3(.09,.15,.24)*ridge;
+ col+=kineticGlow*vec3(1.,.94,.82)+uRepeat*.016*ridge;
  col=mix(col,vec3(1.),edge*.73);
  float halo=exp(-pow(max(sd,0.)/.24,1.15))*(.12+.12*uAura);
- float ring=uEnergy*exp(-pow((r-1.16-uEnergy*.09)/.040,2.));
+ float ring=(uEnergy*.77+uImpact*.7)*exp(-pow((r-1.16-uEnergy*.09)/.040,2.));
  float moved=uMove*exp(-pow((r-1.11)/.033,2.))*.68;
  float rubbing=uGesture*exp(-pow((r-1.25)/.060,2.))*.65;
  float trace=clamp(ring+moved+rubbing,0.,1.);
@@ -169,7 +173,7 @@ class VisualRenderer{
     compose:this.program(FIELD_GLSL.quadVS,FIELD_GLSL.compositeFS)
    };
    this.bg=this.locate(this.programs.bg,['aCorner'],['uTime','uWorld']);
-   this.obj=this.locate(this.programs.obj,['aCorner'],['uCenter','uScreen','uRadius','uAngle','uKind','uSeed','uEnergy','uGesture','uTime','uMove','uAura','uColor','uWorld']);
+   this.obj=this.locate(this.programs.obj,['aCorner'],['uCenter','uScreen','uRadius','uAngle','uKind','uSeed','uEnergy','uGesture','uImpact','uRepeat','uTime','uMove','uAura','uColor','uWorld']);
    this.line=this.locate(this.programs.line,['aPos','aRibbon','aPower'],['uScreen','uTime']);
    this.trail=this.locate(this.programs.trail,['aCorner'],['uPrev','uNodes[0]','uCount','uTime','uSize','uTrace']);
    this.compose=this.locate(this.programs.compose,['aCorner'],['uScene','uHistory','uPixel','uAura','uTrace']);
@@ -267,6 +271,7 @@ class VisualRenderer{
    g.uniform3f(this.obj.uColor,...n.color);g.uniform1f(this.obj.uKind,n.kind);
    g.uniform1f(this.obj.uSeed,n.id*1.131+.7);g.uniform1f(this.obj.uEnergy,n.energy);
    g.uniform1f(this.obj.uGesture,n.gesture||0);
+   g.uniform1f(this.obj.uImpact,n.impact||0);g.uniform1f(this.obj.uRepeat,n.streak||0);
    g.uniform1f(this.obj.uMove,n.dragged?1:0);
    g.uniform1f(this.obj.uAngle,n.angle);this.quad(this.obj);}
  }
@@ -353,6 +358,10 @@ class VisualRenderer{
   const ramps=[['#c2f6e8','#cedff9','#e7d3fc'],['#ffe5ea','#fcd6dd','#d9d4fc'],['#f7e8cf','#deebe2','#e6d4c4'],['#86acd1','#8298c4','#b1a8d1']][state.materialType||0];bg.addColorStop(0,ramps[0]);bg.addColorStop(.55,ramps[1]);bg.addColorStop(1,ramps[2]);
   c.fillStyle=bg;c.fillRect(0,0,W,H);
   for(const n of notes){c.save();c.translate(n.x,n.y);c.rotate(n.angle);
+   const hit=n.impact||0;
+   if(state.materialType===1)c.scale(1+.10*hit,1-.065*hit);
+   if(state.materialType===3)c.rotate(Math.sin(time*31+n.id)*.022*hit);
+   if(state.materialType===2)c.scale(1+.013*hit,1-.009*hit);
    const halo=c.createRadialGradient(0,0,n.r*.42,0,0,n.r*1.7);
    halo.addColorStop(0,n.hex+'45');halo.addColorStop(1,n.hex+'00');
    c.fillStyle=halo;c.beginPath();c.arc(0,0,n.r*1.7,0,Math.PI*2);c.fill();
@@ -363,9 +372,34 @@ class VisualRenderer{
     for(let i=0;i<sides;i++){const a=Math.PI*2*i/sides-Math.PI/2;
      if(i===0)c.moveTo(Math.cos(a)*n.r*.92,Math.sin(a)*n.r*.92);
      else c.lineTo(Math.cos(a)*n.r*.92,Math.sin(a)*n.r*.92);}c.closePath();}
-   else{c.arc(0,0,n.r*.94,0,Math.PI*2);}
-   c.fillStyle=state.materialType===2?n.hex:grad;c.shadowBlur=12+n.energy*22+(n.gesture||0)*12;c.shadowColor=n.hex;c.fill();
+   else if(state.materialType===1){
+    // Rounded superellipse: sugar-glass body, no generic circular button.
+    for(let j=0;j<=48;j++){
+     const a=j/48*Math.PI*2,ct=Math.cos(a),st=Math.sin(a);
+     const px=Math.sign(ct)*Math.pow(Math.abs(ct),.69)*n.r*.88;
+     const py=Math.sign(st)*Math.pow(Math.abs(st),.69)*n.r*.88;
+     if(j===0)c.moveTo(px,py);else c.lineTo(px,py);
+    }c.closePath();
+   }else if(state.materialType===2){
+    // Soft ceramic pentagon with shallow irregular bevel.
+    for(let j=0;j<=50;j++){
+     const a=j/50*Math.PI*2,rr=n.r*(.89+.035*Math.cos(5*a+n.id));
+     if(j===0)c.moveTo(rr*Math.cos(a),rr*Math.sin(a));else c.lineTo(rr*Math.cos(a),rr*Math.sin(a));
+    }c.closePath();
+   }else{c.arc(0,0,n.r*.94,0,Math.PI*2);}
+   c.fillStyle=state.materialType===2?n.hex:grad;
+   c.shadowBlur=12+n.energy*22+(n.gesture||0)*12+hit*23;
+   c.shadowColor=n.hex;c.fill();
    c.shadowBlur=0;c.strokeStyle='#ffffffd9';c.lineWidth=2;c.stroke();
+   if(state.materialType===3){
+    // Radial scored metal surface, visible even without WebGL.
+    c.strokeStyle='rgba(255,255,255,.52)';c.lineWidth=.9;
+    for(let j=0;j<7;j++){const a=j*Math.PI*2/7+n.id*.10;
+     c.beginPath();c.moveTo(Math.cos(a)*n.r*.42,Math.sin(a)*n.r*.42);
+     c.lineTo(Math.cos(a)*n.r*.79,Math.sin(a)*n.r*.79);c.stroke();}
+   }
+   if(hit>.02){c.beginPath();c.arc(0,0,n.r*(1.05+.15*(1-hit)),0,Math.PI*2);
+    c.strokeStyle=`rgba(255,255,255,${.7*hit})`;c.lineWidth=1.2+hit*2;c.stroke();}
    if(state.materialType===0&&n.kind===3){c.globalCompositeOperation='destination-out';c.beginPath();c.arc(0,0,n.r*.48,0,Math.PI*2);c.fill();}
    c.restore();}
  }
