@@ -4,7 +4,7 @@
 <meta name="theme-color" content="#d8f1f2">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>RESONANT OBJECTS · v0.12 WAVE</title>
+<title>RESONANT OBJECTS · v0.12.4</title>
 <style>:root{
   --ink:#344f78; --muted:#7387a5; --aqua:#83e4e5; --violet:#9c9bfd;
   --cream:#fcfff9; --line:rgba(255,255,255,.72); --glaze:rgba(251,255,255,.50);
@@ -282,7 +282,7 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;background:white;bord
   <canvas id="instrument" tabindex="0" aria-label="Tap center or rim, glide or move a resonant shape"></canvas>
   <canvas id="overlay" aria-hidden="true"></canvas><div id="labels" aria-hidden="true"></div>
   <div class="stage-topline">A FIELD OF TOUCH AND CONNECTION <span id="gpuMode" aria-label="Graphics renderer">GPU FIELD</span></div>
-  <div class="stage-message" id="touchHint">✦ TAP TO PLAY · CENTER TO PUSH · RIM TO GLIDE</div>
+  <div class="stage-message" id="touchHint">✦ SURFACE: SOUND · CORE: MOVE OR TAP · EDGE: GLIDE</div>
 </main>
 <aside class="rail" aria-label="Instrument settings">
   <section class="panel"><div class="panel-title"><span class="symbol">⁙</span>OBJECTS</div>
@@ -321,7 +321,7 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;background:white;bord
   </section>
 </aside>
 </div>
-<footer class="bottom"><span class="fine">✧  RESONANT OBJECTS · v0.12</span><span class="readout" id="status" role="status" aria-live="polite">Tap a shape · drag to arrange silently</span></footer>
+<footer class="bottom"><span class="fine">✧  RESONANT OBJECTS · v0.12.4</span><span class="readout" id="status" role="status" aria-live="polite">Tap a shape · drag to arrange silently</span></footer>
 </div>
 <section id="drawer" role="region" aria-label="Instrument controls">
  <div class="drawer-title">TUNE THE INSTRUMENT <button id="closeTune" type="button" class="flatbtn" aria-label="Close tuning">✕</button></div>
@@ -378,7 +378,7 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;background:white;bord
 </section>
 <div id="turn" aria-label="Rotate device"><div class="turn-geometry" aria-hidden="true">◇</div><strong>TURN SIDEWAYS</strong><small>This little instrument likes both hands.<br>Disable rotation lock if necessary.</small></div>
 
-<script>/* RESONANT OBJECTS v0.12 — FIVE INDEPENDENT SOUND ENGINES
+<script>/* RESONANT OBJECTS v0.12.4 — FIVE INDEPENDENT SOUND ENGINES
  * 共通のWeb Audio出力バスは使うが、発音原理とノード・グラフは素材ごとに独立。
  * JEWEL: modal partial synthesis / CANDY: dynamic FM
  * CERAMIC: excited short waveguide / METAL: inharmonic cross-frequency FM
@@ -440,46 +440,46 @@ class CandyElasticFMEngine {
  strike(note,velocity,{sympathetic=false,delay=0,radial=0,repeat=0,impact=false}={}){
   const h=this.host,hz=soundHz(note.midi)*(impact?1.75:1),v=bounded(velocity,0,1),e=new MaterialEvent(h,note,delay,!impact);
   const soft=1-.23*radial*h.expression;
-  const tail=(impact?.11:.22+.87*h.decay)*(sympathetic?.7:1);
-  const carrier=e.osc('sine',hz,tail+.08),out=e.gain(),mod=e.osc('sine',hz*(impact?3.1:2.41),tail+.08);
-  const depth=e.gain();depth.gain.setValueAtTime(hz*(impact?.35:1.08)*(1+.07*repeat),e.t);
-  depth.gain.exponentialRampToValueAtTime(hz*.004,e.t+Math.min(.23,tail*.80));
+  const tail=(impact?.17:.43+1.12*h.decay)*(sympathetic?.78:1);
+  const carrier=e.osc('sine',hz,tail+.08),out=e.gain(),mod=e.osc('sine',hz*(impact?2.02:1.995),tail+.08);
+  const depth=e.gain();depth.gain.setValueAtTime(hz*(impact?.11:.22)*(1+.035*Math.min(repeat,4)),e.t);
+  depth.gain.exponentialRampToValueAtTime(hz*.001,e.t+Math.min(.30,tail*.78));
   mod.connect(depth).connect(carrier.frequency);
-  const bend=impact?1.10:(1+.012*v+.006*Math.min(repeat,4));
+  const bend=impact?1.025:(1+.008*v+.003*Math.min(repeat,4));
   carrier.frequency.setValueAtTime(hz*bend,e.t);carrier.frequency.exponentialRampToValueAtTime(hz,e.t+Math.min(.12,tail*.60));
-  e.envelope(out,(impact?.024:.20)*v*(sympathetic?.42:1)*soft,.004,tail);carrier.connect(out).connect(e.voice.bus);
+  e.envelope(out,(impact?.028:.27)*v*(sympathetic?.42:1)*soft,.009,tail);carrier.connect(out).connect(e.voice.bus);
   // A rounded, subharmonic-like second voice is a separate signal path.
-  if(!impact){const sub=e.osc('sine',hz*.502,tail*.65+.04),subGain=e.gain();
-   e.envelope(subGain,.071*v*(sympathetic?.33:1),.005,tail*.65);sub.connect(subGain).connect(e.voice.bus);}
+  if(!impact){const sub=e.osc('sine',hz*.501,tail*.85+.04),subGain=e.gain();
+   e.envelope(subGain,.046*v*(sympathetic?.33:1),.012,tail*.85);sub.connect(subGain).connect(e.voice.bus);}
  }
 }
 class CeramicWaveguideEngine {
  constructor(host){this.host=host;this.name='CERAMIC / excited delay line';}
  strike(note,velocity,{sympathetic=false,delay=0,radial=0,repeat=0,impact=false}={}){
   const h=this.host,e=new MaterialEvent(h,note,delay,!impact),v=bounded(velocity,0,1),hz=soundHz(note.midi)*(impact?2.05:1);
-  const tail=(impact?.11:.31+1.30*h.decay)*(sympathetic?.64:1)*(1-.055*Math.min(repeat,4));
+  const tail=(impact?.18:.57+1.55*h.decay)*(sympathetic?.64:1)*(1-.055*Math.min(repeat,4));
   // A short pitched pulse excites a closed damped delay-line resonator.
   // It is purposefully NOT a noise burst, to avoid the former snare-like attack.
-  const excitation=e.osc('triangle',Math.min(4500,hz*(1.6+.6*radial)),.033),exGain=e.gain();
-  e.envelope(exGain,impact?.085*v:.27*v,.0018,.021);
+  const excitation=e.osc('triangle',Math.min(4500,hz*(1.25+.24*radial)),.070),exGain=e.gain();
+  e.envelope(exGain,impact?.055*v:.18*v,.008,.052);
   const exciteBus=e.gain(1);excitation.connect(exGain).connect(exciteBus);
   for(let i=0;i<(impact?1:2);i++){
    const ratio=i?1.51:1;
    const delayNode=e.node(h.ctx.createDelay(.12));delayNode.delayTime.value=Math.max(.001,1/(hz*ratio));
-   const toneFilter=e.node(h.ctx.createBiquadFilter());toneFilter.type='lowpass';toneFilter.frequency.value=impact?2600:2600+radial*900;toneFilter.Q.value=.3;
-   const feedback=e.gain(impact?.60:.76+.04*h.decay);
-   const voiceFilter=e.node(h.ctx.createBiquadFilter());voiceFilter.type='bandpass';voiceFilter.frequency.value=hz*(i?2.48:1.12);voiceFilter.Q.value=i?.8:.55;
-   const level=e.gain();e.envelope(level,(impact?.048:.75)*v*(i?.35:1)*(sympathetic?.43:1),.003,tail);
+   const toneFilter=e.node(h.ctx.createBiquadFilter());toneFilter.type='lowpass';toneFilter.frequency.value=impact?1900:1900+radial*600;toneFilter.Q.value=.3;
+   const feedback=e.gain(impact?.52:.67+.035*h.decay);
+   const voiceFilter=e.node(h.ctx.createBiquadFilter());voiceFilter.type='bandpass';voiceFilter.frequency.value=hz*(i?1.51:1.0);voiceFilter.Q.value=i?2.2:2.8;
+   const level=e.gain();e.envelope(level,(impact?.036:.44)*v*(i?.35:1)*(sympathetic?.43:1),.003,tail);
    exciteBus.connect(delayNode);
    delayNode.connect(toneFilter).connect(feedback).connect(delayNode);
    toneFilter.connect(voiceFilter).connect(level).connect(e.voice.bus);
   }
   // Delay lines are disconnected when the scheduled excitation oscillator ends;
   // give them a separate silent clock oscillator for the tail lifetime.
-  const clock=e.osc('sine',1,tail+.055),silent=e.gain(0);clock.connect(silent).connect(e.voice.bus);
+  const clock=e.osc('sine',1,tail+.20),silent=e.gain(0);clock.connect(silent).connect(e.voice.bus);
   // A shallow, pitched mallet-body transient remains separate from the delay-line sound.
-  const body=e.osc('sine',hz*(impact?1.13:1.004),Math.min(tail*.35,.18)+.04),bodyGain=e.gain();
-  e.envelope(bodyGain,(impact?.025:.18)*v,.003,Math.min(tail*.35,.18));body.connect(bodyGain).connect(e.voice.bus);
+  const body=e.osc('sine',hz*(impact?1.13:1.004),Math.min(tail*.65,.52)+.06),bodyGain=e.gain();
+  e.envelope(bodyGain,(impact?.025:.28)*v,.012,Math.min(tail*.65,.52));body.connect(bodyGain).connect(e.voice.bus);
  }
 }
 class MetalInharmonicFMEngine {
@@ -546,7 +546,7 @@ class WaveBreathingEngine {
   });
  }
 }
-/* RESONANT OBJECTS v0.12 — five independent acoustic engines. No external dependencies.
+/* RESONANT OBJECTS v0.12.4 — five independent acoustic engines. No external dependencies.
  * 原音を維持しつつ、近接共鳴の「打撃時」と「音声信号経由」の2層を分離する。
  * Audio graph: per-voice modal synth -> dry bus -> compressor
  *                       \-> modal tanks <-> bounded damped coupling -> wet bus
@@ -995,7 +995,7 @@ class ResonantEngine {
 }
 
 
-/* RESONANT OBJECTS v0.12 — GPU field renderer
+/* RESONANT OBJECTS v0.12.4 — GPU field renderer
  * WebGL2 > WebGL1. Audio remains Web Audio (WebGL is graphics only).
  * Pass 1: native-resolution color field, geometry and GPU connection ribbons.
  * Pass 2: half-resolution double-buffered temporal resonance (GPU ping-pong).
@@ -1494,7 +1494,7 @@ class VisualRenderer{
 }
 
 
-/* RESONANT OBJECTS v0.12.1 — One Playing Field / interaction layer.
+/* RESONANT OBJECTS v0.12.4 — One Playing Field / interaction layer.
  * 描画 / 音源 / 状態を分離。WebGL描画上の位置とタッチ領域は同一のモデルを参照。
  * Notes use stable IDs within each layout; no timer-driven animation when idle. */
 (()=>{
@@ -1521,6 +1521,9 @@ const selects={7:[0,1,2,3,4,6,8],9:[0,1,2,3,4,5,6,7,8],11:[0,1,2,3,4,5,6,7,8,9,1
 const params={material:36,ring:67,space:0,bond:75,bloom:0,level:84,aura:48,trace:38,expression:46};
 const state={reverbType:'nest',waveAccents:true,materialType:0,count:9,scale:'minor',motion:'still',locked:false,dragging:false,connect:true,showNotes:false,collision:true,scene:'original',drawer:false,link:true,hold:true,quality:'balanced',feel:true,moveSound:false};
 const sets=new Map(),stats={7:{hits:0,empty:0,slides:0,rub:0,moves:0,bumps:0,multi:0},9:{hits:0,empty:0,slides:0,rub:0,moves:0,bumps:0,multi:0},11:{hits:0,empty:0,slides:0,rub:0,moves:0,bumps:0,multi:0}};
+// The inner core is a handle. The wider annulus is a playable strike surface.
+// No speculative audio timers: there is no reliable way to predict a drag at touch-down.
+const GRAB_CORE=0.52, MOVE_THRESHOLD=12;
 const pointerMap=new Map();const connectionsByCount=new Map([[7,new Map()],[9,new Map()],[11,new Map()]]);
 const connected=()=>[...connectionsByCount.get(state.count).values()];
 const pairKey=(a,b)=>Math.min(a,b)+':'+Math.max(a,b);
@@ -1619,13 +1622,26 @@ function hit(x,y){let best=-1,dist=Infinity;
  return best;
 }
 const xy=e=>{const r=canvas.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top};};
+// Subtle playing memory and harmonic neighborhood: modify existing excitation,
+// never spawn unsolicited voices or click-like secondary events.
+const playingMemory=new Map();
 function play(index,velocity=1,radial=0){
  // Use a stable snapshot because resuming AudioContext is asynchronous on Safari.
  const current=notes, note=current[index];if(!note)return;
- engine.unlock().then(ok=>{
-  if(!ok){say('Tap again to enable sound');return;}
+ const perform=()=>{
   if(current!==notes)return;
-  if(engine.strike(index,current,velocity,state.feel?radial:0)){
+  const now=performance.now(), prior=playingMemory.get(note.id);
+  const elapsed=prior?now-prior.at:Infinity;
+  const memory=elapsed<950?Math.min(3,prior.level+1):0;
+  playingMemory.set(note.id,{at:now,level:memory});
+  // Nearby resonators subtly color the existing note, without triggering others.
+  const neighbors=current.filter(n=>n!==note).reduce((acc,n)=>{
+   const distance=Math.hypot(n.x-note.x,n.y-note.y);
+   return acc+(distance<note.r*4?Math.max(0,1-distance/(note.r*4)):0);
+  },0);
+  const expressiveVelocity=Math.min(1.08,velocity*(1+memory*.028));
+  const expressiveRadial=Math.min(1,radial+Math.min(.11,neighbors*.025));
+  if(engine.strike(index,current,expressiveVelocity,state.feel?expressiveRadial:0)){
    for(const e of connected())if(e.a===index||e.b===index){
     e.flash=Math.max(e.flash||0,.85);
     if(!e.pulses)e.pulses=[];
@@ -1634,7 +1650,11 @@ function play(index,velocity=1,radial=0){
    }
    say(`✦ ${note.name} · ${radial>.62&&state.feel?'bright rim':'resonating'}`);drawRequest();
   }
- });
+ };
+ // Already-running contexts strike synchronously. On the first touch Safari must
+ // unlock the context from the user gesture; only that first strike is asynchronous.
+ if(engine.ctx?.state==='running'){perform();return;}
+ engine.unlock().then(ok=>{if(ok)perform();else say('Tap again to enable sound');});
 }
 function pointerDown(e){
  e.preventDefault();if($('lab').classList.contains('open'))return;
@@ -1643,10 +1663,11 @@ function pointerDown(e){
  if(i<0){stats[state.count].empty++;return;}
  try{canvas.setPointerCapture(e.pointerId);}catch(_){}
  const n=notes[i],radial=clamp(Math.hypot(x-n.x,y-n.y)/n.r,0,1);
- // Center grabs stay silent until confirmed as a tap; rim plays immediately.
- // This distinguishes an intentional strike from moving a body without a PLAY/MOVE switch.
+ // Touching the outer 73% of the pad area strikes immediately, even while LOCK is off.
+ // Its small inner core is a quiet grab handle: a short core-tap strikes on release.
+ // This explicit spatial distinction avoids click-like pickup sounds during slow drags.
  const alreadyGrabbed=[...pointerMap.values()].some(p=>p.id===i);
- const p={id:i,last:i,intent:'pending',canDrag:radial<.69&&!state.locked&&!alreadyGrabbed,
+ const p={id:i,last:i,intent:'pending',canDrag:radial<GRAB_CORE&&!state.locked&&!alreadyGrabbed,
   holdTimer:0,x,y,startX:x,startY:y,when:performance.now(),moved:false,gesture:false,
   offsetX:x-n.x,offsetY:y-n.y,countedRub:false,countedMove:false,
   contactWith:new Set(),lastSpeed:0,connectTimer:0,connectTarget:-1,previewStart:0,
@@ -1655,8 +1676,14 @@ function pointerDown(e){
  stats[state.count].hits++;stats[state.count].multi=Math.max(stats[state.count].multi,pointerMap.size);
  // Unlock audio on the first gesture even when the player only moves a body.
  // This prepares the collision resonator without producing an unwanted pickup note.
- if(p.canDrag)engine.unlock();
- else{play(i,clamp(1.03-.25*radial,.66,1),radial);p.played=true;}
+ if(p.canDrag){
+  // Only unlock the Web Audio context on grab; do not generate any sound yet.
+  // Touch-down can be a tap, hold or drag. Play the core tap only on pointer-up.
+  engine.unlock();
+ }else{
+  p.played=true;
+  play(i,clamp(1.03-.25*radial,.66,1),radial);
+ }
  scheduleHold(e.pointerId,i);
 }
 function cancelThread(p){if(p?.connectTimer){clearTimeout(p.connectTimer);p.connectTimer=0;}if(p){p.connectTarget=-1;p.previewStart=0;}state.threadPreview=null;}
@@ -1670,7 +1697,8 @@ function scheduleHold(pointerId,index){
  p.holdTimer=setTimeout(()=>{
   p.holdTimer=0;
   if(pointerMap.get(pointerId)===p&&p.last===index&&state.hold&&!p.moved){
-   p.held=true;engine.startHold(pointerId,notes[index]);notes[index].energy=Math.max(notes[index].energy,.34);drawRequest();
+   p.held=true;
+   engine.startHold(pointerId,notes[index]);notes[index].energy=Math.max(notes[index].energy,.34);drawRequest();
   }
  },270);
 }
@@ -1835,8 +1863,11 @@ function pointerMove(e){
  const delta=Math.hypot(x-p.x,y-p.y),speed=clamp(delta/dt/.74,0,1);
  p.x=x;p.y=y;p.when=now;p.lastSpeed=speed;
  const travel=Math.hypot(x-p.startX,y-p.startY);
- if(!p.moved&&travel>10){p.moved=true;cancelHold(e.pointerId);}
- if(p.intent==='pending'&&travel>15){p.intent=p.canDrag?'drag':'glide';}
+ if(!p.moved&&travel>MOVE_THRESHOLD){
+  p.moved=true;
+  cancelHold(e.pointerId);
+ }
+ if(p.intent==='pending'&&travel>MOVE_THRESHOLD){p.intent=p.canDrag?'drag':'glide';}
  if(p.intent==='drag'){
   dragObject(e.pointerId,p,x,y,speed,now);return;
  }
@@ -1900,11 +1931,12 @@ function updateButtons(){
  qsa('[data-feel]').forEach(b=>{b.setAttribute('aria-pressed',String(state.feel));b.textContent=state.feel?'ON':'OFF';});
  qsa('[data-move-sound]').forEach(b=>{b.setAttribute('aria-pressed',String(state.moveSound));b.textContent=state.moveSound?'ON':'OFF';});
  qsa('[data-quality]').forEach(s=>s.value=state.quality);
- $('touchHint').textContent=state.locked?'✦ POSITIONS LOCKED · TAP · GLIDE · HOLD':'✦ TAP TO PLAY · CENTER TO PUSH · RIM TO GLIDE';
+ $('touchHint').textContent=state.locked?'✦ POSITIONS LOCKED · TAP · GLIDE · HOLD':'✦ SURFACE: SOUND · CORE: MOVE OR TAP · EDGE: GLIDE';
  $('sceneName').textContent=({original:'Glass garden',cloud:'Blue hour',bright:'Little sun'})[state.scene]||'Custom';
 }
-function clearPointers(){for(const id of pointerMap.keys()){
-  cancelHold(id);cancelThread(pointerMap.get(id));engine.endGesture(id);
+function clearPointers(){for(const [id,p] of pointerMap){
+  cancelHold(id);cancelThread(p);engine.endGesture(id);
+  try{if(canvas.hasPointerCapture?.(id))canvas.releasePointerCapture(id);}catch(_){}
  }pointerMap.clear();for(const n of notes)n.dragged=false;state.dragging=false;}
 function setCount(n){if(![7,9,11].includes(n))return;clearPointers();state.count=n;state.threadPreview=null;setNotes();say(`${n} resonators ready`);}
 function setScale(s){if(!pitchBanks[s])return;state.scale=s;setNotes();say('New tuning · '+({minor:'D minor',penta:'Pentatonic',lydian:'F Lydian'})[s]);}

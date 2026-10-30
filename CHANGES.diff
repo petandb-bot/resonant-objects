@@ -1,0 +1,144 @@
+--- old v0.12.3
+
++++ new v0.12.4
+
+@@ -1,3 +1,3 @@
+
+-/* RESONANT OBJECTS v0.12.3 — FIVE INDEPENDENT SOUND ENGINES
++/* RESONANT OBJECTS v0.12.4 — FIVE INDEPENDENT SOUND ENGINES
+  * 共通のWeb Audio出力バスは使うが、発音原理とノード・グラフは素材ごとに独立。
+  * JEWEL: modal partial synthesis / CANDY: dynamic FM
+@@ -167,5 +167,5 @@
+
+  }
+ }
+-/* RESONANT OBJECTS v0.12.3 — five independent acoustic engines. No external dependencies.
++/* RESONANT OBJECTS v0.12.4 — five independent acoustic engines. No external dependencies.
+  * 原音を維持しつつ、近接共鳴の「打撃時」と「音声信号経由」の2層を分離する。
+  * Audio graph: per-voice modal synth -> dry bus -> compressor
+@@ -616,5 +616,5 @@
+
+ 
+ 
+-/* RESONANT OBJECTS v0.12.3 — GPU field renderer
++/* RESONANT OBJECTS v0.12.4 — GPU field renderer
+  * WebGL2 > WebGL1. Audio remains Web Audio (WebGL is graphics only).
+  * Pass 1: native-resolution color field, geometry and GPU connection ribbons.
+@@ -1115,5 +1115,5 @@
+
+ 
+ 
+-/* RESONANT OBJECTS v0.12.3 — One Playing Field / interaction layer.
++/* RESONANT OBJECTS v0.12.4 — One Playing Field / interaction layer.
+  * 描画 / 音源 / 状態を分離。WebGL描画上の位置とタッチ領域は同一のモデルを参照。
+  * Notes use stable IDs within each layout; no timer-driven animation when idle. */
+@@ -1142,4 +1142,7 @@
+
+ const state={reverbType:'nest',waveAccents:true,materialType:0,count:9,scale:'minor',motion:'still',locked:false,dragging:false,connect:true,showNotes:false,collision:true,scene:'original',drawer:false,link:true,hold:true,quality:'balanced',feel:true,moveSound:false};
+ const sets=new Map(),stats={7:{hits:0,empty:0,slides:0,rub:0,moves:0,bumps:0,multi:0},9:{hits:0,empty:0,slides:0,rub:0,moves:0,bumps:0,multi:0},11:{hits:0,empty:0,slides:0,rub:0,moves:0,bumps:0,multi:0}};
++// The inner core is a handle. The wider annulus is a playable strike surface.
++// No speculative audio timers: there is no reliable way to predict a drag at touch-down.
++const GRAB_CORE=0.52, MOVE_THRESHOLD=12;
+ const pointerMap=new Map();const connectionsByCount=new Map([[7,new Map()],[9,new Map()],[11,new Map()]]);
+ const connected=()=>[...connectionsByCount.get(state.count).values()];
+@@ -1246,6 +1249,5 @@
+
+  // Use a stable snapshot because resuming AudioContext is asynchronous on Safari.
+  const current=notes, note=current[index];if(!note)return;
+- engine.unlock().then(ok=>{
+-  if(!ok){say('Tap again to enable sound');return;}
++ const perform=()=>{
+   if(current!==notes)return;
+   const now=performance.now(), prior=playingMemory.get(note.id);
+@@ -1269,5 +1271,9 @@
+
+    say(`✦ ${note.name} · ${radial>.62&&state.feel?'bright rim':'resonating'}`);drawRequest();
+   }
+- });
++ };
++ // Already-running contexts strike synchronously. On the first touch Safari must
++ // unlock the context from the user gesture; only that first strike is asynchronous.
++ if(engine.ctx?.state==='running'){perform();return;}
++ engine.unlock().then(ok=>{if(ok)perform();else say('Tap again to enable sound');});
+ }
+ function pointerDown(e){
+@@ -1278,9 +1284,10 @@
+
+  try{canvas.setPointerCapture(e.pointerId);}catch(_){}
+  const n=notes[i],radial=clamp(Math.hypot(x-n.x,y-n.y)/n.r,0,1);
+- // Center grabs stay silent until confirmed as a tap; rim plays immediately.
+- // This distinguishes an intentional strike from moving a body without a PLAY/MOVE switch.
++ // Touching the outer 73% of the pad area strikes immediately, even while LOCK is off.
++ // Its small inner core is a quiet grab handle: a short core-tap strikes on release.
++ // This explicit spatial distinction avoids click-like pickup sounds during slow drags.
+  const alreadyGrabbed=[...pointerMap.values()].some(p=>p.id===i);
+- const p={id:i,last:i,intent:'pending',canDrag:radial<.69&&!state.locked&&!alreadyGrabbed,
+-  holdTimer:0,attackTimer:0,x,y,startX:x,startY:y,when:performance.now(),moved:false,gesture:false,
++ const p={id:i,last:i,intent:'pending',canDrag:radial<GRAB_CORE&&!state.locked&&!alreadyGrabbed,
++  holdTimer:0,x,y,startX:x,startY:y,when:performance.now(),moved:false,gesture:false,
+   offsetX:x-n.x,offsetY:y-n.y,countedRub:false,countedMove:false,
+   contactWith:new Set(),lastSpeed:0,connectTimer:0,connectTarget:-1,previewStart:0,
+@@ -1291,13 +1298,11 @@
+
+  // This prepares the collision resonator without producing an unwanted pickup note.
+  if(p.canDrag){
+-  // 音声コンテキストをユーザージェスチャー内で準備し、ドラッグ判定の短い猶予後に発音。
++  // Only unlock the Web Audio context on grab; do not generate any sound yet.
++  // Touch-down can be a tap, hold or drag. Play the core tap only on pointer-up.
+   engine.unlock();
+-  p.attackTimer=setTimeout(()=>{
+-   p.attackTimer=0;
+-   if(pointerMap.get(e.pointerId)!==p||p.moved||p.held||p.intent!=='pending'||p.played)return;
+-   p.played=true;
+-   play(i,clamp(1.03-.25*radial,.66,1),radial);
+-  },85);
+- }else{play(i,clamp(1.03-.25*radial,.66,1),radial);p.played=true;}
++ }else{
++  p.played=true;
++  play(i,clamp(1.03-.25*radial,.66,1),radial);
++ }
+  scheduleHold(e.pointerId,i);
+ }
+@@ -1314,5 +1319,4 @@
+
+   if(pointerMap.get(pointerId)===p&&p.last===index&&state.hold&&!p.moved){
+    p.held=true;
+-   if(p.attackTimer){clearTimeout(p.attackTimer);p.attackTimer=0;}
+    engine.startHold(pointerId,notes[index]);notes[index].energy=Math.max(notes[index].energy,.34);drawRequest();
+   }
+@@ -1480,10 +1484,9 @@
+
+  p.x=x;p.y=y;p.when=now;p.lastSpeed=speed;
+  const travel=Math.hypot(x-p.startX,y-p.startY);
+- if(!p.moved&&travel>10){
++ if(!p.moved&&travel>MOVE_THRESHOLD){
+   p.moved=true;
+-  if(p.attackTimer){clearTimeout(p.attackTimer);p.attackTimer=0;}
+   cancelHold(e.pointerId);
+  }
+- if(p.intent==='pending'&&travel>15){p.intent=p.canDrag?'drag':'glide';}
++ if(p.intent==='pending'&&travel>MOVE_THRESHOLD){p.intent=p.canDrag?'drag':'glide';}
+  if(p.intent==='drag'){
+   dragObject(e.pointerId,p,x,y,speed,now);return;
+@@ -1520,5 +1523,4 @@
+
+  const tap=e.type==='pointerup'&&p.intent==='pending'&&!p.moved&&!p.held&&!p.played;
+  const noteId=p.id,radial=p.initialRadial;
+- if(p.attackTimer){clearTimeout(p.attackTimer);p.attackTimer=0;}
+  cancelHold(e.pointerId);cancelThread(p);engine.endGesture(e.pointerId);pointerMap.delete(e.pointerId);
+  if(tap)play(noteId,clamp(1.03-.25*radial,.66,1),radial);
+@@ -1550,9 +1552,10 @@
+
+  qsa('[data-move-sound]').forEach(b=>{b.setAttribute('aria-pressed',String(state.moveSound));b.textContent=state.moveSound?'ON':'OFF';});
+  qsa('[data-quality]').forEach(s=>s.value=state.quality);
+- $('touchHint').textContent=state.locked?'✦ POSITIONS LOCKED · TAP · GLIDE · HOLD':'✦ TAP TO PLAY · CENTER TO PUSH · RIM TO GLIDE';
++ $('touchHint').textContent=state.locked?'✦ POSITIONS LOCKED · TAP · GLIDE · HOLD':'✦ SURFACE: SOUND · CORE: MOVE OR TAP · EDGE: GLIDE';
+  $('sceneName').textContent=({original:'Glass garden',cloud:'Blue hour',bright:'Little sun'})[state.scene]||'Custom';
+ }
+-function clearPointers(){for(const id of pointerMap.keys()){
+-  cancelHold(id);cancelThread(pointerMap.get(id));engine.endGesture(id);
++function clearPointers(){for(const [id,p] of pointerMap){
++  cancelHold(id);cancelThread(p);engine.endGesture(id);
++  try{if(canvas.hasPointerCapture?.(id))canvas.releasePointerCapture(id);}catch(_){}
+  }pointerMap.clear();for(const n of notes)n.dragged=false;state.dragging=false;}
+ function setCount(n){if(![7,9,11].includes(n))return;clearPointers();state.count=n;state.threadPreview=null;setNotes();say(`${n} resonators ready`);}
