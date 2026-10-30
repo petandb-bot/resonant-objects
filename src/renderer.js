@@ -1,4 +1,4 @@
-/* RESONANT OBJECTS v0.6 — GPU field renderer
+/* RESONANT OBJECTS v0.7 — GPU field renderer
  * WebGL2 > WebGL1. Audio remains Web Audio (WebGL is graphics only).
  * Pass 1: native-resolution color field, geometry and GPU connection ribbons.
  * Pass 2: half-resolution double-buffered temporal resonance (GPU ping-pong).
@@ -25,7 +25,7 @@ const FIELD_GLSL = {
  float veil=sin(p.x*7.1+p.y*5.2+uTime*.035)*sin(p.x*2.1-p.y*5.3);
  c+=veil*.008;gl_FragColor=vec4(clamp(c,0.,1.),1.);}`,
  objectFS:`precision highp float;varying vec2 vP;
- uniform float uKind,uSeed,uEnergy,uTime,uMove,uAura;uniform vec3 uColor;
+ uniform float uKind,uSeed,uEnergy,uGesture,uTime,uMove,uAura;uniform vec3 uColor;
  const float PI=3.14159265359;
  float poly(vec2 p,float N){float a=atan(p.y,p.x)+PI*.5;float s=2.*PI/N;
  return length(p)*cos(mod(a+s*.5,s)-s*.5)-cos(PI/N)*.92;}
@@ -45,12 +45,13 @@ const FIELD_GLSL = {
  vec3 col=mix(uColor,vec3(.98,.997,1.),.30+.14*interference+.22*shine);
  col=mix(col,vec3(.36,.65,1.),.16*smoothstep(-.8,.8,p.x-p.y));
  float facets=exp(-pow(sin(10.*a+uSeed*2.8+r*12.)/.34,2.))*.13;
- col+=body*(facets*vec3(.8,.95,1.)+.20*ridge+shine*.18)+uEnergy*.21;
+ col+=body*(facets*vec3(.8,.95,1.)+.20*ridge+shine*.18)+uEnergy*.21+uGesture*vec3(.09,.15,.24)*ridge;
  col=mix(col,vec3(1.),edge*.73);
  float halo=exp(-pow(max(sd,0.)/.24,1.15))*(.12+.12*uAura);
  float ring=uEnergy*exp(-pow((r-1.16-uEnergy*.09)/.040,2.));
  float moved=uMove*exp(-pow((r-1.11)/.033,2.))*.68;
- float trace=clamp(ring+moved,0.,1.);
+ float rubbing=uGesture*exp(-pow((r-1.25)/.060,2.))*.65;
+ float trace=clamp(ring+moved+rubbing,0.,1.);
  col=mix(col,vec3(.93,.99,1.),trace*.9);
  float alpha=clamp(body*.94+edge*.37+halo+trace*.88,0.,1.);
  gl_FragColor=vec4(col,alpha);}`,
@@ -135,7 +136,7 @@ class VisualRenderer{
     compose:this.program(FIELD_GLSL.quadVS,FIELD_GLSL.compositeFS)
    };
    this.bg=this.locate(this.programs.bg,['aCorner'],['uTime']);
-   this.obj=this.locate(this.programs.obj,['aCorner'],['uCenter','uScreen','uRadius','uAngle','uKind','uSeed','uEnergy','uTime','uMove','uAura','uColor']);
+   this.obj=this.locate(this.programs.obj,['aCorner'],['uCenter','uScreen','uRadius','uAngle','uKind','uSeed','uEnergy','uGesture','uTime','uMove','uAura','uColor']);
    this.line=this.locate(this.programs.line,['aPos','aRibbon','aPower'],['uScreen','uTime']);
    this.trail=this.locate(this.programs.trail,['aCorner'],['uPrev','uNodes[0]','uCount','uTime','uSize','uTrace']);
    this.compose=this.locate(this.programs.compose,['aCorner'],['uScene','uHistory','uPixel','uAura','uTrace']);
@@ -215,6 +216,7 @@ class VisualRenderer{
   for(const n of notes){g.uniform2f(this.obj.uCenter,n.x,n.y);g.uniform1f(this.obj.uRadius,n.r);
    g.uniform3f(this.obj.uColor,...n.color);g.uniform1f(this.obj.uKind,n.kind);
    g.uniform1f(this.obj.uSeed,n.id*1.131+.7);g.uniform1f(this.obj.uEnergy,n.energy);
+   g.uniform1f(this.obj.uGesture,n.gesture||0);
    g.uniform1f(this.obj.uAngle,n.angle);this.quad(this.obj);}
  }
  drawLinks(time,notes,state){const g=this.gl,verts=[];
@@ -260,7 +262,7 @@ class VisualRenderer{
   g.activeTexture(g.TEXTURE1);g.bindTexture(g.TEXTURE_2D,dst.tex);g.uniform1i(this.compose.uHistory,1);
   g.uniform2f(this.compose.uPixel,1/pw,1/ph);g.uniform1f(this.compose.uAura,this.aura);
   g.uniform1f(this.compose.uTrace,this.trace);this.quad(this.compose);
-  const active=notes.some(n=>n.energy>.03);
+  const active=notes.some(n=>n.energy>.03||(n.gesture||0)>.03);
   if(active&&this.trace>0)this.trailFrames=95;
   else if(this.trailFrames>0)this.trailFrames--;
   this.frame++;
@@ -282,7 +284,7 @@ class VisualRenderer{
      if(i===0)c.moveTo(Math.cos(a)*n.r*.92,Math.sin(a)*n.r*.92);
      else c.lineTo(Math.cos(a)*n.r*.92,Math.sin(a)*n.r*.92);}c.closePath();}
    else{c.arc(0,0,n.r*.94,0,Math.PI*2);}
-   c.fillStyle=grad;c.shadowBlur=12+n.energy*22;c.shadowColor=n.hex;c.fill();
+   c.fillStyle=grad;c.shadowBlur=12+n.energy*22+(n.gesture||0)*12;c.shadowColor=n.hex;c.fill();
    c.shadowBlur=0;c.strokeStyle='#ffffffd9';c.lineWidth=2;c.stroke();
    if(n.kind===3){c.globalCompositeOperation='destination-out';c.beginPath();c.arc(0,0,n.r*.48,0,Math.PI*2);c.fill();}
    c.restore();}
@@ -296,6 +298,6 @@ class VisualRenderer{
    c.strokeStyle=`rgba(255,255,255,${Math.min(.85,(state.move?.6:.08)+Math.max(a.energy,b.energy)*.5)})`;
    c.beginPath();c.moveTo(a.x,a.y);c.lineTo(b.x,b.y);c.stroke();}
   for(const n of notes){c.strokeStyle=`rgba(255,255,255,${.25+n.energy*.65})`;
-   c.beginPath();c.arc(n.x,n.y,n.r*(1.20+n.energy*.3),0,Math.PI*2);c.stroke();}
+   c.beginPath();c.arc(n.x,n.y,n.r*(1.20+n.energy*.3+(n.gesture||0)*.15),0,Math.PI*2);c.stroke();}
  }
 }

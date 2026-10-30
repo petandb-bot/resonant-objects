@@ -1,4 +1,4 @@
-/* RESONANT OBJECTS v0.5 — audio. No external dependencies.
+/* RESONANT OBJECTS v0.7 — expression-aware modal synthesis. No external dependencies.
  * 原音を維持しつつ、近接共鳴の「打撃時」と「音声信号経由」の2層を分離する。
  * Audio graph: per-voice modal synth -> dry bus -> compressor
  *                       \-> modal tanks <-> bounded damped coupling -> wet bus
@@ -6,7 +6,8 @@
  */
 class ResonantEngine {
  constructor(onStatus=()=>{}){
-  this.onStatus=onStatus;this.ctx=null;this.voices=[];this.holds=new Map();this.noise=null;
+  this.onStatus=onStatus;this.ctx=null;this.voices=[];this.holds=new Map();this.gestures=new Map();this.noise=null;
+  this.expression=.46;
   this.material=.36;this.decay=.67;this.bond=.75;this.space=0;this.bloom=0;this.level=.84;
   this.link=true;this.tanks=[];this.edges=[];this.tankKey='';this.wetGains=[];
  }
@@ -53,6 +54,7 @@ class ResonantEngine {
   return this.ctx.resume().then(()=>this.ctx.state==='running').catch(()=>false);
  }
  setMaterial(v){this.material=v/100;}
+ setExpression(v){this.expression=Math.min(1,Math.max(0,v/100));}
  setDecay(v){this.decay=v/100;}
  setBond(v){this.bond=v/100;this.refreshLinks();}
  setLink(v){this.link=!!v;this.refreshLinks();}
@@ -139,7 +141,8 @@ class ResonantEngine {
   for(const osc of v.oscillators){try{osc.stop(now+.065);}catch(_){}}
   const i=this.voices.indexOf(v);if(i>=0)this.voices.splice(i,1);
  }
- tone(note,velocity,sympathetic=false,delay=0){
+ // radial: 0 center, 1 rim. Keep the original v0.6 mode ratios and center tone.
+ tone(note,velocity,sympathetic=false,delay=0,radial=0){
   if(!this.ctx||this.ctx.state!=='running'||velocity<.012)return;
   const c=this.ctx,time=c.currentTime+delay+.004;
   const voice=this.newVoice(time),m=this.material,d=this.decay;
@@ -150,6 +153,7 @@ class ResonantEngine {
   const modes=[[1,.32,1.03],[2+drift,.37,.88],[3-drift,.17,.66],[1.006,.10,1.30],
    [4.06+.18*m,.048*bright,.28],[5.31+.39*m,.026*bright,.17]];
   const peak=strength*.34;
+  const edge=sympathetic?0:Math.min(1,Math.max(0,radial))*this.expression;
   let remaining=sympathetic?4:6;
   const cleanup=()=>{
    if(--remaining>0)return;voice.finished=true;
@@ -162,7 +166,10 @@ class ResonantEngine {
    const osc=c.createOscillator(),g=c.createGain();
    const seconds=Math.max(.09,tail*dur*(sympathetic?.84:1));
    const rise=sympathetic?.046:(idx>=4?.0025:.0065+.002*m);
-   const target=Math.max(.0001,peak*amp*(idx>=4?(.45+vel*.55):1));
+   // Rim blows excite higher modes, while the center favors the fundamental.
+   // Keep gain bounded; do not turn the instrument into a harsher bell by default.
+   const positionGain=idx===0?(1-.17*edge):idx===1?(1+.18*edge):idx>=4?(1+.95*edge):(1+.50*edge);
+   const target=Math.max(.0001,peak*amp*positionGain*(idx>=4?(.45+vel*.55):1));
    osc.type='sine';osc.frequency.setValueAtTime(hz*ratio,time);
    g.gain.setValueAtTime(.00001,time);g.gain.linearRampToValueAtTime(target,time+rise);
    g.gain.exponentialRampToValueAtTime(.000012,time+rise+seconds);
@@ -172,8 +179,8 @@ class ResonantEngine {
   }
   if(!sympathetic){
    const src=c.createBufferSource();src.buffer=this.noise;
-   const hp=c.createBiquadFilter();hp.type='highpass';hp.frequency.value=900+m*1600;
-   const lp=c.createBiquadFilter();lp.type='lowpass';lp.frequency.value=2600+m*3700;
+   const hp=c.createBiquadFilter();hp.type='highpass';hp.frequency.value=900+m*1600+edge*1200;
+   const lp=c.createBiquadFilter();lp.type='lowpass';lp.frequency.value=2600+m*3700+edge*1200;
    const g=c.createGain();
    g.gain.setValueAtTime(.00001,time);g.gain.linearRampToValueAtTime(.036*vel*(.55+m*.8),time+.0015);
    g.gain.exponentialRampToValueAtTime(.00001,time+.016);
@@ -182,10 +189,10 @@ class ResonantEngine {
    src.start(time);src.stop(time+.02);
   }
  }
- strike(index,notes,velocity=1){
+ strike(index,notes,velocity=1,radial=0){
   if(!this.ctx||this.ctx.state!=='running')return false;
   this.syncTanks(notes);const origin=notes[index];if(!origin)return false;
-  this.tone(origin,velocity);
+  this.tone(origin,velocity,false,0,radial);
   origin.last=performance.now();origin.energy=Math.min(1,origin.energy+velocity*.92);
   const distances=notes.filter(n=>n.id!==index)
    .map(n=>({n,dist:Math.hypot(n.x-origin.x,n.y-origin.y)})).sort((a,b)=>a.dist-b.dist);
@@ -199,6 +206,52 @@ class ResonantEngine {
   }
   return true;
  }
+ // Pointer gesture: bounded, speed-sensitive rubbing / glissando.
+ // Independent from the six original modal partials. It never starts on an idle touch.
+ beginGesture(pointerId,note){
+  if(!this.ctx||this.ctx.state!=='running'||this.gestures.has(pointerId)||this.gestures.size>=7)return false;
+  const c=this.ctx,t=c.currentTime,hz=440*Math.pow(2,(note.midi-69)/12);
+  const bus=c.createGain();bus.gain.setValueAtTime(.00001,t);bus.connect(this.voiceBus);
+  const main=c.createOscillator(),upper=c.createOscillator(),upperGain=c.createGain();
+  main.type='sine';upper.type='sine';main.frequency.value=hz;upper.frequency.value=hz*2.008;
+  upperGain.gain.value=.22;
+  main.connect(bus);upper.connect(upperGain).connect(bus);
+  // A little filtered noise creates tactile grain, not broadband hiss.
+  const grain=c.createBufferSource(),filter=c.createBiquadFilter(),grainGain=c.createGain();
+  grain.buffer=this.noise;grain.loop=true;filter.type='bandpass';filter.frequency.value=Math.min(4500,1100+hz*1.5);filter.Q.value=1.5;
+  grainGain.gain.value=.12;grain.connect(filter).connect(grainGain).connect(bus);
+  main.start(t);upper.start(t);grain.start(t);
+  this.gestures.set(pointerId,{bus,main,upper,upperGain,grain,filter,grainGain,baseHz:hz, noteId:note.id});
+  return true;
+ }
+ updateGesture(pointerId,note,{speed=0,radial=0,offset=0,proximity=0,move=false}={}){
+  const g=this.gestures.get(pointerId);if(!g||!this.ctx)return;
+  const c=this.ctx,t=c.currentTime,expr=this.expression;
+  const vel=Math.min(1,Math.max(0,speed)),rim=Math.min(1,Math.max(0,radial));
+  const hz=440*Math.pow(2,(note.midi-69)/12),bend=move?Math.min(4,Math.max(-4,offset*4)):Math.min(2,Math.max(-2,offset*2));
+  const target=Math.min(4000,hz*Math.pow(2,bend*expr/12));
+  g.main.frequency.setTargetAtTime(target,t,.035);
+  g.upper.frequency.setTargetAtTime(target*(2.004+.017*rim),t,.055);
+  g.filter.frequency.setTargetAtTime(Math.min(5600,Math.max(450,800+target*1.6+vel*1400)),t,.05);
+  g.upperGain.gain.setTargetAtTime(.16+rim*.18+vel*.18,t,.035);
+  // Effects remain intentionally quiet next to normal struck notes.
+  const amount=(move?.014:.019)*expr*Math.pow(vel,.72)*(move?(.54+.46*proximity):(.70+.30*rim));
+  g.bus.gain.cancelScheduledValues(t);
+  g.bus.gain.setTargetAtTime(Math.max(.00001,amount),t,.023);
+  g.bus.gain.setTargetAtTime(.00001,t+.065,.095); // stop naturally if pointer pauses
+ }
+ endGesture(pointerId){
+  const g=this.gestures.get(pointerId);if(!g||!this.ctx)return;
+  this.gestures.delete(pointerId);const t=this.ctx.currentTime;
+  g.bus.gain.cancelScheduledValues(t);g.bus.gain.setTargetAtTime(.00001,t,.035);
+  let remaining=3;
+  const cleanup=()=>{if(--remaining!==0)return;for(const n of [g.main,g.upper,g.grain,g.filter,g.grainGain,g.upperGain,g.bus]){
+    try{n.disconnect();}catch(_){} }};
+  for(const node of [g.main,g.upper,g.grain]){
+   node.onended=cleanup;try{node.stop(t+.19);}catch(_){cleanup();}
+  }
+ }
+ stopAllGestures(){for(const id of [...this.gestures.keys()])this.endGesture(id);}
  // A quiet bowed excitation while pressing a shape; release always fades cleanly.
  startHold(pointerId,note){
   if(!this.ctx||this.ctx.state!=='running'||this.holds.has(pointerId)||this.holds.size>=5)return;
@@ -225,5 +278,5 @@ class ResonantEngine {
   }
  }
  stopAllHolds(){for(const id of [...this.holds.keys()])this.stopHold(id);}
- suspend(){this.stopAllHolds();if(this.ctx?.state==='running')this.ctx.suspend().catch(()=>{});}
+ suspend(){this.stopAllGestures();this.stopAllHolds();if(this.ctx?.state==='running')this.ctx.suspend().catch(()=>{});}
 }
