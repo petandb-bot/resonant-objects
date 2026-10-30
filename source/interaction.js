@@ -1,4 +1,4 @@
-/* RESONANT OBJECTS v0.11.2 — One Playing Field / interaction layer.
+/* RESONANT OBJECTS v0.12 — One Playing Field / interaction layer.
  * 描画 / 音源 / 状態を分離。WebGL描画上の位置とタッチ領域は同一のモデルを参照。
  * Notes use stable IDs within each layout; no timer-driven animation when idle. */
 (()=>{
@@ -23,7 +23,7 @@ const pitchBanks={
 };
 const selects={7:[0,1,2,3,4,6,8],9:[0,1,2,3,4,5,6,7,8],11:[0,1,2,3,4,5,6,7,8,9,10]};
 const params={material:36,ring:67,space:0,bond:75,bloom:0,level:84,aura:48,trace:38,expression:46};
-const state={waveAccents:true,materialType:0,count:9,scale:'minor',motion:'still',locked:false,dragging:false,connect:true,showNotes:false,collision:true,scene:'original',drawer:false,link:true,hold:true,quality:'balanced',feel:true,moveSound:false};
+const state={reverbType:'nest',waveAccents:true,materialType:0,count:9,scale:'minor',motion:'still',locked:false,dragging:false,connect:true,showNotes:false,collision:true,scene:'original',drawer:false,link:true,hold:true,quality:'balanced',feel:true,moveSound:false};
 const sets=new Map(),stats={7:{hits:0,empty:0,slides:0,rub:0,moves:0,bumps:0,multi:0},9:{hits:0,empty:0,slides:0,rub:0,moves:0,bumps:0,multi:0},11:{hits:0,empty:0,slides:0,rub:0,moves:0,bumps:0,multi:0}};
 const pointerMap=new Map();const connectionsByCount=new Map([[7,new Map()],[9,new Map()],[11,new Map()]]);
 const connected=()=>[...connectionsByCount.get(state.count).values()];
@@ -44,7 +44,7 @@ function say(msg){
 function pitches(count,scale){const source=pitchBanks[scale];const entries=source.concat([['G3',55],['C5',72]]);
  return selects[count].map(i=>entries[i]);}
 function makeSet(count){return Array.from({length:count},(_,id)=>({id,midi:50,name:'',kind:id===0?0:((id-1)%8),big:id===0,
-  color:hexRGB(colors[id]),hex:colors[id],u:.5,v:.5,saved:false,r:35,x:0,y:0,energy:0,angle:0,last:0,stageW:1,stageH:1,gesture:0,impact:0,streak:0,waveAccent:false}));}
+  color:hexRGB(colors[id]),hex:colors[id],u:.5,v:.5,saved:false,r:35,x:0,y:0,energy:0,angle:0,last:0,stageW:1,stageH:1,gesture:0,impact:0,streak:0,waveLayer:false}));}
 for(const k of [7,9,11])sets.set(k,makeSet(k));
 function setNotes(){clearPointers();notes=sets.get(state.count);engine.setConnections(connected());const names=pitches(state.count,state.scale);
  for(const [i,n] of notes.entries()){n.name=names[i][0];n.midi=names[i][1];}
@@ -82,7 +82,10 @@ function drawRequest(){if(!requestId)requestId=requestAnimationFrame(draw);}
 function draw(t){requestId=0;
  if(state.motion!=='still' && !notes.some(n=>n.energy>.02||(n.gesture||0)>.02) && lastTime && t/1000-lastTime<.031){drawRequest();return;}
  const now=t/1000,dt=lastTime?Math.min(.06,now-lastTime):.016;lastTime=now;
- for(const e of connected())e.flash=Math.max(0,(e.flash||0)-dt*1.2);
+ for(const e of connected()){
+  e.flash=Math.max(0,(e.flash||0)-dt*1.2);
+  if(e.pulses?.length)e.pulses=e.pulses.filter(p=>performance.now()-p.at<p.duration);
+ }
  state.connections=connected();
  const previewPointer=[...pointerMap.values()].find(p=>p.connectTarget>=0);
  if(previewPointer&&state.threadPreview)state.threadPreview.progress=clamp((performance.now()-previewPointer.previewStart)/490,0,1);
@@ -102,9 +105,9 @@ function draw(t){requestId=0;
   }
   for(let i=0;i<notes.length;i++)notes[i].energy=clamp(notes[i].energy+transfer[i],0,1);
  }
- for(const n of notes){n.energy=Math.max(0,n.energy-dt*(n.waveAccent||state.materialType===4?.23:.64));
+ for(const n of notes){n.energy=Math.max(0,n.energy-dt*(n.waveLayer||state.materialType===4?.28:.64));
  n.gesture=Math.max(0,(n.gesture||0)-dt*2.7);
- n.impact=Math.max(0,(n.impact||0)-dt*[2.8,3.5,6.5,4.5,1.4][n.waveAccent?4:state.materialType]);
+ n.impact=Math.max(0,(n.impact||0)-dt*[2.8,3.5,6.5,4.5,1.4][state.materialType]);
  if(n.energy>.008||n.gesture>.008||n.impact>.008)any=true;
  // Geometry may subtly rotate, but touch centers NEVER drift during performance.
  if(state.motion==='orbit')n.angle+=dt*.14*(n.id%2===0?1:-1);
@@ -127,7 +130,12 @@ function play(index,velocity=1,radial=0){
   if(!ok){say('Tap again to enable sound');return;}
   if(current!==notes)return;
   if(engine.strike(index,current,velocity,state.feel?radial:0)){
-   for(const e of connected())if(e.a===index||e.b===index)e.flash=Math.max(e.flash||0,.95);
+   for(const e of connected())if(e.a===index||e.b===index){
+    e.flash=Math.max(e.flash||0,.85);
+    if(!e.pulses)e.pulses=[];
+    e.pulses.push({at:performance.now(),from:index,strength:Math.min(1,velocity),duration:730});
+    if(e.pulses.length>4)e.pulses.shift();
+   }
    say(`✦ ${note.name} · ${radial>.62&&state.feel?'bright rim':'resonating'}`);drawRequest();
   }
  });
@@ -179,7 +187,7 @@ function tie(a,b){
  if(a===b||!state.connect||countDegree(a)>=2||countDegree(b)>=2)return false;
  const k=pairKey(a,b),map=connectionsByCount.get(state.count);
  if(map.has(k))return false;
- map.set(k,{a:Math.min(a,b),b:Math.max(a,b),flash:1,created:performance.now()});
+ map.set(k,{a:Math.min(a,b),b:Math.max(a,b),flash:.65,pulses:[],created:performance.now()});
  notes[a].energy=Math.max(notes[a].energy,.28);notes[b].energy=Math.max(notes[b].energy,.28);
  syncThreads();say('Two shapes are resonating together');return true;
 }
@@ -296,7 +304,7 @@ function dragObject(pointerId,p,x,y,speed,now){
     if(engine.contact(n,other,speed,notes)){
      stats[state.count].bumps++;chimed++;
      n.energy=Math.max(n.energy,.42);other.energy=Math.max(other.energy,.39);
-     other.gesture=Math.max(other.gesture||0,[.38,.62,.24,.42,.35][other.waveAccent?4:state.materialType]);
+     other.gesture=Math.max(other.gesture||0,[.38,.62,.24,.42,.35][state.materialType]);
     }
    }
    p.contactWith.add(other.id);
@@ -407,15 +415,14 @@ function setScale(s){if(!pitchBanks[s])return;state.scale=s;setNotes();say('New 
 function setLock(locked){clearPointers();state.locked=locked;updateButtons();say(locked?'Positions locked · sounds remain playable':'Drag centers to move, glide along edges');drawRequest();}
 function setMotion(m){if(!['still','float','orbit'].includes(m))return;
  state.motion=m;updateButtons();drawRequest();}
-// Select two stable, separated players as slow WAVE voices without adding a play mode.
+// Every body retains its own material. Two notes also carry a quiet sustained WAVE veil.
 function updateWaveVoices(){
  for(const set of sets.values()){
   const last=set.length-2;
-  for(const n of set)n.waveAccent=state.waveAccents&&state.materialType!==4&&(n.id===2||n.id===last);
+  for(const n of set)n.waveLayer=state.waveAccents&&state.materialType!==4&&(n.id===2||n.id===last);
  }
  for(const set of sets.values())for(const n of set){
-  const type=n.waveAccent?4:state.materialType;
-  const palette=MATERIALS[type].colors;
+  const palette=MATERIALS[state.materialType].colors;
   n.hex=palette[n.id%palette.length];n.color=hexRGB(n.hex);
  }
  if(engine.ctx)engine.syncTanks(notes);
@@ -430,6 +437,16 @@ function setMaterialType(k,announce=true){
  if($('materialTag'))$('materialTag').textContent=MATERIALS[k].name;
  renderer.clearHistory();drawRequest();
  if(announce)say(MATERIALS[k].name+' · material changed');
+}
+function selectReverb(type,announce=true){
+ if(!['nest','velvet','prism','horizon'].includes(type))return;
+ state.reverbType=type;engine.setReverbType(type);
+ qsa('[data-reverb]').forEach(el=>{
+  el.value=type;
+ });
+ qsa('[data-reverb-choice]').forEach(button=>
+  button.setAttribute('aria-pressed',String(button.dataset.reverbChoice===type)));
+ if(announce){state.scene='custom';updateButtons();say('Space · '+({nest:'Nest',velvet:'Velvet',prism:'Prism',horizon:'Horizon'})[type]);}
 }
 function setParam(k,v){v=clamp(Number(v),0,100);params[k]=v;
  if(k==='material')engine.setMaterial(v);
@@ -459,6 +476,7 @@ function scene(s){if(!['original','cloud','bright'].includes(s))return;
  state.scene=s;
  const values={original:{material:36,ring:67,space:0,bond:75,bloom:0},cloud:{material:28,ring:88,space:35,bond:88,bloom:42},bright:{material:67,ring:51,space:17,bond:56,bloom:15}}[s];
  for(const [k,v] of Object.entries(values))setParam(k,v);
+ selectReverb(({original:'nest',cloud:'velvet',bright:'prism'})[s],false);
  state.scale=s==='cloud'?'penta':s==='bright'?'lydian':'minor';setNotes();setMaterialType(s==='bright'?1:s==='cloud'?0:0,false);updateButtons();
  say(`Scene · ${$('sceneName').textContent}`);
 }
@@ -466,22 +484,24 @@ function shuffle(){
  // Keep tuning and positions unchanged; randomize acoustic material and resonance.
  setMaterialType(Math.floor(Math.random()*5),false);
  for(const [k,lo,hi] of [['material',15,83],['ring',35,91],['space',0,43],['bond',30,98],['bloom',0,50]])setParam(k,Math.round(lo+Math.random()*(hi-lo)));
+ selectReverb(['nest','velvet','prism','horizon'][Math.floor(Math.random()*4)],false);
  state.scene='custom';updateButtons();say('A different resonance');
 }
 function reset(){connectionsByCount.get(state.count).clear();syncThreads();for(const n of notes)n.saved=false;layoutSet(notes);engine.refreshLinks(notes);updateLabels();drawRequest();say('Positions reset');}
 function save(){
  try{const result={count:state.count,scale:state.scale,motion:state.motion,scene:state.scene,params,
-  materialType:state.materialType,waveAccents:state.waveAccents,feel:state.feel,moveSound:state.moveSound,connect:state.connect,showNotes:state.showNotes,collision:state.collision,locked:state.locked,link:state.link,hold:state.hold,quality:state.quality,
+  materialType:state.materialType,reverbType:state.reverbType,waveAccents:state.waveAccents,feel:state.feel,moveSound:state.moveSound,connect:state.connect,showNotes:state.showNotes,collision:state.collision,locked:state.locked,link:state.link,hold:state.hold,quality:state.quality,
   connections:Object.fromEntries([...connectionsByCount].map(([k,map])=>[k,[...map.values()].map(e=>[e.a,e.b])])),
   positions:Object.fromEntries([...sets].map(([k,set])=>[k,set.map(n=>({u:n.u,v:n.v,saved:n.saved}))]))};
-  localStorage.setItem('resonant-objects-v0112',JSON.stringify(result));say('Saved on this device');
+  localStorage.setItem('resonant-objects-v012',JSON.stringify(result));say('Saved on this device');
  }catch(e){say('Storage unavailable');}
 }
 function restore(){
- try{const ownSave=localStorage.getItem('resonant-objects-v0112');const raw=ownSave||localStorage.getItem('resonant-objects-v0111')||localStorage.getItem('resonant-objects-v011')||localStorage.getItem('resonant-objects-v010')||localStorage.getItem('resonant-objects-v09')||localStorage.getItem('resonant-objects-v081')||localStorage.getItem('resonant-objects-v08')||localStorage.getItem('resonant-objects-v07')||localStorage.getItem('resonant-objects-v06')||localStorage.getItem('resonant-objects-v05')||localStorage.getItem('resonant-objects-v04');if(!raw)return;
+ try{const ownSave=localStorage.getItem('resonant-objects-v012');const raw=ownSave||localStorage.getItem('resonant-objects-v0113')||localStorage.getItem('resonant-objects-v0112')||localStorage.getItem('resonant-objects-v0111')||localStorage.getItem('resonant-objects-v011')||localStorage.getItem('resonant-objects-v010')||localStorage.getItem('resonant-objects-v09')||localStorage.getItem('resonant-objects-v081')||localStorage.getItem('resonant-objects-v08')||localStorage.getItem('resonant-objects-v07')||localStorage.getItem('resonant-objects-v06')||localStorage.getItem('resonant-objects-v05')||localStorage.getItem('resonant-objects-v04');if(!raw)return;
   const v=JSON.parse(raw);if([7,9,11].includes(v.count))state.count=v.count;
   if(Number.isInteger(v.materialType)&&v.materialType>=0&&v.materialType<=4)state.materialType=v.materialType;
   if(typeof v.waveAccents==='boolean')state.waveAccents=v.waveAccents;
+  if(['nest','velvet','prism','horizon'].includes(v.reverbType))state.reverbType=v.reverbType;
   if(pitchBanks[v.scale])state.scale=v.scale;
   if(['still','float','orbit'].includes(v.motion))state.motion=v.motion;
   if(['original','cloud','bright','custom'].includes(v.scene))state.scene=v.scene;
@@ -533,7 +553,7 @@ $('clearConnections').addEventListener('click',()=>{connectionsByCount.get(state
 $('miniReset').addEventListener('click',()=>{reset();toggleDrawer(false);});
 $('miniLab').addEventListener('click',()=>lab(true));
 qsa('[data-material-type]').forEach(b=>b.addEventListener('click',()=>setMaterialType(Number(b.dataset.materialType))));
- qsa('[data-wave-accents]').forEach(b=>b.addEventListener('click',()=>{clearPointers();state.waveAccents=!state.waveAccents;updateWaveVoices();updateButtons();say(state.waveAccents?'Two wave voices added':'Original material across all notes');}));
+ qsa('[data-wave-accents]').forEach(b=>b.addEventListener('click',()=>{clearPointers();state.waveAccents=!state.waveAccents;updateWaveVoices();updateButtons();say(state.waveAccents?'WAVE rests gently on two voices':'All voices have their original sound');}));
 qsa('[data-lock]').forEach(b=>b.addEventListener('click',()=>setLock(!state.locked)));
 qsa('[data-collision]').forEach(b=>b.addEventListener('click',()=>{state.collision=!state.collision;updateButtons();say(state.collision?'Gentle contact notes enabled':'Contact notes muted');}));
 qsa('[data-count]').forEach(b=>b.addEventListener('click',()=>setCount(Number(b.dataset.count))));
@@ -558,6 +578,8 @@ qsa('[data-quality]').forEach(s=>s.addEventListener('change',()=>{
  state.quality=s.value;renderer.setQuality(state.quality);updateButtons();drawRequest();
  say('GPU quality · '+state.quality);
 }));
+qsa('[data-reverb]').forEach(el=>el.addEventListener('change',()=>selectReverb(el.value)));
+qsa('[data-reverb-choice]').forEach(el=>el.addEventListener('click',()=>selectReverb(el.dataset.reverbChoice)));
 qsa('[data-param]').forEach(input=>input.addEventListener('input',()=>{
   setParam(input.dataset.param,input.value);state.scene='custom';updateButtons();
 }));
@@ -578,6 +600,6 @@ window.addEventListener('orientationchange',()=>setTimeout(resize,150));
 document.addEventListener('visibilitychange',()=>{if(document.hidden){clearPointers();engine.suspend();}else{lastTime=0;resize();}});
 window.addEventListener('pagehide',()=>engine.suspend());
 // Deliberately initialize without audio; first gesture must create/resume its context.
-viewReady=true;restore();setMaterialType(state.materialType,false);renderer.setQuality(state.quality);for(const k of Object.keys(params))setParam(k,params[k]);engine.setExpression(state.feel?params.expression:0);engine.setLink(state.link);setNotes();say('Touch, move, and keep two pieces close to make a thread');
+viewReady=true;restore();selectReverb(state.reverbType,false);setMaterialType(state.materialType,false);renderer.setQuality(state.quality);for(const k of Object.keys(params))setParam(k,params[k]);engine.setExpression(state.feel?params.expression:0);engine.setLink(state.link);setNotes();say('Touch, move, and keep two pieces close to make a thread');
 })();
 

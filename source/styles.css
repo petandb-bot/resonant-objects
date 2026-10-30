@@ -219,3 +219,14 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;background:white;bord
  #drawer .drawer-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media(max-height:420px) and (orientation:landscape){#drawer{max-height:calc(100dvh - 12px);top:6px;bottom:auto}}
+
+/* v0.11.3 — small reverb palette in the hidden tuning drawer only */
+#drawer .reverb-field{grid-column:span 2;min-width:0}
+#drawer .reverb-choices{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin-top:6px}
+#drawer .reverb-choices button{appearance:none;border-radius:12px;border:1px solid #ffffffd6;background:#ffffff75;color:#537a9d;min-width:0;min-height:54px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;font-weight:650;box-shadow:0 2px 9px #6381a71c}
+#drawer .reverb-choices button span{font-size:21px;font-weight:500;line-height:1.1}
+#drawer .reverb-choices button small{font-size:8px;letter-spacing:.075em}
+#drawer .reverb-choices button[aria-pressed="true"]{background:linear-gradient(130deg,#8ae0e4b8,#abb6f3bc);border-color:#fff;color:#2b5b89;box-shadow:0 2px 12px #649ce15e}
+#drawer .reverb-hint{font-size:9px;font-weight:400;color:#6889a6}
+#drawer .reverb-footnote{font-size:9px;color:#6487a4;margin:6px 0 0}
+@media(max-width:680px){#drawer .reverb-field{grid-column:span 2}#drawer .reverb-choices button{min-height:44px}#drawer .reverb-choices button span{font-size:17px}}

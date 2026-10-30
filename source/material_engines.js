@@ -1,4 +1,4 @@
-/* RESONANT OBJECTS v0.11.2 — FIVE INDEPENDENT SOUND ENGINES
+/* RESONANT OBJECTS v0.12 — FIVE INDEPENDENT SOUND ENGINES
  * 共通のWeb Audio出力バスは使うが、発音原理とノード・グラフは素材ごとに独立。
  * JEWEL: modal partial synthesis / CANDY: dynamic FM
  * CERAMIC: excited short waveguide / METAL: inharmonic cross-frequency FM
@@ -138,7 +138,7 @@ class WaveBreathingEngine {
    return;
   }
   const tail=(2.4+3.9*h.decay)*(sympathetic?.58:1);
-  const level=(sympathetic?.35:1)*(note.waveAccent?.64:1)*v;
+  const level=(sympathetic?.35:1)*(note.waveLayer?.74:1)*v;
   // Fine detuning creates a natural rolling wave, perceptible on phone speakers.
   const components=[
    [1, .128, .035, 1.00],

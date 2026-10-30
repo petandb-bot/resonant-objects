@@ -1,4 +1,4 @@
-/* RESONANT OBJECTS v0.11.2 — four distinct acoustic engines. No external dependencies.
+/* RESONANT OBJECTS v0.12 — five independent acoustic engines. No external dependencies.
  * 原音を維持しつつ、近接共鳴の「打撃時」と「音声信号経由」の2層を分離する。
  * Audio graph: per-voice modal synth -> dry bus -> compressor
  *                       \-> modal tanks <-> bounded damped coupling -> wet bus
@@ -9,8 +9,9 @@ class ResonantEngine {
   this.onStatus=onStatus;this.ctx=null;this.voices=[];this.holds=new Map();this.gestures=new Map();
   this.expression=.46;
   this.material=.36;this.materialType=0;this.decay=.67;this.bond=.75;this.space=0;this.bloom=0;this.level=.84;
+  this.reverbType='nest';this.reverbSlots=[];this.reverbCurrent=0;this.reverbBuffers=new Map();
   this.link=true;this.connections=[];this.tanks=[];this.edges=[];this.tankKey='';this.wetGains=[];
-  this.lastContact=new Map();
+  this.lastContact=new Map();this.waveLayerTime=new Map();this.threadWaveTime=new Map();
   this.synths=[new JewelModalEngine(this),new CandyElasticFMEngine(this),
    new CeramicWaveguideEngine(this),new MetalInharmonicFMEngine(this),new WaveBreathingEngine(this)];
  }
@@ -33,6 +34,9 @@ class ResonantEngine {
    this.effectInsert.connect(del).connect(filter).connect(gain).connect(this.compressor);
    this.wetGains.push({gain,amount});
   }
+  // Two convolution paths permit a click-free change of acoustic character.
+  // Precomputed synthetic stereo impulse responses avoid network/sample dependencies.
+  this.initReverb();
   // Bounded two-tap diffusion; feedback below unity and low-pass filtered.
   // BLOOM=0 keeps the v0.4 output unchanged.
   const input=this.bloomInput=c.createGain();input.gain.value=1;
@@ -58,7 +62,7 @@ class ResonantEngine {
  setMaterialType(type){
   const selected=Math.max(0,Math.min(4,type|0));
   if(this.materialType===selected)return;
-  this.stopAllGestures();this.stopAllHolds();this.materialType=selected;
+  this.stopAllGestures();this.stopAllHolds();this.materialType=selected;this.waveLayerTime?.clear();this.threadWaveTime?.clear();
   // Changing body construction changes its sympathetic resonator as well.
   this.tankKey='';this.clearTanks();
  }
@@ -67,11 +71,121 @@ class ResonantEngine {
  setBond(v){this.bond=v/100;this.refreshLinks();}
  setLink(v){this.link=!!v;this.refreshLinks();}
  setConnections(connections){this.connections=connections.map(e=>({a:e.a,b:e.b}));this.refreshLinks();}
+ /* Four genuinely different acoustic spaces: no pitch shift, no surprise percussion.
+  * An early-reflection cluster and filtered diffuse late field are generated once
+  * per AudioContext. The impulse is high-pass corrected and energy-normalized.
+  * Reverb is a parallel wet-only path: dry instruments and existing Bloom persist.
+  */
+ reverbProfile(name){
+  return ({
+   nest:    {duration:.65, pre:.009, lp:3900, hp:220, color:.39, early:.68, tail:.42, attack:.005, level:.86},
+   velvet:  {duration:1.40,pre:.022, lp:2300, hp:175, color:.79, early:.34, tail:.83, attack:.020, level:1.0},
+   prism:   {duration:1.78,pre:.028, lp:6200, hp:290, color:.27, early:.54, tail:.67, attack:.014, level:.93},
+   horizon: {duration:2.75,pre:.051, lp:3650, hp:180, color:.60, early:.20, tail:1.0, attack:.034, level:1.02}
+  })[name]||null;
+ }
+ makeReverbImpulse(name){
+  if(this.reverbBuffers.has(name))return this.reverbBuffers.get(name);
+  const c=this.ctx,p=this.reverbProfile(name);
+  if(!c||!p)return null;
+  const rate=c.sampleRate,len=Math.ceil(rate*(p.duration+.060));
+  const buffer=c.createBuffer(2,len,rate);
+  let totalEnergy=0;
+  for(let ch=0;ch<2;ch++){
+   const out=buffer.getChannelData(ch);
+   let seed=(0xCAFE173 ^ (['nest','velvet','prism','horizon'].indexOf(name)*14489) ^ (ch*2654435761))>>>0;
+   const rand=()=>{seed^=seed<<13;seed^=seed>>>17;seed^=seed<<5;return (seed>>>0)/4294967296;};
+   let prev=0,dc=0;
+   const noiseStart=.010+(ch*.004),f=rate;
+   for(let i=0;i<len;i++){
+    const t=i/f;
+    const envelope=Math.exp(-5.4*t/p.duration);
+    const rise=Math.min(1,Math.pow(t/Math.max(.004,p.attack),1.5));
+    const white=rand()*2-1;
+    prev += (white-prev)*(1-p.color*.87);
+    dc += (prev-dc)*.003;
+    // Smooth, signed noise field prevents periodic metallic ringing.
+    const diffuse=(prev-dc)*rise*envelope*p.tail;
+    // Small, broad early reflections with a muted attack.
+    const earlyTimes=[.019,.033,.052,.081,.113,.158];
+    let early=0;
+    for(let j=0;j<earlyTimes.length;j++){
+     const dt=t-(earlyTimes[j]+(ch?-.003:.003)*(j%2?1:-1));
+     const width=.0027+.0011*(j%3);
+     if(Math.abs(dt)<width){
+      const z=dt/width;
+      early+=Math.cos(z*Math.PI/2)*Math.cos(z*Math.PI/2)*
+       ([.26,-.20,.17,-.12,.09,-.065][j])*p.early;
+     }
+    }
+    out[i]=(diffuse+early);
+    totalEnergy+=out[i]*out[i];
+   }
+  }
+  // Normalize all types to similar energy, not their sample peak.
+  const gain=1.45/Math.sqrt(Math.max(.001,totalEnergy/2));
+  for(let ch=0;ch<2;ch++){
+   const samples=buffer.getChannelData(ch);
+   for(let i=0;i<samples.length;i++)samples[i]*=gain;
+  }
+  this.reverbBuffers.set(name,buffer);return buffer;
+ }
+ initReverb(){
+  const c=this.ctx;
+  this.reverbSlots=[];
+  for(let i=0;i<2;i++){
+   const send=c.createGain(),pre=c.createDelay(.15),high=c.createBiquadFilter(),
+    convolution=c.createConvolver(),low=c.createBiquadFilter(),wet=c.createGain();
+   high.type='highpass';low.type='lowpass';
+   send.gain.value=i===0?1:0;wet.gain.value=0;convolution.normalize=false;
+   this.effectInsert.connect(send).connect(pre).connect(high).connect(convolution).connect(low).connect(wet).connect(this.compressor);
+   this.reverbSlots.push({send,pre,high,convolution,low,wet,type:null});
+  }
+  this.configureReverbSlot(0,this.reverbType);
+  this.reverbCurrent=0;
+ }
+ configureReverbSlot(i,type){
+  const slot=this.reverbSlots[i],p=this.reverbProfile(type);
+  if(!slot||!p)return;
+  // Set buffers only while the inactive slot is muted.
+  slot.convolution.buffer=this.makeReverbImpulse(type);
+  slot.pre.delayTime.value=p.pre;
+  slot.high.frequency.value=p.hp;
+  slot.low.frequency.value=p.lp;
+  slot.type=type;
+ }
+ setReverbType(type){
+  if(!this.reverbProfile(type)||type===this.reverbType)return;
+  this.reverbType=type;
+  if(!this.ctx||!this.reverbSlots.length)return;
+  const c=this.ctx,now=c.currentTime;
+  const next=1-this.reverbCurrent,old=this.reverbSlots[this.reverbCurrent],slot=this.reverbSlots[next];
+  // Protect against quick repeat selection: mute slot before replacing its IR.
+  slot.wet.gain.cancelScheduledValues(now);
+  slot.wet.gain.setValueAtTime(0,now);
+  slot.send.gain.cancelScheduledValues(now);
+  slot.send.gain.setValueAtTime(0,now);
+  this.configureReverbSlot(next,type);
+  slot.send.gain.setTargetAtTime(1,now,.016);
+  this.reverbCurrent=next;
+  this.updateReverbMix(.15);
+  old.send.gain.cancelScheduledValues(now);old.send.gain.setTargetAtTime(0,now,.05);
+ }
+ updateReverbMix(fade=.045){
+  if(!this.ctx||!this.reverbSlots.length)return;
+  const now=this.ctx.currentTime,wet=.43*Math.pow(this.space,1.38);
+  this.reverbSlots.forEach((s,i)=>{
+   const p=this.reverbProfile(s.type);
+   s.wet.gain.setTargetAtTime(i===this.reverbCurrent?wet*(p?p.level:1):0,now,fade);
+  });
+ }
  setBloom(v){this.bloom=v/100;if(this.ctx&&this.bloomWet)
   this.bloomWet.gain.setTargetAtTime(.22*Math.pow(this.bloom,1.45),this.ctx.currentTime,.045);}
- setSpace(v){this.space=v/100;if(!this.ctx)return;
+ setSpace(v){this.space=Math.max(0,Math.min(1,v/100));if(!this.ctx)return;
+  // Keep a small part of the previous early-reflection character.
   for(const {gain,amount} of this.wetGains)
-   gain.gain.setTargetAtTime(Math.pow(this.space,1.35)*amount,this.ctx.currentTime,.025);
+   gain.gain.setTargetAtTime(Math.pow(this.space,1.35)*amount*.24,this.ctx.currentTime,.035);
+  this.updateReverbMix();
  }
  setLevel(v){this.level=v/100;if(this.master&&this.ctx)this.master.gain.setTargetAtTime(this.level,this.ctx.currentTime,.02);}
  clearTanks(){
@@ -162,10 +276,21 @@ class ResonantEngine {
   const i=this.voices.indexOf(v);if(i>=0)this.voices.splice(i,1);
  }
  // The sound source is selected per object; wave accents can coexist with struck materials.
- soundType(note){return note?.waveAccent?4:this.materialType;}
+ soundType(note){return this.materialType;}
+ // WAVE is an additive resonant veil: no primary voice is replaced.
+ // Kept quiet and rate-limited so repeated notes never become a drone pile-up.
+ waveVeil(note,velocity,{sympathetic=false,delay=0,radial=0}={}){
+  if(!note?.waveLayer || this.materialType===4 || velocity<.055)return;
+  const now=performance.now(),last=this.waveLayerTime?.get(note.id)||-10000;
+  if(now-last<(sympathetic?480:180))return;
+  if(!this.waveLayerTime)this.waveLayerTime=new Map();
+  this.waveLayerTime.set(note.id,now);
+  this.synths[4].strike(note,velocity*(sympathetic?.38:.64),{sympathetic,delay:delay+.022,radial});
+ }
  tone(note,velocity,sympathetic=false,delay=0,radial=0,repeat=0){
   if(!this.ctx||this.ctx.state!=='running'||velocity<.012)return;
   this.synths[this.soundType(note)].strike(note,velocity,{sympathetic,delay,radial,repeat});
+  this.waveVeil(note,velocity,{sympathetic,delay,radial});
  }
  strike(index,notes,velocity=1,radial=0){
   if(!this.ctx||this.ctx.state!=='running')return false;
@@ -190,6 +315,17 @@ class ResonantEngine {
    if(!other)continue;
    const v=velocity*(.075+.11*this.bond);
    this.tone(other,v,true,.025+k*.010);
+   // Connected WAVE layers bloom into a quiet harmonic field. No new transient.
+   // A source that carries a veil can also excite a linked neighbour gently.
+   if(origin.waveLayer && !other.waveLayer && this.materialType!==4){
+    const now=performance.now();
+    if(!this.threadWaveTime)this.threadWaveTime=new Map();
+    const key=index+':'+other.id;
+    if(now-(this.threadWaveTime.get(key)||-10000)>850){
+     this.threadWaveTime.set(key,now);
+     this.synths[4].strike(other,velocity*.13,{sympathetic:true,delay:.07+k*.018});
+    }
+   }
    other.energy=Math.min(1,other.energy+.23*v);
   }
   return true;

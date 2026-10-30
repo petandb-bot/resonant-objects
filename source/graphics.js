@@ -1,4 +1,4 @@
-/* RESONANT OBJECTS v0.11.2 — GPU field renderer
+/* RESONANT OBJECTS v0.12 — GPU field renderer
  * WebGL2 > WebGL1. Audio remains Web Audio (WebGL is graphics only).
  * Pass 1: native-resolution color field, geometry and GPU connection ribbons.
  * Pass 2: half-resolution double-buffered temporal resonance (GPU ping-pong).
@@ -40,7 +40,7 @@ const FIELD_GLSL = {
  float veil=sin(p.x*7.1+p.y*5.2+uTime*.035)*sin(p.x*2.1-p.y*5.3);
  c+=veil*.008;gl_FragColor=vec4(clamp(c,0.,1.),1.);}`,
  objectFS:`precision highp float;varying vec2 vP;
- uniform float uKind,uSeed,uEnergy,uGesture,uImpact,uRepeat,uTime,uMove,uAura,uWorld;uniform vec3 uColor;
+ uniform float uKind,uSeed,uEnergy,uGesture,uImpact,uRepeat,uTime,uMove,uAura,uWorld,uWaveLayer;uniform vec3 uColor;
  const float PI=3.14159265359;
  float poly(vec2 p,float N){float a=atan(p.y,p.x)+PI*.5;float s=2.*PI/N;
  return length(p)*cos(mod(a+s*.5,s)-s*.5)-cos(PI/N)*.92;}
@@ -79,18 +79,22 @@ const FIELD_GLSL = {
  if(uWorld>2.5 && uWorld<3.5)shine=pow(shine,.38)*.85;
  if(uWorld>3.5)shine=.35+.35*exp(-pow((r-.46)/.33,2.));
  float interference=sin(p.x*8.6+p.y*5.2+uSeed)*sin(p.y*4.9-p.x*2.3);
- vec3 col=mix(uColor,vec3(.98,.997,1.),(uWorld>1.5&&uWorld<2.5?.09:.27)+.11*interference+.24*shine);
- col=mix(col,vec3(.36,.65,1.),(uWorld>1.5&&uWorld<2.5?.055:.16)*smoothstep(-.8,.8,p.x-p.y));
+ vec3 col=mix(uColor,vec3(.98,.997,1.),(uWorld>1.5&&uWorld<2.5?.08:.16)+.07*interference+.15*shine);
+ col=mix(col,vec3(.36,.65,1.),(uWorld>1.5&&uWorld<2.5?.035:.10)*smoothstep(-.8,.8,p.x-p.y));
  float facets=exp(-pow(sin(10.*a+uSeed*2.8+r*12.)/.34,2.))*.13;
  float kineticGlow=(uWorld<.5?.33:uWorld<1.5?.24:uWorld<2.5?.10:uWorld<3.5?.29:.19)*uImpact;
- col+=body*(facets*vec3(.8,.95,1.)+.20*ridge+shine*.18)+uEnergy*.21+uGesture*vec3(.09,.15,.24)*ridge;
+ col+=body*(facets*vec3(.8,.95,1.)+.12*ridge+shine*.12)+uEnergy*.21+uGesture*vec3(.09,.15,.24)*ridge;
  col+=kineticGlow*vec3(1.,.94,.82)+uRepeat*.016*ridge;
- col=mix(col,vec3(1.),edge*.73);
+ // Subtle optical second voice: original solid body stays fully visible.
+ float veilRing=exp(-pow((r-(1.10+.017*uEnergy))/.045,2.));
+ float innerVeil=exp(-pow((r-(.52+.018*uEnergy))/.038,2.));
+ col+=uWaveLayer*(veilRing*.27+innerVeil*.12)*vec3(.50,.80,1.);
+ col=mix(col,mix(uColor,vec3(1.),.78),edge*.72);
  float halo=exp(-pow(max(sd,0.)/.24,1.15))*(.12+.12*uAura);
  float ring=(uEnergy*.77+uImpact*.7)*exp(-pow((r-1.16-uEnergy*.09)/.040,2.));
  float moved=uMove*exp(-pow((r-1.11)/.033,2.))*.68;
  float rubbing=uGesture*exp(-pow((r-1.25)/.060,2.))*.65;
- float trace=clamp(ring+moved+rubbing,0.,1.);
+ float trace=clamp(ring+moved+rubbing+uWaveLayer*veilRing*(.19+.26*uEnergy),0.,1.);
  col=mix(col,vec3(.93,.99,1.),trace*.9);
  float alpha=clamp(body*.94+edge*.37+halo+trace*.88,0.,1.);
  gl_FragColor=vec4(col,alpha);}`,
@@ -181,7 +185,7 @@ class VisualRenderer{
     compose:this.program(FIELD_GLSL.quadVS,FIELD_GLSL.compositeFS)
    };
    this.bg=this.locate(this.programs.bg,['aCorner'],['uTime','uWorld']);
-   this.obj=this.locate(this.programs.obj,['aCorner'],['uCenter','uScreen','uRadius','uAngle','uKind','uSeed','uEnergy','uGesture','uImpact','uRepeat','uTime','uMove','uAura','uColor','uWorld']);
+   this.obj=this.locate(this.programs.obj,['aCorner'],['uCenter','uScreen','uRadius','uAngle','uKind','uSeed','uEnergy','uGesture','uImpact','uRepeat','uTime','uMove','uAura','uColor','uWorld','uWaveLayer']);
    this.line=this.locate(this.programs.line,['aPos','aRibbon','aPower'],['uScreen','uTime']);
    this.trail=this.locate(this.programs.trail,['aCorner'],['uPrev','uNodes[0]','uCount','uTime','uSize','uTrace']);
    this.compose=this.locate(this.programs.compose,['aCorner'],['uScene','uHistory','uPixel','uAura','uTrace']);
@@ -275,12 +279,12 @@ class VisualRenderer{
   g.useProgram(this.programs.obj);g.uniform2f(this.obj.uScreen,this.W,this.H);
   g.uniform1f(this.obj.uTime,time);
   g.uniform1f(this.obj.uAura,this.aura);
-  for(const n of notes){g.uniform1f(this.obj.uWorld,n.waveAccent?4:(state.materialType||0));g.uniform2f(this.obj.uCenter,n.x,n.y);g.uniform1f(this.obj.uRadius,n.r);
+  for(const n of notes){g.uniform1f(this.obj.uWorld,(state.materialType||0));g.uniform2f(this.obj.uCenter,n.x,n.y);g.uniform1f(this.obj.uRadius,n.r);
    g.uniform3f(this.obj.uColor,...n.color);g.uniform1f(this.obj.uKind,n.kind);
    g.uniform1f(this.obj.uSeed,n.id*1.131+.7);g.uniform1f(this.obj.uEnergy,n.energy);
    g.uniform1f(this.obj.uGesture,n.gesture||0);
    g.uniform1f(this.obj.uImpact,n.impact||0);g.uniform1f(this.obj.uRepeat,n.streak||0);
-   g.uniform1f(this.obj.uMove,n.dragged?1:0);
+   g.uniform1f(this.obj.uMove,n.dragged?1:0);g.uniform1f(this.obj.uWaveLayer,n.waveLayer?1:0);
    g.uniform1f(this.obj.uAngle,n.angle);this.quad(this.obj);}
  }
  drawLinks(time,notes,state){const g=this.gl,verts=[];
@@ -331,32 +335,82 @@ class VisualRenderer{
   else if(this.trailFrames>0)this.trailFrames--;
   this.frame++;
  }
- // 2D linework overlays the WebGL field; the geometric scene remains GPU-rendered.
- // Persistent link curves carry an energy pulse from the most recently struck note.
+ // Connected forms share a visible, instrument-like optical fibre.
+ // The path stays still at rest: travelling light occurs ONLY on acoustic excitation.
+ // This lightweight 2D foreground is composited over the WebGL field.
  drawThreads(time,notes,state){
   const c=this.overlayCtx,d=this.dpr;if(!c)return;
   c.setTransform(d,0,0,d,0,0);
   if(this.mode!=='canvas2d')c.clearRect(0,0,this.W,this.H);
-  const all=state.connections||[];
-  for(const e of all){const a=notes[e.a],b=notes[e.b];if(!a||!b)continue;
+  const now=performance.now();
+  for(const edge of state.connections||[]){
+   const a=notes[edge.a],b=notes[edge.b];if(!a||!b)continue;
    const dx=b.x-a.x,dy=b.y-a.y,L=Math.hypot(dx,dy)||1;
-   const mag=Math.min(1,Math.max(a.energy,b.energy)*.65+e.flash*.75);
-   const bend=Math.min(13,L*.12)*(e.a%2?1:-1);
-   const mx=(a.x+b.x)/2-dy/L*bend,my=(a.y+b.y)/2+dx/L*bend;
-   c.beginPath();c.moveTo(a.x,a.y);c.quadraticCurveTo(mx,my,b.x,b.y);
-   c.strokeStyle=`rgba(255,255,255,${.62+mag*.34})`;c.lineWidth=4+mag*3;c.shadowColor='#92ddff';c.shadowBlur=7+mag*9;c.stroke();
-   c.shadowBlur=0;c.beginPath();c.moveTo(a.x,a.y);c.quadraticCurveTo(mx,my,b.x,b.y);
-   c.strokeStyle=`rgba(77,132,192,${.36+mag*.3})`;c.lineWidth=1.1;c.stroke();
-   if(e.flash>.025){const t=(time*.7+e.a*.17)%1;
-    const px=(1-t)*(1-t)*a.x+2*(1-t)*t*mx+t*t*b.x,py=(1-t)*(1-t)*a.y+2*(1-t)*t*my+t*t*b.y;
-    c.beginPath();c.arc(px,py,3+e.flash*2.5,0,Math.PI*2);c.fillStyle='rgba(255,255,255,.96)';c.shadowColor='#6bc4fd';c.shadowBlur=13;c.fill();c.shadowBlur=0;}
+   const nx=dx/L,ny=dy/L,perpx=-ny,perpy=nx;
+   const bend=Math.min(19,L*.125)*((edge.a+edge.b)%2?1:-1);
+   const sx=a.x+nx*a.r*.70,sy=a.y+ny*a.r*.70;
+   const ex=b.x-nx*b.r*.70,ey=b.y-ny*b.r*.70;
+   const mx=(sx+ex)*.5+perpx*bend,my=(sy+ey)*.5+perpy*bend;
+   const energy=Math.min(1,Math.max(a.energy,b.energy)*.60+(edge.flash||0)*.52);
+   const path=()=>{c.beginPath();c.moveTo(sx,sy);c.quadraticCurveTo(mx,my,ex,ey);};
+   c.save();c.lineCap='round';
+   // Restrained outer halo, followed by a clear two-tone glass fibre.
+   path();c.strokeStyle=`rgba(153,222,254,${.15+.14*energy})`;
+   c.lineWidth=10+energy*4;c.shadowBlur=12+energy*8;c.shadowColor='#a4dcff';c.stroke();
+   c.shadowBlur=0;
+   const gradient=c.createLinearGradient(sx,sy,ex,ey);
+   gradient.addColorStop(0,'rgba(255,255,255,.76)');
+   gradient.addColorStop(.48,`rgba(125,213,236,${.50+.30*energy})`);
+   gradient.addColorStop(1,'rgba(252,232,255,.84)');
+   path();c.strokeStyle=gradient;c.lineWidth=2.4+energy*1.25;c.stroke();
+   path();c.strokeStyle=`rgba(255,255,255,${.31+.40*energy})`;c.lineWidth=.66;c.stroke();
+   // Small attachment rings: connected, not just overlapping graphic strokes.
+   for(const [px,py] of [[sx,sy],[ex,ey]]){
+    c.beginPath();c.arc(px,py,3.3+1.2*energy,0,Math.PI*2);
+    c.lineWidth=1.05;c.strokeStyle=`rgba(255,255,255,${.73+.22*energy})`;c.stroke();
+   }
+   const curve=t=>({
+    x:(1-t)*(1-t)*sx+2*(1-t)*t*mx+t*t*ex,
+    y:(1-t)*(1-t)*sy+2*(1-t)*t*my+t*t*ey
+   });
+   for(const pulse of edge.pulses||[]){
+    const age=(now-pulse.at)/pulse.duration;
+    if(age<0||age>=1)continue;
+    const raw=Math.min(1,age/.80),t=pulse.from===edge.a?raw:1-raw;
+    const p=curve(t),opacity=Math.min(1,age/.09,(1-age)/.22)*pulse.strength;
+    // Light has a short taper; avoid confetti particles and permanently moving dots.
+    for(let k=5;k>=0;k--){
+     const back=Math.max(0,Math.min(1,t+(pulse.from===edge.a?-1:1)*k*.017));
+     const q=curve(back);c.beginPath();c.arc(q.x,q.y,1.2+(5-k)*.30,0,Math.PI*2);
+     c.fillStyle=`rgba(235,255,255,${opacity*(1-k/6)*.26})`;c.fill();
+    }
+    c.beginPath();c.arc(p.x,p.y,2.2+2.5*opacity,0,Math.PI*2);
+    c.shadowBlur=14;c.shadowColor='#e2fbff';c.fillStyle=`rgba(255,255,255,${opacity*.90})`;c.fill();c.shadowBlur=0;
+    // The receiving end glows in proportion to the arrival, not constantly.
+   }
+   c.restore();
+  }
+  // Delicate dual halo announces the second acoustic engine without changing the body.
+  // When idle it is static; the extra ring expands only with an actual sound.
+  if(this.mode!=='canvas2d')for(const n of notes){if(!n.waveLayer)continue;
+   const r=n.r*(1.17+.075*n.energy);
+   c.save();c.beginPath();c.arc(n.x,n.y,r,0,Math.PI*2);
+   c.lineWidth=1.5;c.strokeStyle=`rgba(236,255,255,${.36+.33*n.energy})`;
+   c.shadowColor='#80d9fa';c.shadowBlur=6+8*n.energy;c.stroke();
+   c.shadowBlur=0;c.beginPath();c.arc(n.x,n.y,r+3.7,0,Math.PI*2);
+   c.lineWidth=.55;c.strokeStyle=`rgba(150,206,243,${.16+.20*n.energy})`;c.stroke();c.restore();
   }
   const candidate=state.threadPreview;
   if(candidate){const a=notes[candidate.a],b=notes[candidate.b];if(a&&b){
-   c.beginPath();c.moveTo(a.x,a.y);c.lineTo(b.x,b.y);c.lineWidth=2.7;
-   c.setLineDash([5,7]);c.strokeStyle=`rgba(255,255,255,${.28+candidate.progress*.6})`;c.stroke();c.setLineDash([]);
-   const cx=(a.x+b.x)/2,cy=(a.y+b.y)/2;c.beginPath();c.arc(cx,cy,4+candidate.progress*6,-Math.PI/2,-Math.PI/2+candidate.progress*Math.PI*2);
-   c.lineWidth=2;c.strokeStyle='rgba(93,152,201,.84)';c.stroke();
+   const dx=b.x-a.x,dy=b.y-a.y,L=Math.hypot(dx,dy)||1,p=candidate.progress||0;
+   const sx=a.x+dx/L*a.r*.72,sy=a.y+dy/L*a.r*.72;
+   const ex=b.x-dx/L*b.r*.72,ey=b.y-dy/L*b.r*.72;
+   c.save();c.lineCap='round';c.setLineDash([3.5,6]);
+   c.beginPath();c.moveTo(sx,sy);c.quadraticCurveTo((sx+ex)*.5-dy/L*12,(sy+ey)*.5+dx/L*12,ex,ey);
+   c.strokeStyle=`rgba(245,253,255,${.26+p*.55})`;c.lineWidth=1.7+p*.5;c.stroke();c.setLineDash([]);
+   const cx=(sx+ex)*.5,cy=(sy+ey)*.5;
+   c.beginPath();c.arc(cx,cy,4.5,-Math.PI/2,-Math.PI/2+p*Math.PI*2);
+   c.strokeStyle='rgba(79,139,190,.82)';c.lineWidth=1.65;c.stroke();c.restore();
   }}
  }
 
@@ -366,7 +420,7 @@ class VisualRenderer{
   const ramps=[['#c2f6e8','#cedff9','#e7d3fc'],['#ffe5ea','#fcd6dd','#d9d4fc'],['#f7e8cf','#deebe2','#e6d4c4'],['#86acd1','#8298c4','#b1a8d1'],['#a6e8f3','#d1d7fd','#e8e7ff']][state.materialType||0];bg.addColorStop(0,ramps[0]);bg.addColorStop(.55,ramps[1]);bg.addColorStop(1,ramps[2]);
   c.fillStyle=bg;c.fillRect(0,0,W,H);
   for(const n of notes){c.save();c.translate(n.x,n.y);c.rotate(n.angle);
-   const hit=n.impact||0,type=n.waveAccent?4:state.materialType;
+   const hit=n.impact||0,type=state.materialType;
    if(type===1)c.scale(1+.10*hit,1-.065*hit);
    if(type===3)c.rotate(Math.sin(time*31+n.id)*.022*hit);
    if(type===2)c.scale(1+.013*hit,1-.009*hit);
@@ -402,6 +456,13 @@ class VisualRenderer{
    c.shadowBlur=12+n.energy*22+(n.gesture||0)*12+hit*23;
    c.shadowColor=n.hex;c.fill();
    c.shadowBlur=0;c.strokeStyle='#ffffffd9';c.lineWidth=2;c.stroke();
+   if(n.waveLayer){
+    c.beginPath();c.arc(0,0,n.r*(1.12+.015*n.energy),0,Math.PI*2);
+    c.lineWidth=1.75;c.strokeStyle=`rgba(218,252,255,${.56+.27*n.energy})`;
+    c.shadowColor='#83d4fc';c.shadowBlur=9+10*n.energy;c.stroke();c.shadowBlur=0;
+    c.beginPath();c.arc(0,0,n.r*.53,0,Math.PI*2);
+    c.lineWidth=.9;c.strokeStyle='rgba(245,255,255,.38)';c.stroke();
+   }
    if(type===4){
     c.strokeStyle='rgba(255,255,255,.60)';c.lineWidth=1.6;
     for(let j=0;j<2;j++){c.beginPath();c.arc(0,0,n.r*(.46+j*.20+n.energy*.025),0,Math.PI*2);c.stroke();}
