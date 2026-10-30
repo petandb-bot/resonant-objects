@@ -1,4 +1,4 @@
-/* RESONANT OBJECTS v0.8.1 — GPU field renderer
+/* RESONANT OBJECTS v0.9 — GPU field renderer
  * WebGL2 > WebGL1. Audio remains Web Audio (WebGL is graphics only).
  * Pass 1: native-resolution color field, geometry and GPU connection ribbons.
  * Pass 2: half-resolution double-buffered temporal resonance (GPU ping-pong).
@@ -14,36 +14,63 @@ const FIELD_GLSL = {
  float c=cos(uAngle),s=sin(uAngle);vec2 q=vec2(p.x*c-p.y*s,p.x*s+p.y*c);
  vec2 xy=uCenter+q*uRadius;vec2 uv=xy/uScreen;
  gl_Position=vec4(uv.x*2.-1.,1.-uv.y*2.,0.,1.);}`,
- bgFS:`precision mediump float;varying vec2 vUV;uniform float uTime;
+ bgFS:`precision mediump float;varying vec2 vUV;uniform float uTime,uWorld;
  float glow(vec2 p,vec2 c, float k){return exp(-length((p-c)*vec2(1.25,1.15))*k);}
  void main(){vec2 p=vec2(vUV.x,1.-vUV.y);
- vec3 c=mix(vec3(.76,.94,.96),vec3(.85,.84,.98),p.x*.59+p.y*.13);
- c+=vec3(.15,.13,.13)*glow(p,vec2(.15,.79),4.3);
- c+=vec3(.075,.15,.15)*glow(p,vec2(.82,.22),3.8);
- c+=vec3(.10,.055,.13)*glow(p,vec2(.58,.92),3.9);
- c=mix(c,vec3(.975,.99,.97),.18*glow(p,vec2(.40,.4),3.1));
+ vec3 c;
+ if(uWorld<.5){
+  c=mix(vec3(.72,.95,.96),vec3(.83,.82,.98),p.x*.53+p.y*.19);
+  c+=vec3(.14,.13,.15)*glow(p,vec2(.15,.82),4.5);
+  c+=vec3(.08,.15,.15)*glow(p,vec2(.82,.22),3.8);
+ }else if(uWorld<1.5){
+  c=mix(vec3(1.,.87,.91),vec3(.89,.88,1.),p.x*.4+p.y*.2);
+  c+=vec3(.02,.10,.02)*glow(p,vec2(.15,.72),4.2);
+  c+=vec3(.12,.09,.04)*glow(p,vec2(.88,.22),4.2);
+ }else if(uWorld<2.5){
+  c=mix(vec3(.97,.91,.79),vec3(.81,.92,.88),p.x*.58+p.y*.18);
+  c+=vec3(.055,.04,.08)*glow(p,vec2(.22,.83),4.2);
+ }else{
+  c=mix(vec3(.37,.58,.78),vec3(.51,.49,.71),p.x*.64+p.y*.12);
+  c+=vec3(.11,.13,.13)*glow(p,vec2(.8,.22),4.5);
+  c+=vec3(.09,.06,.12)*glow(p,vec2(.20,.80),3.2);
+ }
  float veil=sin(p.x*7.1+p.y*5.2+uTime*.035)*sin(p.x*2.1-p.y*5.3);
  c+=veil*.008;gl_FragColor=vec4(clamp(c,0.,1.),1.);}`,
  objectFS:`precision highp float;varying vec2 vP;
- uniform float uKind,uSeed,uEnergy,uGesture,uTime,uMove,uAura;uniform vec3 uColor;
+ uniform float uKind,uSeed,uEnergy,uGesture,uTime,uMove,uAura,uWorld;uniform vec3 uColor;
  const float PI=3.14159265359;
  float poly(vec2 p,float N){float a=atan(p.y,p.x)+PI*.5;float s=2.*PI/N;
  return length(p)*cos(mod(a+s*.5,s)-s*.5)-cos(PI/N)*.92;}
  void main(){vec2 p=vP;float r=length(p),a=atan(p.y,p.x);
  float sd=r-.96,ridge=0.;
- if(uKind<.5){sd=r-.96;ridge=exp(-pow((r-.78)/.07,2.));}
- else if(uKind<1.5){sd=poly(p,3.);ridge=exp(-pow((abs(p.x)*.72+abs(p.y)*.55-.35)/.065,2.))*.6;}
- else if(uKind<2.5){sd=poly(p,6.);ridge=exp(-pow((r-.55)/.060,2.));}
- else if(uKind<3.5){sd=abs(r-.72)-.20;ridge=exp(-pow((r-.72)/.07,2.));}
- else if(uKind<4.5){sd=length(vec2(p.x/1.11,p.y/.60))-.93;ridge=exp(-pow((p.y+p.x*.16)/.09,2.));}
- else if(uKind<5.5){sd=poly(p,4.);ridge=exp(-pow((abs(p.x)+abs(p.y)-.59)/.08,2.));}
- else if(uKind<6.5){sd=max(abs(p.x*.88)+abs(p.y*.36),abs(p.y*.92)+abs(p.x*.18))-.83;ridge=exp(-pow((abs(p.y*.42+p.x*.35)-.20)/.065,2.));}
- else {sd=r-(.78+.19*cos(6.*a));ridge=exp(-pow((sin(a*3.)*r)/.09,2.))*.5;}
+ if(uWorld<.5){ // JEWEL: facets, clear and refractive.
+  if(uKind<.5){sd=r-.96;ridge=exp(-pow((r-.78)/.07,2.));}
+  else if(uKind<1.5){sd=poly(p,3.);ridge=exp(-pow((abs(p.x)*.72+abs(p.y)*.55-.35)/.065,2.))*.6;}
+  else if(uKind<2.5){sd=poly(p,6.);ridge=exp(-pow((r-.55)/.060,2.));}
+  else if(uKind<3.5){sd=abs(r-.72)-.20;ridge=exp(-pow((r-.72)/.07,2.));}
+  else if(uKind<4.5){sd=length(vec2(p.x/1.11,p.y/.60))-.93;ridge=exp(-pow((p.y+p.x*.16)/.09,2.));}
+  else if(uKind<5.5){sd=poly(p,4.);ridge=exp(-pow((abs(p.x)+abs(p.y)-.59)/.08,2.));}
+  else if(uKind<6.5){sd=max(abs(p.x*.88)+abs(p.y*.36),abs(p.y*.92)+abs(p.x*.18))-.83;ridge=exp(-pow((abs(p.y*.42+p.x*.35)-.20)/.065,2.));}
+  else {sd=r-(.78+.19*cos(6.*a));ridge=exp(-pow((sin(a*3.)*r)/.09,2.))*.5;}
+ }else if(uWorld<1.5){ // CANDY: elastic soft geometric bodies.
+  float bounce=.035*(uEnergy+uGesture)*sin(a*4.+uTime*15.+uSeed);
+  float superRadius=pow(pow(abs(p.x),3.8)+pow(abs(p.y),3.8),1./3.8);
+  sd=mix(r,superRadius,.28+.22*mod(uKind,3.))-.93+bounce;
+  ridge=exp(-pow((r-.62)/.25,2.))*.3;
+ }else if(uWorld<2.5){ // CERAMIC: restrained, matte rounded geometry.
+  sd=mix(r,poly(p,5.+mod(uKind,3.)),.22)-.92;
+  ridge=exp(-pow((r-.78)/.16,2.))*.16;
+ }else{ // METAL: specular rings and anodized shapes.
+  sd=mix(r,poly(p,6.+mod(uKind,3.)),.54)-.93;
+  ridge=exp(-pow((r-.69)/.05,2.))*.96;
+ }
  float body=1.-smoothstep(-.022,.022,sd);float edge=exp(-pow(sd/.032,2.));
  float shine=exp(-pow(length((p-vec2(-.34,.40))*vec2(.87,1.2))/.45,2.));
+ if(uWorld>1.5 && uWorld<2.5)shine*=.27;
+ if(uWorld>2.5)shine=pow(shine,.38)*.85;
  float interference=sin(p.x*8.6+p.y*5.2+uSeed)*sin(p.y*4.9-p.x*2.3);
- vec3 col=mix(uColor,vec3(.98,.997,1.),.30+.14*interference+.22*shine);
- col=mix(col,vec3(.36,.65,1.),.16*smoothstep(-.8,.8,p.x-p.y));
+ vec3 col=mix(uColor,vec3(.98,.997,1.),(uWorld>1.5&&uWorld<2.5?.09:.27)+.11*interference+.24*shine);
+ col=mix(col,vec3(.36,.65,1.),(uWorld>1.5&&uWorld<2.5?.055:.16)*smoothstep(-.8,.8,p.x-p.y));
  float facets=exp(-pow(sin(10.*a+uSeed*2.8+r*12.)/.34,2.))*.13;
  col+=body*(facets*vec3(.8,.95,1.)+.20*ridge+shine*.18)+uEnergy*.21+uGesture*vec3(.09,.15,.24)*ridge;
  col=mix(col,vec3(1.),edge*.73);
@@ -141,8 +168,8 @@ class VisualRenderer{
     trail:this.program(FIELD_GLSL.quadVS,FIELD_GLSL.temporalFS),
     compose:this.program(FIELD_GLSL.quadVS,FIELD_GLSL.compositeFS)
    };
-   this.bg=this.locate(this.programs.bg,['aCorner'],['uTime']);
-   this.obj=this.locate(this.programs.obj,['aCorner'],['uCenter','uScreen','uRadius','uAngle','uKind','uSeed','uEnergy','uGesture','uTime','uMove','uAura','uColor']);
+   this.bg=this.locate(this.programs.bg,['aCorner'],['uTime','uWorld']);
+   this.obj=this.locate(this.programs.obj,['aCorner'],['uCenter','uScreen','uRadius','uAngle','uKind','uSeed','uEnergy','uGesture','uTime','uMove','uAura','uColor','uWorld']);
    this.line=this.locate(this.programs.line,['aPos','aRibbon','aPower'],['uScreen','uTime']);
    this.trail=this.locate(this.programs.trail,['aCorner'],['uPrev','uNodes[0]','uCount','uTime','uSize','uTrace']);
    this.compose=this.locate(this.programs.compose,['aCorner'],['uScene','uHistory','uPixel','uAura','uTrace']);
@@ -230,12 +257,12 @@ class VisualRenderer{
   }
  }
  drawScene(time,notes,state){const g=this.gl;
-  g.disable(g.BLEND);g.useProgram(this.programs.bg);g.uniform1f(this.bg.uTime,time);this.quad(this.bg);
+  g.disable(g.BLEND);g.useProgram(this.programs.bg);g.uniform1f(this.bg.uTime,time);g.uniform1f(this.bg.uWorld,state.materialType||0);this.quad(this.bg);
   g.enable(g.BLEND);g.blendFunc(g.SRC_ALPHA,g.ONE_MINUS_SRC_ALPHA);
   this.drawLinks(time,notes,state);
   g.useProgram(this.programs.obj);g.uniform2f(this.obj.uScreen,this.W,this.H);
   g.uniform1f(this.obj.uTime,time);
-  g.uniform1f(this.obj.uAura,this.aura);
+  g.uniform1f(this.obj.uAura,this.aura);g.uniform1f(this.obj.uWorld,state.materialType||0);
   for(const n of notes){g.uniform2f(this.obj.uCenter,n.x,n.y);g.uniform1f(this.obj.uRadius,n.r);
    g.uniform3f(this.obj.uColor,...n.color);g.uniform1f(this.obj.uKind,n.kind);
    g.uniform1f(this.obj.uSeed,n.id*1.131+.7);g.uniform1f(this.obj.uEnergy,n.energy);
@@ -294,7 +321,7 @@ class VisualRenderer{
  // Compatibility only. It is *not* composited into the WebGL path.
  drawFallback(time,notes,state){const c=this.c2d,W=this.W,H=this.H,d=this.dpr;
   c.setTransform(d,0,0,d,0,0);const bg=c.createLinearGradient(0,0,W,H);
-  bg.addColorStop(0,'#c2f6e8');bg.addColorStop(.55,'#cedff9');bg.addColorStop(1,'#e7d3fc');
+  const ramps=[['#c2f6e8','#cedff9','#e7d3fc'],['#ffe5ea','#fcd6dd','#d9d4fc'],['#f7e8cf','#deebe2','#e6d4c4'],['#86acd1','#8298c4','#b1a8d1']][state.materialType||0];bg.addColorStop(0,ramps[0]);bg.addColorStop(.55,ramps[1]);bg.addColorStop(1,ramps[2]);
   c.fillStyle=bg;c.fillRect(0,0,W,H);
   for(const n of notes){c.save();c.translate(n.x,n.y);c.rotate(n.angle);
    const halo=c.createRadialGradient(0,0,n.r*.42,0,0,n.r*1.7);
@@ -303,14 +330,14 @@ class VisualRenderer{
    const grad=c.createLinearGradient(-n.r,-n.r,n.r,n.r);
    grad.addColorStop(0,'#ffffff');grad.addColorStop(.23,n.hex);grad.addColorStop(.56,'#c6efff');grad.addColorStop(1,n.hex);
    c.globalAlpha=.95;c.beginPath();
-   if(n.kind===1||n.kind===2||n.kind===5||n.kind===6){const sides=n.kind===1?3:n.kind===2?6:4;
+   if((state.materialType===0||state.materialType===3)&&(n.kind===1||n.kind===2||n.kind===5||n.kind===6)){const sides=n.kind===1?3:n.kind===2?6:4;
     for(let i=0;i<sides;i++){const a=Math.PI*2*i/sides-Math.PI/2;
      if(i===0)c.moveTo(Math.cos(a)*n.r*.92,Math.sin(a)*n.r*.92);
      else c.lineTo(Math.cos(a)*n.r*.92,Math.sin(a)*n.r*.92);}c.closePath();}
    else{c.arc(0,0,n.r*.94,0,Math.PI*2);}
-   c.fillStyle=grad;c.shadowBlur=12+n.energy*22+(n.gesture||0)*12;c.shadowColor=n.hex;c.fill();
+   c.fillStyle=state.materialType===2?n.hex:grad;c.shadowBlur=12+n.energy*22+(n.gesture||0)*12;c.shadowColor=n.hex;c.fill();
    c.shadowBlur=0;c.strokeStyle='#ffffffd9';c.lineWidth=2;c.stroke();
-   if(n.kind===3){c.globalCompositeOperation='destination-out';c.beginPath();c.arc(0,0,n.r*.48,0,Math.PI*2);c.fill();}
+   if(state.materialType===0&&n.kind===3){c.globalCompositeOperation='destination-out';c.beginPath();c.arc(0,0,n.r*.48,0,Math.PI*2);c.fill();}
    c.restore();}
  }
  drawFallbackLines(time,notes,state){const c=this.overlayCtx,d=this.dpr;

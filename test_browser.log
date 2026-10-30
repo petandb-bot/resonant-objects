@@ -1,0 +1,12 @@
+MODE gpu title RESONANT OBJECTS · v0.9 gpu label 2D COMPATIBILITY initial error []
+  JEWEL {"theme": "jewel", "pressed": ["true", "false", "false", "false"], "stage": [844, 312], "canvas": [844, 312], "renderer": "2D COMPATIBILITY"} 
+  CANDY {"theme": "candy", "pressed": ["false", "true", "false", "false"], "stage": [844, 312], "canvas": [844, 312], "renderer": "2D COMPATIBILITY"} 
+  CERAMIC {"theme": "ceramic", "pressed": ["false", "false", "true", "false"], "stage": [844, 312], "canvas": [844, 312], "renderer": "2D COMPATIBILITY"} 
+  METAL {"theme": "metal", "pressed": ["false", "false", "false", "true"], "stage": [844, 312], "canvas": [844, 312], "renderer": "2D COMPATIBILITY"} 
+drawer open? True audio status ✦ D3 · resonating errors [] warns []
+MODE fallback title RESONANT OBJECTS · v0.9 gpu label 2D COMPATIBILITY initial error []
+  JEWEL {"theme": "jewel", "pressed": ["true", "false", "false", "false"], "stage": [844, 312], "canvas": [844, 312], "renderer": "2D COMPATIBILITY"} 
+  CANDY {"theme": "candy", "pressed": ["false", "true", "false", "false"], "stage": [844, 312], "canvas": [844, 312], "renderer": "2D COMPATIBILITY"} 
+  CERAMIC {"theme": "ceramic", "pressed": ["false", "false", "true", "false"], "stage": [844, 312], "canvas": [844, 312], "renderer": "2D COMPATIBILITY"} 
+  METAL {"theme": "metal", "pressed": ["false", "false", "false", "true"], "stage": [844, 312], "canvas": [844, 312], "renderer": "2D COMPATIBILITY"} 
+drawer open? True audio status ✦ D3 · resonating errors [] warns []

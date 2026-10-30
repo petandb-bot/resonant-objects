@@ -1,7 +1,12 @@
 <div id="app">
 <header class="top">
   <div class="brand"><span class="brandmark" aria-hidden="true">✧</span><div class="brand-name">RESONANT OBJECTS<small>A LITTLE UNIVERSE OF SOUND</small></div></div>
-  <div class="top-center one-field" aria-label="One playing field"><span class="one-field-mark">✳</span> ONE PLAYING FIELD</div>
+  <div class="top-center material-picker" aria-label="Choose resonant material" role="group">
+  <button data-material-type="0" aria-pressed="true" type="button">JEWEL</button>
+  <button data-material-type="1" aria-pressed="false" type="button">CANDY</button>
+  <button data-material-type="2" aria-pressed="false" type="button">CERAMIC</button>
+  <button data-material-type="3" aria-pressed="false" type="button">METAL</button>
+  </div>
   <div class="top-right">
     <div class="quick-count piece-count" aria-label="Number of notes"><button data-count="7" type="button">7</button><button data-count="9" type="button">9</button><button data-count="11" type="button">11</button></div>
     <button data-lock class="flatbtn lock-btn" type="button" aria-pressed="false" title="Prevent dragging; keep playing">UNLOCKED</button>
@@ -12,8 +17,8 @@
 </header>
 <div class="workspace">
 <aside class="rail" aria-label="Sonic parameters">
-  <section class="panel"><div class="panel-title"><span class="symbol">◈</span>MATERIAL</div>
-    <div class="knobline"><div class="knob" aria-hidden="true"></div><div class="control-detail"><output data-value="material">Warm alloy</output><small>soft ↔ bright</small></div></div>
+  <section class="panel"><div class="panel-title"><span class="symbol">◈</span>MATERIAL <span class="newtag" id="materialTag">JEWEL</span></div>
+    <div class="knobline"><div class="knob" aria-hidden="true"></div><div class="control-detail"><output data-value="material">Warm</output><small>tone brightness</small></div></div>
     <input data-param="material" aria-label="Material" type="range" min="0" max="100" value="36">
   </section>
   <section class="panel"><div class="panel-title"><span class="symbol">◎</span>RING</div>
@@ -56,7 +61,7 @@
     <div class="switchline"><span>Expressive touch</span><button data-feel type="button" class="switchbtn" aria-pressed="true">ON</button></div>
     <div class="graphics-grid"><label>FEEL <output data-value="expression">Gentle</output></label><input data-param="expression" aria-label="Expression amount" type="range" min="0" max="100" value="46"></div>
     <div class="switchline"><span>Drag sound</span><button data-move-sound type="button" class="switchbtn" aria-pressed="true">ON</button></div>
-    <div class="switchline"><span>Contact chimes</span><button data-collision type="button" class="switchbtn" aria-pressed="true">ON</button></div>
+    <div class="switchline"><span>Glass contact ping</span><button data-collision type="button" class="switchbtn" aria-pressed="true">ON</button></div>
     <p class="panel-desc">Touch: play · Centre: drag · Edge: glide · Contact: ring</p>
   </section>
   <section class="panel"><div class="panel-title"><span class="symbol">✳</span>LIVE RESONANCE <span class="newtag">NEW</span></div>
@@ -74,12 +79,15 @@
   </section>
 </aside>
 </div>
-<footer class="bottom"><span class="fine">✧  RESONANT OBJECTS · v0.8.1</span><span class="readout" id="status" role="status" aria-live="polite">Tap a shape to wake the instrument</span></footer>
+<footer class="bottom"><span class="fine">✧  RESONANT OBJECTS · v0.9</span><span class="readout" id="status" role="status" aria-live="polite">Tap a shape to wake the instrument</span></footer>
 </div>
 <section id="drawer" role="region" aria-label="Instrument controls">
  <div class="drawer-title">TUNE THE INSTRUMENT <button id="closeTune" type="button" class="flatbtn" aria-label="Close tuning">✕</button></div>
  <div class="drawer-grid">
-  <div class="mini-field"><label>Material <output data-value="material">Warm alloy</output></label><input data-param="material" aria-label="Material" type="range" min="0" max="100" value="36"></div>
+  <div class="mini-field material-choice"><label>MATERIAL</label><div class="material-choices">
+  <button data-material-type="0" type="button">JEWEL</button><button data-material-type="1" type="button">CANDY</button>
+  <button data-material-type="2" type="button">CERAMIC</button><button data-material-type="3" type="button">METAL</button></div></div>
+  <div class="mini-field"><label>Brightness <output data-value="material">Warm</output></label><input data-param="material" aria-label="Material" type="range" min="0" max="100" value="36"></div>
   <div class="mini-field"><label>Ring <output data-value="ring">Long</output></label><input data-param="ring" aria-label="Ring" type="range" min="0" max="100" value="67"></div>
   <div class="mini-field"><label>Space <output data-value="space">Dry</output></label><input data-param="space" aria-label="Space" type="range" min="0" max="100" value="0"></div>
   <div class="mini-field"><label>Bond <output data-value="bond">Connected</output></label><input data-param="bond" aria-label="Bond" type="range" min="0" max="100" value="75"></div>
@@ -87,7 +95,7 @@
   <div class="mini-field"><label>Play Feel</label><button data-feel type="button" class="switchbtn" aria-pressed="true">ON</button></div>
   <div class="mini-field"><label>Expression <output data-value="expression">Gentle</output></label><input data-param="expression" aria-label="Expression amount" type="range" min="0" max="100" value="46"></div>
   <div class="mini-field"><label>Drag Sound</label><button data-move-sound type="button" class="switchbtn" aria-pressed="true">ON</button></div>
-  <div class="mini-field"><label>Contact Chimes</label><button data-collision type="button" class="switchbtn" aria-pressed="true">ON</button></div>
+  <div class="mini-field"><label>Glass Contact Ping</label><button data-collision type="button" class="switchbtn" aria-pressed="true">ON</button></div>
   <div class="mini-field"><label>Lock Positions</label><button data-lock type="button" class="switchbtn" aria-pressed="false">UNLOCKED</button></div>
   <div class="mini-field"><label>Live Link</label><button data-link type="button" class="switchbtn" aria-pressed="true">ON</button></div>
   <div class="mini-field"><label>Hold to sing</label><button data-hold type="button" class="switchbtn" aria-pressed="true">ON</button></div>

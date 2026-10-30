@@ -141,3 +141,23 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;background:white;bord
 .lock-btn[aria-pressed="true"]{background:linear-gradient(120deg,#b8e3fa,#cbbdff);color:#315a8b;border-color:white}
 @media(max-width:1100px){.one-field{display:none}}
 @media(max-width:720px){.lock-btn{font-size:9px!important;padding:0 6px!important}}
+
+/* v0.9: one playing field, immediate accessible material buttons, not separate modes. */
+.material-picker{gap:3px;padding:3px 4px;display:flex;flex-shrink:0;}
+.material-picker button,.material-choices button{border:1px solid rgba(255,255,255,.88);border-radius:13px;background:rgba(255,255,255,.45);padding:8px 8px;min-height:35px;font-size:10px;letter-spacing:.06em;font-weight:800;color:#4e6796;white-space:nowrap;}
+.material-picker button[aria-pressed="true"],.material-choices button[aria-pressed="true"]{background:linear-gradient(115deg,#bdf9f6,#e2ccff);box-shadow:inset 0 1px 2px #fff,0 3px 10px #8eaae84b;color:#374a94;}
+.material-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;}
+.material-choices button{font-size:9px;padding:5px 1px;min-height:30px;}
+[data-material="candy"]{--aqua:#ffa7be;--violet:#ffc36e;}
+[data-material="ceramic"]{--aqua:#d6be97;--violet:#afc3aa;}
+[data-material="metal"]{--aqua:#91b8e4;--violet:#b7a5f4;}
+[data-material="candy"] .material-picker button[aria-pressed="true"]{background:linear-gradient(110deg,#ffc0da,#ffe3a1)}
+[data-material="ceramic"] .material-picker button[aria-pressed="true"]{background:linear-gradient(110deg,#edcfb5,#b6d5c8)}
+[data-material="metal"] .material-picker button[aria-pressed="true"]{background:linear-gradient(110deg,#b2d5f5,#c6b8eb)}
+@media(max-width:1100px){.material-picker{display:flex}.top{gap:4px}.material-picker button{padding:5px 6px;font-size:9px}.brand-name{font-size:13px}.brand-name small{display:none}}
+@media(max-width:850px){.brandmark{display:none}.brand-name{font-size:11px}.top{padding:6px 8px}.material-picker button{font-size:8px;padding:4px 5px;min-height:30px}.top-right .flatbtn{font-size:9px;min-width:32px;padding:0 6px}.top-right #labButton{display:none}}
+@media(max-width:690px) and (orientation:landscape){.brand{flex:0 1 auto}.brand-name{font-size:9px;max-width:70px;white-space:normal;line-height:1.1}.material-picker{margin-left:auto}.material-picker button{font-size:7px;padding:3px 4px}.top-right{gap:2px}.top-right #reset{display:none}.top-right .flatbtn{height:30px}.material-picker button{min-height:28px}}
+@media(max-width:1100px){.material-picker{position:relative}}
+
+@media(max-width:720px) and (orientation:landscape){.stage-message{display:none}}
+[data-material="metal"] .note-label{color:#f5faff;text-shadow:0 1px 4px #233a7480}

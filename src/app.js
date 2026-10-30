@@ -1,4 +1,4 @@
-/* RESONANT OBJECTS v0.8.1 — One Playing Field / interaction layer.
+/* RESONANT OBJECTS v0.9 — One Playing Field / interaction layer.
  * 描画 / 音源 / 状態を分離。WebGL描画上の位置とタッチ領域は同一のモデルを参照。
  * Notes use stable IDs within each layout; no timer-driven animation when idle. */
 (()=>{
@@ -7,6 +7,12 @@ const $=id=>document.getElementById(id), qsa=s=>[...document.querySelectorAll(s)
 const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
 const field=$('stage'),canvas=$('instrument'),overlay=$('overlay'),labels=$('labels'),readout=$('status');
 const colors=['#4cd7ed','#f48ad0','#4bd9c5','#f6b57e','#839cff','#84c9f4','#65c5eb','#f28faa','#72e2cc','#e6a5f2','#85bafa'];
+const MATERIALS=[
+ {name:'JEWEL',colors:['#65ccf5','#d99cf7','#5fe5e0','#fdc6a7','#a4a6ff','#86dfff','#8ba8ff','#f7aacd','#8bdcc7','#ffd1b1','#b2b4ff']},
+ {name:'CANDY',colors:['#ff8fbe','#ffc66a','#8dd5fb','#f9a36e','#c39cff','#b7e67f','#ffa0a1','#94cde7','#f4d886','#9ee9bd','#f3a4ed']},
+ {name:'CERAMIC',colors:['#e9a7a1','#e5ca9a','#adc3c4','#e8bb89','#abcbbb','#d3afa9','#b6bddb','#e3c1a8','#b3d2c0','#d8c6a5','#bbc1d5']},
+ {name:'METAL',colors:['#7fbded','#d1a9e9','#a3d9d5','#f0bc84','#88a7da','#b1d7eb','#91afcf','#c9b7e9','#a2d2c3','#e5afbf','#9facd8']}
+];
 const hexRGB=h=>[parseInt(h.slice(1,3),16)/255,parseInt(h.slice(3,5),16)/255,parseInt(h.slice(5,7),16)/255];
 // D minor 9 pitches exactly as v0.3, with two added notes for 11-piece mode.
 const pitchBanks={
@@ -16,7 +22,7 @@ const pitchBanks={
 };
 const selects={7:[0,1,2,3,4,6,8],9:[0,1,2,3,4,5,6,7,8],11:[0,1,2,3,4,5,6,7,8,9,10]};
 const params={material:36,ring:67,space:0,bond:75,bloom:0,level:84,aura:48,trace:38,expression:46};
-const state={count:9,scale:'minor',motion:'still',locked:false,dragging:false,collision:true,scene:'original',drawer:false,link:true,hold:true,quality:'balanced',feel:true,moveSound:true};
+const state={materialType:0,count:9,scale:'minor',motion:'still',locked:false,dragging:false,collision:true,scene:'original',drawer:false,link:true,hold:true,quality:'balanced',feel:true,moveSound:true};
 const sets=new Map(),stats={7:{hits:0,empty:0,slides:0,rub:0,moves:0,bumps:0,multi:0},9:{hits:0,empty:0,slides:0,rub:0,moves:0,bumps:0,multi:0},11:{hits:0,empty:0,slides:0,rub:0,moves:0,bumps:0,multi:0}};
 const pointerMap=new Map();let notes=[],W=1,H=1,requestId=0,lastTime=0,lastActive=0,viewReady=false;
 let lastTrigger=-1,lastLinkRefresh=0;
@@ -287,10 +293,7 @@ function pointerEnd(e){
  cancelHold(e.pointerId);engine.endGesture(e.pointerId);pointerMap.delete(e.pointerId);
  if(p.intent==='drag'){
   notes[p.id].dragged=false;
-  if(state.feel&&state.moveSound&&p.lastSpeed>.23&&performance.now()-p.when<110){
-   engine.releasePluck(notes[p.id],p.lastSpeed);
-   notes[p.id].energy=Math.max(notes[p.id].energy,.35);
-  }
+  // Release is silent unless it physically contacts another object.
   state.dragging=[...pointerMap.values()].some(v=>v.intent==='drag');
   engine.refreshLinks(notes);drawRequest();
  }
@@ -318,6 +321,17 @@ function setScale(s){if(!pitchBanks[s])return;state.scale=s;setNotes();say('New 
 function setLock(locked){clearPointers();state.locked=locked;updateButtons();say(locked?'Positions locked · sounds remain playable':'Drag centers to move, glide along edges');drawRequest();}
 function setMotion(m){if(!['still','float','orbit'].includes(m))return;
  state.motion=m;updateButtons();drawRequest();}
+function setMaterialType(k,announce=true){
+ k=Number(k);if(!Number.isInteger(k)||k<0||k>3)return;
+ state.materialType=k;engine.setMaterialType(k);
+ const palette=MATERIALS[k].colors;
+ for(const set of sets.values())for(const n of set){n.hex=palette[n.id%palette.length];n.color=hexRGB(n.hex);}
+ document.documentElement.dataset.material=MATERIALS[k].name.toLowerCase();
+ qsa('[data-material-type]').forEach(b=>b.setAttribute('aria-pressed',String(Number(b.dataset.materialType)===k)));
+ if($('materialTag'))$('materialTag').textContent=MATERIALS[k].name;
+ renderer.clearHistory();drawRequest();
+ if(announce)say(MATERIALS[k].name+' · material changed');
+}
 function setParam(k,v){v=clamp(Number(v),0,100);params[k]=v;
  if(k==='material')engine.setMaterial(v);
  if(k==='ring')engine.setDecay(v);
@@ -328,7 +342,7 @@ function setParam(k,v){v=clamp(Number(v),0,100);params[k]=v;
  if(k==='expression')engine.setExpression(state.feel?v:0);
  if(k==='aura'||k==='trace')renderer.setFX(params.aura,params.trace);
  const caption={
-  material:v<30?'Soft metal':v>70?'Bright glass':'Warm alloy',
+  material:v<30?'Soft':v>70?'Bright':'Balanced',
   ring:v<30?'Short':v>63?'Long':'Medium',
   space:v<1?'Dry':v<45?'Small room':'Large room',
   bond:v<26?'Quiet':v>65?'Connected':'Gentle',
@@ -346,25 +360,27 @@ function scene(s){if(!['original','cloud','bright'].includes(s))return;
  state.scene=s;
  const values={original:{material:36,ring:67,space:0,bond:75,bloom:0},cloud:{material:28,ring:88,space:35,bond:88,bloom:42},bright:{material:67,ring:51,space:17,bond:56,bloom:15}}[s];
  for(const [k,v] of Object.entries(values))setParam(k,v);
- state.scale=s==='cloud'?'penta':s==='bright'?'lydian':'minor';setNotes();updateButtons();
+ state.scale=s==='cloud'?'penta':s==='bright'?'lydian':'minor';setNotes();setMaterialType(s==='bright'?1:s==='cloud'?0:0,false);updateButtons();
  say(`Scene · ${$('sceneName').textContent}`);
 }
 function shuffle(){
- // Keep tuning and positions unchanged; randomize only timbre and resonance.
+ // Keep tuning and positions unchanged; randomize acoustic material and resonance.
+ setMaterialType(Math.floor(Math.random()*4),false);
  for(const [k,lo,hi] of [['material',15,83],['ring',35,91],['space',0,43],['bond',30,98],['bloom',0,50]])setParam(k,Math.round(lo+Math.random()*(hi-lo)));
  state.scene='custom';updateButtons();say('A different resonance');
 }
 function reset(){for(const n of notes)n.saved=false;layoutSet(notes);engine.refreshLinks(notes);updateLabels();drawRequest();say('Positions reset');}
 function save(){
  try{const result={count:state.count,scale:state.scale,motion:state.motion,scene:state.scene,params,
-  feel:state.feel,moveSound:state.moveSound,collision:state.collision,locked:state.locked,link:state.link,hold:state.hold,quality:state.quality,
+  materialType:state.materialType,feel:state.feel,moveSound:state.moveSound,collision:state.collision,locked:state.locked,link:state.link,hold:state.hold,quality:state.quality,
   positions:Object.fromEntries([...sets].map(([k,set])=>[k,set.map(n=>({u:n.u,v:n.v,saved:n.saved}))]))};
-  localStorage.setItem('resonant-objects-v081',JSON.stringify(result));say('Saved on this device');
+  localStorage.setItem('resonant-objects-v09',JSON.stringify(result));say('Saved on this device');
  }catch(e){say('Storage unavailable');}
 }
 function restore(){
- try{const raw=localStorage.getItem('resonant-objects-v081')||localStorage.getItem('resonant-objects-v08')||localStorage.getItem('resonant-objects-v07')||localStorage.getItem('resonant-objects-v06')||localStorage.getItem('resonant-objects-v05')||localStorage.getItem('resonant-objects-v04');if(!raw)return;
+ try{const raw=localStorage.getItem('resonant-objects-v09')||localStorage.getItem('resonant-objects-v081')||localStorage.getItem('resonant-objects-v08')||localStorage.getItem('resonant-objects-v07')||localStorage.getItem('resonant-objects-v06')||localStorage.getItem('resonant-objects-v05')||localStorage.getItem('resonant-objects-v04');if(!raw)return;
   const v=JSON.parse(raw);if([7,9,11].includes(v.count))state.count=v.count;
+  if(Number.isInteger(v.materialType)&&v.materialType>=0&&v.materialType<=3)state.materialType=v.materialType;
   if(pitchBanks[v.scale])state.scale=v.scale;
   if(['still','float','orbit'].includes(v.motion))state.motion=v.motion;
   if(['original','cloud','bright','custom'].includes(v.scene))state.scene=v.scene;
@@ -398,6 +414,7 @@ function lab(open){$('lab').classList.toggle('open',open);$('shade').classList.t
    tr.innerHTML=`<td>${k}${k===state.count?' ●':''}</td><td>${m.diameter}px</td><td>${m.gap}px</td><td>${s.hits}</td><td>${s.empty}</td><td>${s.slides}</td><td>${s.rub}</td><td>${s.moves}</td><td>${s.bumps}</td><td>${s.multi}</td>`;
    rows.appendChild(tr);}}
 }
+qsa('[data-material-type]').forEach(b=>b.addEventListener('click',()=>setMaterialType(Number(b.dataset.materialType))));
 qsa('[data-lock]').forEach(b=>b.addEventListener('click',()=>setLock(!state.locked)));
 qsa('[data-collision]').forEach(b=>b.addEventListener('click',()=>{state.collision=!state.collision;updateButtons();say(state.collision?'Gentle contact notes enabled':'Contact notes muted');}));
 qsa('[data-count]').forEach(b=>b.addEventListener('click',()=>setCount(Number(b.dataset.count))));
@@ -442,5 +459,5 @@ window.addEventListener('orientationchange',()=>setTimeout(resize,150));
 document.addEventListener('visibilitychange',()=>{if(document.hidden){clearPointers();engine.suspend();}else{lastTime=0;resize();}});
 window.addEventListener('pagehide',()=>engine.suspend());
 // Deliberately initialize without audio; first gesture must create/resume its context.
-viewReady=true;restore();renderer.setQuality(state.quality);for(const k of Object.keys(params))setParam(k,params[k]);engine.setExpression(state.feel?params.expression:0);engine.setLink(state.link);setNotes();say('Touch to play · drag the centre · glide at the rim');
+viewReady=true;restore();setMaterialType(state.materialType,false);renderer.setQuality(state.quality);for(const k of Object.keys(params))setParam(k,params[k]);engine.setExpression(state.feel?params.expression:0);engine.setLink(state.link);setNotes();say('Touch to play · drag the centre · glide at the rim');
 })();
