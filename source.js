@@ -1,4 +1,4 @@
-/* RESONANT OBJECTS v0.12.4 — FIVE INDEPENDENT SOUND ENGINES
+/* RESONANT OBJECTS v0.13.0 — FIVE INDEPENDENT SOUND ENGINES
  * 共通のWeb Audio出力バスは使うが、発音原理とノード・グラフは素材ごとに独立。
  * JEWEL: modal partial synthesis / CANDY: dynamic FM
  * CERAMIC: excited short waveguide / METAL: inharmonic cross-frequency FM
@@ -166,7 +166,7 @@ class WaveBreathingEngine {
   });
  }
 }
-/* RESONANT OBJECTS v0.12.4 — five independent acoustic engines. No external dependencies.
+/* RESONANT OBJECTS v0.13.0 — five independent acoustic engines. No external dependencies.
  * 原音を維持しつつ、近接共鳴の「打撃時」と「音声信号経由」の2層を分離する。
  * Audio graph: per-voice modal synth -> dry bus -> compressor
  *                       \-> modal tanks <-> bounded damped coupling -> wet bus
@@ -615,7 +615,7 @@ class ResonantEngine {
 }
 
 
-/* RESONANT OBJECTS v0.12.4 — GPU field renderer
+/* RESONANT OBJECTS v0.13.0 — GPU field renderer
  * WebGL2 > WebGL1. Audio remains Web Audio (WebGL is graphics only).
  * Pass 1: native-resolution color field, geometry and GPU connection ribbons.
  * Pass 2: half-resolution double-buffered temporal resonance (GPU ping-pong).
@@ -632,133 +632,120 @@ const FIELD_GLSL = {
  vec2 xy=uCenter+q*uRadius;vec2 uv=xy/uScreen;
  gl_Position=vec4(uv.x*2.-1.,1.-uv.y*2.,0.,1.);}`,
  bgFS:`precision mediump float;varying vec2 vUV;uniform float uTime,uWorld;
- float glow(vec2 p,vec2 c, float k){return exp(-length((p-c)*vec2(1.25,1.15))*k);}
- void main(){vec2 p=vec2(vUV.x,1.-vUV.y);
- vec3 c;
- if(uWorld<.5){
-  c=mix(vec3(.72,.95,.96),vec3(.83,.82,.98),p.x*.53+p.y*.19);
-  c+=vec3(.14,.13,.15)*glow(p,vec2(.15,.82),4.5);
-  c+=vec3(.08,.15,.15)*glow(p,vec2(.82,.22),3.8);
- }else if(uWorld<1.5){
-  c=mix(vec3(1.,.87,.91),vec3(.89,.88,1.),p.x*.4+p.y*.2);
-  c+=vec3(.02,.10,.02)*glow(p,vec2(.15,.72),4.2);
-  c+=vec3(.12,.09,.04)*glow(p,vec2(.88,.22),4.2);
- }else if(uWorld<2.5){
-  c=mix(vec3(.97,.91,.79),vec3(.81,.92,.88),p.x*.58+p.y*.18);
-  c+=vec3(.055,.04,.08)*glow(p,vec2(.22,.83),4.2);
- }else if(uWorld<3.5){
-  c=mix(vec3(.37,.58,.78),vec3(.51,.49,.71),p.x*.64+p.y*.12);
-  c+=vec3(.11,.13,.13)*glow(p,vec2(.8,.22),4.5);
-  c+=vec3(.09,.06,.12)*glow(p,vec2(.20,.80),3.2);
- }else{
-  c=mix(vec3(.69,.91,.94),vec3(.74,.77,.98),p.y*.49+p.x*.31);
-  c+=vec3(.14,.13,.17)*glow(p,vec2(.27,.78),3.8);
- }
- float veil=sin(p.x*7.1+p.y*5.2+uTime*.035)*sin(p.x*2.1-p.y*5.3);
- c+=veil*.008;gl_FragColor=vec4(clamp(c,0.,1.),1.);}`,
+ void main(){
+  vec2 p=vUV;float lineA=1.-smoothstep(.0,.004,abs(fract(p.x*23.)-.5));
+  float lineB=1.-smoothstep(.0,.004,abs(fract(p.y*13.)-.5));
+  float grid=(lineA+lineB)*.010;
+  float vign=1.-.18*length(p-vec2(.5));
+  vec3 base=vec3(.014,.019,.029)*vign;
+  vec3 tint=uWorld<.5?vec3(.013,.048,.054):uWorld<1.5?vec3(.055,.016,.035):uWorld<2.5?vec3(.045,.036,.020):uWorld<3.5?vec3(.021,.034,.062):vec3(.022,.032,.058);
+  float glow=exp(-pow(length((p-vec2(.52,.52))*vec2(1.,1.5))/.68,2.));
+  vec3 c=base+tint*(.13+.19*glow)+vec3(grid);
+  gl_FragColor=vec4(c,1.);
+ }`,
  objectFS:`precision highp float;varying vec2 vP;
  uniform float uKind,uSeed,uEnergy,uGesture,uImpact,uRepeat,uTime,uMove,uAura,uWorld,uWaveLayer;uniform vec3 uColor;
- const float PI=3.14159265359;
- float poly(vec2 p,float N){float a=atan(p.y,p.x)+PI*.5;float s=2.*PI/N;
- return length(p)*cos(mod(a+s*.5,s)-s*.5)-cos(PI/N)*.92;}
- void main(){vec2 p=vP;float r=length(p),a=atan(p.y,p.x);
- float sd=r-.96,ridge=0.;
- if(uWorld<.5){ // JEWEL: facet shimmer launched by each impact.
-  p+=.009*uImpact*vec2(cos(a*7.+uTime*18.),sin(a*5.-uTime*16.));r=length(p);
-  if(uKind<.5){sd=r-.96;ridge=exp(-pow((r-.78)/.07,2.));}
-  else if(uKind<1.5){sd=poly(p,3.);ridge=exp(-pow((abs(p.x)*.72+abs(p.y)*.55-.35)/.065,2.))*.6;}
-  else if(uKind<2.5){sd=poly(p,6.);ridge=exp(-pow((r-.55)/.060,2.));}
-  else if(uKind<3.5){sd=abs(r-.72)-.20;ridge=exp(-pow((r-.72)/.07,2.));}
-  else if(uKind<4.5){sd=length(vec2(p.x/1.11,p.y/.60))-.93;ridge=exp(-pow((p.y+p.x*.16)/.09,2.));}
-  else if(uKind<5.5){sd=poly(p,4.);ridge=exp(-pow((abs(p.x)+abs(p.y)-.59)/.08,2.));}
-  else if(uKind<6.5){sd=max(abs(p.x*.88)+abs(p.y*.36),abs(p.y*.92)+abs(p.x*.18))-.83;ridge=exp(-pow((abs(p.y*.42+p.x*.35)-.20)/.065,2.));}
-  else {sd=r-(.78+.19*cos(6.*a));ridge=exp(-pow((sin(a*3.)*r)/.09,2.))*.5;}
- }else if(uWorld<1.5){ // CANDY: elastic soft geometric bodies.
-  float bounce=(.025*uEnergy+.070*uImpact+.027*uGesture)*sin(a*4.+uTime*13.+uSeed);
-  p*=1.-.045*uImpact;r=length(p);
-  float superRadius=pow(pow(abs(p.x),3.8)+pow(abs(p.y),3.8),1./3.8);
-  sd=mix(r,superRadius,.28+.22*mod(uKind,3.))-.93+bounce;
-  ridge=exp(-pow((r-.62)/.25,2.))*.3;
- }else if(uWorld<2.5){ // CERAMIC: restrained, matte rounded geometry.
-  sd=mix(r,poly(p,5.+mod(uKind,3.)),.22)-.92+.007*uImpact*sin(a*5.+uTime*19.);
-  ridge=exp(-pow((r-.78)/.16,2.))*.16;
- }else if(uWorld<3.5){ // METAL: specular rings and anodized shapes.
-  sd=mix(r,poly(p,6.+mod(uKind,3.)),.54)-.93+.016*uImpact*sin(a*12.+uTime*29.);
-  ridge=exp(-pow((r-.69)/.05,2.))*.96;
- }else{ // WAVE: a breathing circular resonator with soft propagating bands.
-  float swell=.023*uEnergy*sin(uTime*2.6+uSeed);
-  sd=r-(.92+swell+.012*sin(a*6.+uTime*.9));
-  ridge=exp(-pow((r-(.55+.055*sin(uTime*.9+uSeed)))/.08,2.))*.52;
- }
- float body=1.-smoothstep(-.022,.022,sd);float edge=exp(-pow(sd/.032,2.));
- float shine=exp(-pow(length((p-vec2(-.34,.40))*vec2(.87,1.2))/.45,2.));
- if(uWorld>1.5 && uWorld<2.5)shine*=.27;
- if(uWorld>2.5 && uWorld<3.5)shine=pow(shine,.38)*.85;
- if(uWorld>3.5)shine=.35+.35*exp(-pow((r-.46)/.33,2.));
- float interference=sin(p.x*8.6+p.y*5.2+uSeed)*sin(p.y*4.9-p.x*2.3);
- vec3 col=mix(uColor,vec3(.98,.997,1.),(uWorld>1.5&&uWorld<2.5?.08:.16)+.07*interference+.15*shine);
- col=mix(col,vec3(.36,.65,1.),(uWorld>1.5&&uWorld<2.5?.035:.10)*smoothstep(-.8,.8,p.x-p.y));
- float facets=exp(-pow(sin(10.*a+uSeed*2.8+r*12.)/.34,2.))*.13;
- float kineticGlow=(uWorld<.5?.33:uWorld<1.5?.24:uWorld<2.5?.10:uWorld<3.5?.29:.19)*uImpact;
- col+=body*(facets*vec3(.8,.95,1.)+.12*ridge+shine*.12)+uEnergy*.21+uGesture*vec3(.09,.15,.24)*ridge;
- col+=kineticGlow*vec3(1.,.94,.82)+uRepeat*.016*ridge;
- // Subtle optical second voice: original solid body stays fully visible.
- float veilRing=exp(-pow((r-(1.10+.017*uEnergy))/.045,2.));
- float innerVeil=exp(-pow((r-(.52+.018*uEnergy))/.038,2.));
- col+=uWaveLayer*(veilRing*.27+innerVeil*.12)*vec3(.50,.80,1.);
- col=mix(col,mix(uColor,vec3(1.),.78),edge*.72);
- float halo=exp(-pow(max(sd,0.)/.24,1.15))*(.12+.12*uAura);
- float ring=(uEnergy*.77+uImpact*.7)*exp(-pow((r-1.16-uEnergy*.09)/.040,2.));
- float moved=uMove*exp(-pow((r-1.11)/.033,2.))*.68;
- float rubbing=uGesture*exp(-pow((r-1.25)/.060,2.))*.65;
- float trace=clamp(ring+moved+rubbing+uWaveLayer*veilRing*(.19+.26*uEnergy),0.,1.);
- col=mix(col,vec3(.93,.99,1.),trace*.9);
- float alpha=clamp(body*.94+edge*.37+halo+trace*.88,0.,1.);
- gl_FragColor=vec4(col,alpha);}`,
+ const float PI=3.141592653589793;
+ float sdPoly(vec2 p,float n,float radius){float a=atan(p.y,p.x)+PI/2.;float stepA=2.*PI/n;
+  return length(p)*cos(mod(a+stepA*.5,stepA)-stepA*.5)-radius*cos(PI/n);}
+ float band(float d,float width){return 1.-smoothstep(width*.58,width*1.5,abs(d));}
+ float ring(float d,float r,float w){return band(d-r,w);}
+ void main(){
+  vec2 p=vP;float a=atan(p.y,p.x);float r=length(p);
+  float energy=clamp(uEnergy+uGesture*.3+uImpact*.65,0.,1.);
+  float sd=r-.80;float detail=0.;float core=0.;float cut=0.;
+  if(uWorld<.5){
+   // JEWEL — offset polygonal structures; diagonal interior architecture.
+   float sides=3.+mod(floor(uKind+uSeed*.07),4.);
+   sd=sdPoly(p,sides,.79)+uImpact*.012*sin(a*9.+uTime*17.);
+   detail=band(sdPoly(p,sides,.49),.016)*.76;
+   detail+=band(abs(p.x*.74+p.y*.47)-.24,.014)*.42;
+   core=ring(r,.19,.018)*.75;
+  } else if(uWorld<1.5){
+   // CANDY — elastic rounded superellipse, one internal spring.
+   p*=1.-uImpact*.038;
+   float q=pow(pow(abs(p.x),3.5)+pow(abs(p.y),3.5),1./3.5);
+   sd=mix(q,length(p),.28)-.79+uImpact*.012*sin(a*4.+uTime*8.);
+   detail=ring(r,.48,.018)*.64+band(p.y*.40+p.x*.6,.022)*.21;
+   core=ring(r,.16,.016)*.40;
+  } else if(uWorld<2.5){
+   // CERAMIC — quietly squared, nested hollow contours.
+   sd=mix(sdPoly(p,5.,.76),r-.77,.62);
+   detail=ring(r,.53,.020)*.62;
+   core=ring(r,.31,.014)*.52;
+  } else if(uWorld<3.5){
+   // METAL — sharply segmented hexagon; angular scored radius.
+   sd=sdPoly(p,6.+mod(uKind,2.),.80);
+   detail=ring(r,.60,.023)*.52;
+   float spoke=abs(sin(a*6.+uSeed));
+   detail+=step(.975,spoke)*smoothstep(.31,.45,r)*(1.-smoothstep(.67,.76,r))*.58;
+   core=ring(r,.28,.019)*.33;
+  } else {
+   // WAVE — concentric oscillating vectors, no flat-colored body.
+   sd=r-(.79+.012*sin(a*6.+uSeed+uTime*.8)*energy);
+   detail=ring(r,.49+.025*energy,.022)*.75;
+   core=ring(r,.25,.016)*.66;
+  }
+  float outline=band(sd,.055);
+  float secondary=band(sd+.080,.023)*.34;
+  float interior=1.-smoothstep(-.018,.028,sd);
+  vec3 ink=uColor*.87+vec3(.025,.035,.035);
+  float power=.64+.56*energy;
+  float shape=outline*1.22+secondary+interior*(detail+core)*.92;
+  // Small filled region provides a tactile target without becoming a shiny 3D orb.
+  float inner=exp(-r*r*13.)*(.095+.13*uImpact);
+  vec3 rgb=ink*shape*power+ink*inner;
+  float osc=ring(r,.90+.15*energy,.014)*(.15+.60*uEnergy+.25*uImpact);
+  float local=ring(r,1.045,.028)*uGesture*.43+ring(r,.99,.018)*uMove*.56;
+  rgb+=ink*(osc+local)*.66;
+  // Two delicate, separate resonant bands show WAVE as a layer, not a replacement.
+  float wave=(ring(r,1.12+.024*energy,.016)+ring(r,1.19,.010)*.52)*uWaveLayer;
+  rgb+=mix(ink,vec3(.46,.75,.99),.57)*wave*(.38+.28*energy);
+  // Stencil-like final color, transparent outside contours.
+  float alpha=clamp((shape*1.24+inner+osc+local+wave*.9)*power,0.,1.);
+  if(alpha<.009)discard;
+  gl_FragColor=vec4(clamp(rgb/max(alpha,.05),0.,1.),alpha);
+ }`,
  ribbonVS:`attribute vec2 aPos;attribute vec2 aRibbon;attribute float aPower;
  uniform vec2 uScreen;varying vec2 vRibbon;varying float vPower;
  void main(){vRibbon=aRibbon;vPower=aPower;vec2 uv=aPos/uScreen;
  gl_Position=vec4(uv.x*2.-1.,1.-uv.y*2.,0.,1.);}`,
  ribbonFS:`precision mediump float;varying vec2 vRibbon;varying float vPower;
  uniform float uTime;
- void main(){float core=exp(-pow((vRibbon.y-.5)*4.2,2.));
- float z=fract(uTime*.38+vRibbon.x*.71);float point=exp(-pow((vRibbon.x-z)/.036,2.));
- float a=(core*.52+point*core*.7)*vPower;
- gl_FragColor=vec4(mix(vec3(.40,.68,.95),vec3(.99,.99,1.),point*.7),clamp(a,0.,.8));}`,
+ void main(){float y=abs(vRibbon.y-.5);float core=1.-smoothstep(.11,.32,y);
+ float a=core*clamp(vPower*.52,0.,.38);
+ gl_FragColor=vec4(.32,.47,.62,a);}`,
  temporalFS:`precision highp float;varying vec2 vUV;
  uniform sampler2D uPrev;uniform vec2 uSize;uniform vec4 uNodes[11];
  uniform float uCount,uTime,uTrace;
- void main(){vec3 fresh=vec3(0.);vec2 flow=vec2(0.);
+ void main(){vec3 fresh=vec3(0.);
  for(int i=0;i<11;i++){
   if(float(i)>=uCount)break;
-  vec4 n=uNodes[i];float energy=n.w;
-  vec2 delta=(vUV-n.xy)*uSize;float d=length(delta);float radius=n.z;
-  float waveRadius=radius*(1.25+mod(uTime*1.07+float(i)*.34,1.4));
-  float wave=exp(-pow((d-waveRadius)/max(2.5,radius*.14),2.))*energy;
-  float core=exp(-d/max(6.,radius*.85))*energy;
-  vec3 hue=mix(vec3(.26,.63,.99),vec3(.96,.58,.89),mod(float(i)*.27,1.));
-  fresh+=hue*(wave*.11+core*.015);
-  flow+=normalize(delta+vec2(.0001))*(.00008+energy*.00023)*exp(-d/max(2.,radius*2.));
+  vec4 n=uNodes[i];float en=n.w;
+  float d=length((vUV-n.xy)*uSize);
+  float rr=n.z*(1.25+mod(uTime*.52+float(i)*.31,1.1));
+  float wave=exp(-pow((d-rr)/max(2.5,n.z*.12),2.))*en;
+  vec3 hue=mix(vec3(.04,.46,.67),vec3(.57,.23,.67),mod(float(i)*.27,1.));
+  fresh+=hue*wave*.026;
  }
- vec3 old=texture2D(uPrev,clamp(vUV-flow,0.,1.)).rgb;
- vec3 color=clamp(old*.914+fresh*uTrace,0.,1.);
- gl_FragColor=vec4(color,1.);}`,
+ vec3 old=texture2D(uPrev,vUV).rgb;
+ gl_FragColor=vec4(min(old*.86+fresh*uTrace,vec3(.30)),1.);
+ }`,
  compositeFS:`precision mediump float;varying vec2 vUV;
  uniform sampler2D uScene,uHistory;uniform vec2 uPixel;
  uniform float uAura,uTrace;
  void main(){vec3 scene=texture2D(uScene,vUV).rgb;
- vec3 glow=vec3(0.);
- glow+=texture2D(uScene,vUV+vec2(4.,0.)*uPixel).rgb;
- glow+=texture2D(uScene,vUV-vec2(4.,0.)*uPixel).rgb;
- glow+=texture2D(uScene,vUV+vec2(0.,4.)*uPixel).rgb;
- glow+=texture2D(uScene,vUV-vec2(0.,4.)*uPixel).rgb;
- glow*=.25;
- vec3 highlight=max(glow-scene*.86-vec3(.10),0.);
- vec3 field=texture2D(uHistory,vUV).rgb;
- vec3 combined=scene+highlight*uAura*.46+field*uTrace*.82;
- // Gentle tone-map prevents repeated feedback from making the field pure white.
- combined=combined/(vec3(1.)+max(combined-vec3(.88),0.)*.75);
- gl_FragColor=vec4(clamp(combined,0.,1.),1.);}`
+ vec3 blur=vec3(0.);
+ blur+=texture2D(uScene,vUV+vec2(3.,0.)*uPixel).rgb;
+ blur+=texture2D(uScene,vUV-vec2(3.,0.)*uPixel).rgb;
+ blur+=texture2D(uScene,vUV+vec2(0.,3.)*uPixel).rgb;
+ blur+=texture2D(uScene,vUV-vec2(0.,3.)*uPixel).rgb;
+ blur*=.25;
+ vec3 highlights=max(blur-vec3(.055),vec3(0.));
+ vec3 trail=texture2D(uHistory,vUV).rgb;
+ vec3 color=scene+highlights*uAura*.14+trail*uTrace*.58;
+ gl_FragColor=vec4(clamp(color,0.,1.),1.);
+ }`
 };
 class VisualRenderer{
  constructor(canvas,overlay,onStatus=()=>{}){
@@ -879,7 +866,7 @@ class VisualRenderer{
     const g=this.gl,pixel=new Uint8Array(4);
     g.readPixels(Math.floor(this.canvas.width*.5),Math.floor(this.canvas.height*.5),1,1,g.RGBA,g.UNSIGNED_BYTE,pixel);
     const error=g.getError();
-    if(error!==g.NO_ERROR || pixel[0]+pixel[1]+pixel[2]<28)
+    if(error!==g.NO_ERROR || pixel[0]+pixel[1]+pixel[2]<3)
      throw Error('GPU frame validation failed (error '+error+', pixel '+Array.from(pixel).join(',')+')');
    }
   }catch(error){
@@ -960,161 +947,91 @@ class VisualRenderer{
   c.setTransform(d,0,0,d,0,0);
   if(this.mode!=='canvas2d')c.clearRect(0,0,this.W,this.H);
   const now=performance.now();
+  const palette=['#59dfec','#ff78ac','#e5c092','#9eafff','#72b9fc'];
+  const color=palette[state.materialType||0];
   for(const edge of state.connections||[]){
    const a=notes[edge.a],b=notes[edge.b];if(!a||!b)continue;
-   const dx=b.x-a.x,dy=b.y-a.y,L=Math.hypot(dx,dy)||1;
-   const nx=dx/L,ny=dy/L,perpx=-ny,perpy=nx;
-   const bend=Math.min(19,L*.125)*((edge.a+edge.b)%2?1:-1);
-   const sx=a.x+nx*a.r*.70,sy=a.y+ny*a.r*.70;
-   const ex=b.x-nx*b.r*.70,ey=b.y-ny*b.r*.70;
-   const mx=(sx+ex)*.5+perpx*bend,my=(sy+ey)*.5+perpy*bend;
-   const energy=Math.min(1,Math.max(a.energy,b.energy)*.60+(edge.flash||0)*.52);
+   const dx=b.x-a.x,dy=b.y-a.y,L=Math.hypot(dx,dy)||1,nx=dx/L,ny=dy/L;
+   const px=-ny,py=nx,bend=Math.min(13,L*.075)*((edge.a+edge.b)%2?1:-1);
+   const sx=a.x+nx*a.r*.86,sy=a.y+ny*a.r*.86;
+   const ex=b.x-nx*b.r*.86,ey=b.y-ny*b.r*.86;
+   const mx=(sx+ex)*.5+px*bend,my=(sy+ey)*.5+py*bend;
+   const energy=Math.min(1,Math.max(a.energy,b.energy)*.5+(edge.flash||0)*.7);
    const path=()=>{c.beginPath();c.moveTo(sx,sy);c.quadraticCurveTo(mx,my,ex,ey);};
    c.save();c.lineCap='round';
-   // Contrast-first optical fibre: dark underlay separates it from pastel scenery.
-   path();c.strokeStyle=`rgba(45,72,115,${.26+.14*energy})`;
-   c.lineWidth=13+energy*2;c.shadowBlur=5;c.shadowColor='rgba(45,72,115,.22)';c.stroke();
-   c.shadowBlur=0;
-   path();c.strokeStyle=`rgba(118,202,245,${.54+.20*energy})`;
-   c.lineWidth=8+energy*2;c.stroke();
-   const gradient=c.createLinearGradient(sx,sy,ex,ey);
-   gradient.addColorStop(0,'rgba(36,93,157,.96)');
-   gradient.addColorStop(.48,`rgba(58,114,174,${.92+.06*energy})`);
-   gradient.addColorStop(1,'rgba(114,65,159,.95)');
-   path();c.strokeStyle=gradient;c.lineWidth=3.5+energy*.8;c.stroke();
-   path();c.strokeStyle=`rgba(241,252,255,${.68+.22*energy})`;c.lineWidth=.8;c.stroke();
-   // Small attachment rings: connected, not just overlapping graphic strokes.
-   for(const [px,py] of [[sx,sy],[ex,ey]]){
-    c.beginPath();c.arc(px,py,3.3+1.2*energy,0,Math.PI*2);
-    c.lineWidth=2;c.strokeStyle=`rgba(45,83,145,${.85+.12*energy})`;c.stroke();
+   // Thin colored core remains legible against black without full-width blooming.
+   path();c.lineWidth=4.8;c.strokeStyle='rgba(8,11,18,.96)';c.stroke();
+   path();c.lineWidth=2.0+.45*energy;c.strokeStyle=color;c.globalAlpha=.55+.38*energy;c.stroke();
+   c.globalAlpha=1;
+   for(const [x,y] of [[sx,sy],[ex,ey]]){
+    c.beginPath();c.arc(x,y,3.1,0,Math.PI*2);c.fillStyle='#070a10';c.fill();
+    c.lineWidth=1.45;c.strokeStyle=color;c.stroke();
    }
-   const curve=t=>({
-    x:(1-t)*(1-t)*sx+2*(1-t)*t*mx+t*t*ex,
-    y:(1-t)*(1-t)*sy+2*(1-t)*t*my+t*t*ey
-   });
+   const curve=t=>({x:(1-t)*(1-t)*sx+2*(1-t)*t*mx+t*t*ex,y:(1-t)*(1-t)*sy+2*(1-t)*t*my+t*t*ey});
    for(const pulse of edge.pulses||[]){
-    const age=(now-pulse.at)/pulse.duration;
-    if(age<0||age>=1)continue;
-    const raw=Math.min(1,age/.80),t=pulse.from===edge.a?raw:1-raw;
-    const p=curve(t),opacity=Math.min(1,age/.09,(1-age)/.22)*pulse.strength;
-    // Light has a short taper; avoid confetti particles and permanently moving dots.
-    for(let k=5;k>=0;k--){
-     const back=Math.max(0,Math.min(1,t+(pulse.from===edge.a?-1:1)*k*.017));
-     const q=curve(back);c.beginPath();c.arc(q.x,q.y,1.2+(5-k)*.30,0,Math.PI*2);
-     c.fillStyle=`rgba(235,255,255,${opacity*(1-k/6)*.26})`;c.fill();
-    }
-    c.beginPath();c.arc(p.x,p.y,2.2+2.5*opacity,0,Math.PI*2);
-    c.shadowBlur=14;c.shadowColor='#e2fbff';c.fillStyle=`rgba(255,255,255,${opacity*.90})`;c.fill();c.shadowBlur=0;
-    // The receiving end glows in proportion to the arrival, not constantly.
+    const age=(now-pulse.at)/pulse.duration;if(age<0||age>=1)continue;
+    const tt=Math.min(1,age/.85),t=pulse.from===edge.a?tt:1-tt;
+    const loc=curve(t),amp=Math.min(1,age/.11,(1-age)/.25)*pulse.strength;
+    c.beginPath();c.arc(loc.x,loc.y,3.2+1.9*amp,0,Math.PI*2);
+    c.fillStyle='#dffaff';c.globalAlpha=amp;c.fill();c.globalAlpha=1;
    }
    c.restore();
   }
-  // Delicate dual halo announces the second acoustic engine without changing the body.
-  // When idle it is static; the extra ring expands only with an actual sound.
-  if(this.mode!=='canvas2d')for(const n of notes){if(!n.waveLayer)continue;
-   const r=n.r*(1.17+.075*n.energy);
-   c.save();c.beginPath();c.arc(n.x,n.y,r,0,Math.PI*2);
-   c.lineWidth=1.5;c.strokeStyle=`rgba(236,255,255,${.36+.33*n.energy})`;
-   c.shadowColor='#80d9fa';c.shadowBlur=6+8*n.energy;c.stroke();
-   c.shadowBlur=0;c.beginPath();c.arc(n.x,n.y,r+3.7,0,Math.PI*2);
-   c.lineWidth=.55;c.strokeStyle=`rgba(150,206,243,${.16+.20*n.energy})`;c.stroke();c.restore();
+  // Quiet WAVE overlay, not an extra object.
+  for(const n of notes){if(!n.waveLayer)continue;
+   c.save();c.strokeStyle='#78b9f9';c.globalAlpha=.49+.27*n.energy;c.lineWidth=1.15;
+   c.setLineDash([1.7,5.2]);c.beginPath();c.arc(n.x,n.y,n.r*1.18,0,Math.PI*2);c.stroke();c.restore();
   }
   const candidate=state.threadPreview;
   if(candidate){const a=notes[candidate.a],b=notes[candidate.b];if(a&&b){
-   const dx=b.x-a.x,dy=b.y-a.y,L=Math.hypot(dx,dy)||1,p=candidate.progress||0;
-   const sx=a.x+dx/L*a.r*.72,sy=a.y+dy/L*a.r*.72;
-   const ex=b.x-dx/L*b.r*.72,ey=b.y-dy/L*b.r*.72;
-   c.save();c.lineCap='round';c.setLineDash([3.5,6]);
-   c.beginPath();c.moveTo(sx,sy);c.quadraticCurveTo((sx+ex)*.5-dy/L*12,(sy+ey)*.5+dx/L*12,ex,ey);
-   c.strokeStyle=`rgba(54,100,163,${.60+p*.35})`;c.lineWidth=2.4+p*.5;c.stroke();c.setLineDash([]);
-   const cx=(sx+ex)*.5,cy=(sy+ey)*.5;
-   c.beginPath();c.arc(cx,cy,4.5,-Math.PI/2,-Math.PI/2+p*Math.PI*2);
-   c.strokeStyle='rgba(79,139,190,.82)';c.lineWidth=1.65;c.stroke();c.restore();
+   const dx=b.x-a.x,dy=b.y-a.y,L=Math.hypot(dx,dy)||1,prog=candidate.progress||0;
+   const sx=a.x+dx/L*a.r*.82,sy=a.y+dy/L*a.r*.82;
+   const ex=b.x-dx/L*b.r*.82,ey=b.y-dy/L*b.r*.82;
+   c.save();c.strokeStyle=color;c.globalAlpha=.26+.60*prog;c.lineWidth=1.4;
+   c.setLineDash([2,5]);c.beginPath();c.moveTo(sx,sy);c.lineTo(ex,ey);c.stroke();c.restore();
   }}
  }
 
  // Compatibility only. It is *not* composited into the WebGL path.
- drawFallback(time,notes,state){const c=this.c2d,W=this.W,H=this.H,d=this.dpr;
-  c.setTransform(d,0,0,d,0,0);const bg=c.createLinearGradient(0,0,W,H);
-  const ramps=[['#c2f6e8','#cedff9','#e7d3fc'],['#ffe5ea','#fcd6dd','#d9d4fc'],['#f7e8cf','#deebe2','#e6d4c4'],['#86acd1','#8298c4','#b1a8d1'],['#a6e8f3','#d1d7fd','#e8e7ff']][state.materialType||0];bg.addColorStop(0,ramps[0]);bg.addColorStop(.55,ramps[1]);bg.addColorStop(1,ramps[2]);
-  c.fillStyle=bg;c.fillRect(0,0,W,H);
-  for(const n of notes){c.save();c.translate(n.x,n.y);c.rotate(n.angle);
-   const hit=n.impact||0,type=state.materialType;
-   if(type===1)c.scale(1+.10*hit,1-.065*hit);
-   if(type===3)c.rotate(Math.sin(time*31+n.id)*.022*hit);
-   if(type===2)c.scale(1+.013*hit,1-.009*hit);
-   const halo=c.createRadialGradient(0,0,n.r*.42,0,0,n.r*1.7);
-   halo.addColorStop(0,n.hex+'45');halo.addColorStop(1,n.hex+'00');
-   c.fillStyle=halo;c.beginPath();c.arc(0,0,n.r*1.7,0,Math.PI*2);c.fill();
-   const grad=c.createLinearGradient(-n.r,-n.r,n.r,n.r);
-   grad.addColorStop(0,'#ffffff');grad.addColorStop(.23,n.hex);grad.addColorStop(.56,'#c6efff');grad.addColorStop(1,n.hex);
-   c.globalAlpha=.95;c.beginPath();
-   if((type===0||type===3)&&(n.kind===1||n.kind===2||n.kind===5||n.kind===6)){const sides=n.kind===1?3:n.kind===2?6:4;
-    for(let i=0;i<sides;i++){const a=Math.PI*2*i/sides-Math.PI/2;
-     if(i===0)c.moveTo(Math.cos(a)*n.r*.92,Math.sin(a)*n.r*.92);
-     else c.lineTo(Math.cos(a)*n.r*.92,Math.sin(a)*n.r*.92);}c.closePath();}
-   else if(type===1){
-    // Rounded superellipse: sugar-glass body, no generic circular button.
-    for(let j=0;j<=48;j++){
-     const a=j/48*Math.PI*2,ct=Math.cos(a),st=Math.sin(a);
-     const px=Math.sign(ct)*Math.pow(Math.abs(ct),.69)*n.r*.88;
-     const py=Math.sign(st)*Math.pow(Math.abs(st),.69)*n.r*.88;
-     if(j===0)c.moveTo(px,py);else c.lineTo(px,py);
-    }c.closePath();
-   }else if(type===2){
-    // Soft ceramic pentagon with shallow irregular bevel.
-    for(let j=0;j<=50;j++){
-     const a=j/50*Math.PI*2,rr=n.r*(.89+.035*Math.cos(5*a+n.id));
-     if(j===0)c.moveTo(rr*Math.cos(a),rr*Math.sin(a));else c.lineTo(rr*Math.cos(a),rr*Math.sin(a));
-    }c.closePath();
-   }else if(type===4){
-    for(let j=0;j<=64;j++){const a=j*Math.PI/32,rr=n.r*(.90+.015*Math.sin(6*a+time*1.4));
-     if(j===0)c.moveTo(rr*Math.cos(a),rr*Math.sin(a));else c.lineTo(rr*Math.cos(a),rr*Math.sin(a));}c.closePath();
-   }else{c.arc(0,0,n.r*.94,0,Math.PI*2);}
-   c.fillStyle=type===2?n.hex:grad;
-   c.shadowBlur=12+n.energy*22+(n.gesture||0)*12+hit*23;
-   c.shadowColor=n.hex;c.fill();
-   c.shadowBlur=0;c.strokeStyle='#ffffffd9';c.lineWidth=2;c.stroke();
-   if(n.waveLayer){
-    c.beginPath();c.arc(0,0,n.r*(1.12+.015*n.energy),0,Math.PI*2);
-    c.lineWidth=1.75;c.strokeStyle=`rgba(218,252,255,${.56+.27*n.energy})`;
-    c.shadowColor='#83d4fc';c.shadowBlur=9+10*n.energy;c.stroke();c.shadowBlur=0;
-    c.beginPath();c.arc(0,0,n.r*.53,0,Math.PI*2);
-    c.lineWidth=.9;c.strokeStyle='rgba(245,255,255,.38)';c.stroke();
-   }
-   if(type===4){
-    c.strokeStyle='rgba(255,255,255,.60)';c.lineWidth=1.6;
-    for(let j=0;j<2;j++){c.beginPath();c.arc(0,0,n.r*(.46+j*.20+n.energy*.025),0,Math.PI*2);c.stroke();}
-   }
-   if(type===3){
-    // Radial scored metal surface, visible even without WebGL.
-    c.strokeStyle='rgba(255,255,255,.52)';c.lineWidth=.9;
-    for(let j=0;j<7;j++){const a=j*Math.PI*2/7+n.id*.10;
-     c.beginPath();c.moveTo(Math.cos(a)*n.r*.42,Math.sin(a)*n.r*.42);
-     c.lineTo(Math.cos(a)*n.r*.79,Math.sin(a)*n.r*.79);c.stroke();}
-   }
-   if(hit>.02){c.beginPath();c.arc(0,0,n.r*(1.05+.15*(1-hit)),0,Math.PI*2);
-    c.strokeStyle=`rgba(255,255,255,${.7*hit})`;c.lineWidth=1.2+hit*2;c.stroke();}
-   if(type===0&&n.kind===3){c.globalCompositeOperation='destination-out';c.beginPath();c.arc(0,0,n.r*.48,0,Math.PI*2);c.fill();}
-   c.restore();}
+ drawFallback(time,notes,state){
+  const c=this.c2d,W=this.W,H=this.H,d=this.dpr;
+  c.setTransform(d,0,0,d,0,0);c.fillStyle='#07090e';c.fillRect(0,0,W,H);
+  c.strokeStyle='rgba(104,124,146,.095)';c.lineWidth=.55;
+  for(let x=25;x<W;x+=36){c.beginPath();c.moveTo(x,0);c.lineTo(x,H);c.stroke();}
+  for(let y=15;y<H;y+=36){c.beginPath();c.moveTo(0,y);c.lineTo(W,y);c.stroke();}
+  const mat=state.materialType||0;
+  for(const n of notes){
+   const x=n.x,y=n.y,r=n.r*.83,energy=n.energy,impact=n.impact||0;
+   const color=n.hex;c.save();c.translate(x,y);c.rotate(n.angle||0);
+   c.strokeStyle=color;c.lineJoin='round';c.lineCap='round';
+   c.globalAlpha=.79+.20*Math.min(1,energy+impact);
+   c.lineWidth=2+energy*.9;c.beginPath();
+   if(mat===0){const sides=[6,3,6,7,4,4,5,6][n.kind%8];for(let j=0;j<=sides;j++){
+    const a=j/sides*Math.PI*2-Math.PI*.5;
+    if(j===0)c.moveTo(Math.cos(a)*r,Math.sin(a)*r);else c.lineTo(Math.cos(a)*r,Math.sin(a)*r);}}
+   else if(mat===1){const bounce=1+impact*.07;c.ellipse(0,0,r*bounce,r*(1-.04*impact),0,0,Math.PI*2);}
+   else if(mat===2){c.roundRect(-r,-r,r*2,r*2,r*.38);}
+   else if(mat===3){for(let j=0;j<=6;j++){const a=j/6*Math.PI*2-.5;if(j===0)c.moveTo(Math.cos(a)*r,Math.sin(a)*r);else c.lineTo(Math.cos(a)*r,Math.sin(a)*r);}}
+   else c.arc(0,0,r,0,Math.PI*2);
+   c.closePath();c.stroke();
+   c.lineWidth=1;c.globalAlpha=.35+.5*energy;
+   if(mat===1){c.beginPath();c.arc(0,0,r*.61,0,Math.PI*2);c.stroke();}
+   else if(mat===2){c.beginPath();c.arc(0,0,r*.52,0,Math.PI*2);c.stroke();}
+   else if(mat===3){for(let k=0;k<6;k++){const a=k*Math.PI/3;c.beginPath();c.moveTo(Math.cos(a)*r*.46,Math.sin(a)*r*.46);c.lineTo(Math.cos(a)*r*.73,Math.sin(a)*r*.73);c.stroke();}}
+   else{c.beginPath();c.arc(0,0,r*.54,0,Math.PI*2);c.stroke();}
+   if(energy>.03){c.globalAlpha=Math.min(.85,energy*.75);c.beginPath();c.arc(0,0,r*(1.12+.15*energy),0,Math.PI*2);c.stroke();}
+   c.restore();
+  }
  }
- drawFallbackLines(time,notes,state){const c=this.overlayCtx,d=this.dpr;
-  c.setTransform(d,0,0,d,0,0);c.clearRect(0,0,this.W,this.H);
-  c.lineWidth=1;const reach=Math.min(260,Math.max(95,this.H*.8));
-  for(let i=0;i<notes.length;i++)for(let j=i+1;j<notes.length;j++){
-   const a=notes[i],b=notes[j],distance=Math.hypot(a.x-b.x,a.y-b.y);
-   if(distance>reach||Math.max(a.energy,b.energy)<.18)continue;
-   c.strokeStyle=`rgba(255,255,255,${Math.min(.66,Math.max(a.energy,b.energy)*.35)})`;
-   c.beginPath();c.moveTo(a.x,a.y);c.lineTo(b.x,b.y);c.stroke();}
-  for(const n of notes){if(n.dragged){
-   c.lineWidth=2;c.strokeStyle="rgba(255,255,255,.85)";c.beginPath();c.arc(n.x,n.y,n.r*1.32,0,Math.PI*2);c.stroke();c.lineWidth=1;
-  }c.strokeStyle=`rgba(255,255,255,${.25+n.energy*.65})`;
-   c.beginPath();c.arc(n.x,n.y,n.r*(1.20+n.energy*.3+(n.gesture||0)*.15),0,Math.PI*2);c.stroke();}
+
+ drawFallbackLines(time,notes,state){
+  const c=this.overlayCtx,d=this.dpr;c.setTransform(d,0,0,d,0,0);c.clearRect(0,0,this.W,this.H);
+  for(const n of notes)if(n.dragged){c.beginPath();c.arc(n.x,n.y,n.r*1.15,0,Math.PI*2);c.strokeStyle='rgba(184,201,223,.38)';c.lineWidth=1;c.stroke();}
  }
 }
 
 
-/* RESONANT OBJECTS v0.12.4 — One Playing Field / interaction layer.
+/* RESONANT OBJECTS v0.13.0 — One Playing Field / interaction layer.
  * 描画 / 音源 / 状態を分離。WebGL描画上の位置とタッチ領域は同一のモデルを参照。
  * Notes use stable IDs within each layout; no timer-driven animation when idle. */
 (()=>{
@@ -1551,7 +1468,7 @@ function updateButtons(){
  qsa('[data-feel]').forEach(b=>{b.setAttribute('aria-pressed',String(state.feel));b.textContent=state.feel?'ON':'OFF';});
  qsa('[data-move-sound]').forEach(b=>{b.setAttribute('aria-pressed',String(state.moveSound));b.textContent=state.moveSound?'ON':'OFF';});
  qsa('[data-quality]').forEach(s=>s.value=state.quality);
- $('touchHint').textContent=state.locked?'✦ POSITIONS LOCKED · TAP · GLIDE · HOLD':'✦ SURFACE: SOUND · CORE: MOVE OR TAP · EDGE: GLIDE';
+ $('touchHint').textContent=state.locked?'✦ POSITIONS LOCKED · TAP · GLIDE · HOLD':'';
  $('sceneName').textContent=({original:'Glass garden',cloud:'Blue hour',bright:'Little sun'})[state.scene]||'Custom';
 }
 function clearPointers(){for(const [id,p] of pointerMap){
