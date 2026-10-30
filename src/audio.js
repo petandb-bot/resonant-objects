@@ -1,4 +1,4 @@
-/* RESONANT OBJECTS v0.7 — expression-aware modal synthesis. No external dependencies.
+/* RESONANT OBJECTS v0.8 — expression-aware modal synthesis. No external dependencies.
  * 原音を維持しつつ、近接共鳴の「打撃時」と「音声信号経由」の2層を分離する。
  * Audio graph: per-voice modal synth -> dry bus -> compressor
  *                       \-> modal tanks <-> bounded damped coupling -> wet bus
@@ -205,6 +205,19 @@ class ResonantEngine {
    this.tone(n,v,true,.014+sent*.009);n.energy=Math.min(1,n.energy+v*.55);sent++;
   }
   return true;
+ }
+ // Gentle physical contact; no automatic chains and no timed sequence.
+ contact(source,target,speed,notes){
+  if(!this.ctx||this.ctx.state!=='running')return;
+  const v=Math.max(.08,Math.min(.42,speed*.34));
+  this.tone(target,v,false,0,.78);
+  this.tone(source,v*.24,true,.011,0);
+  target.energy=Math.min(1,target.energy+v*.72);
+ }
+ // A short release ping gives moving a shape a tangible end, without changing pitch mapping.
+ releasePluck(note,speed){
+  if(!this.ctx||this.ctx.state!=='running')return;
+  this.tone(note,Math.min(.25,speed*.20),true,0,0);
  }
  // Pointer gesture: bounded, speed-sensitive rubbing / glissando.
  // Independent from the six original modal partials. It never starts on an idle touch.

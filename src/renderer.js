@@ -1,4 +1,4 @@
-/* RESONANT OBJECTS v0.7 — GPU field renderer
+/* RESONANT OBJECTS v0.8 — GPU field renderer
  * WebGL2 > WebGL1. Audio remains Web Audio (WebGL is graphics only).
  * Pass 1: native-resolution color field, geometry and GPU connection ribbons.
  * Pass 2: half-resolution double-buffered temporal resonance (GPU ping-pong).
@@ -211,7 +211,7 @@ class VisualRenderer{
   g.enable(g.BLEND);g.blendFunc(g.SRC_ALPHA,g.ONE_MINUS_SRC_ALPHA);
   this.drawLinks(time,notes,state);
   g.useProgram(this.programs.obj);g.uniform2f(this.obj.uScreen,this.W,this.H);
-  g.uniform1f(this.obj.uTime,time);g.uniform1f(this.obj.uMove,state.move?1:0);
+  g.uniform1f(this.obj.uTime,time);g.uniform1f(this.obj.uMove,n.dragged?1:0);
   g.uniform1f(this.obj.uAura,this.aura);
   for(const n of notes){g.uniform2f(this.obj.uCenter,n.x,n.y);g.uniform1f(this.obj.uRadius,n.r);
    g.uniform3f(this.obj.uColor,...n.color);g.uniform1f(this.obj.uKind,n.kind);
@@ -225,9 +225,9 @@ class VisualRenderer{
    const a=notes[i];const nearest=notes.map((n,j)=>({n,j,d:Math.hypot(n.x-a.x,n.y-a.y)}))
     .filter(v=>v.j!==i&&v.d<reach).sort((x,y)=>x.d-y.d).slice(0,3);
    for(const {n:b,j,d} of nearest){if(j<i)continue;
-    const energy=Math.max(a.energy,b.energy),power=state.move?.54:(state.link?.10:.04)+energy*.68;
+    const energy=Math.max(a.energy,b.energy),power=state.dragging?.54:(state.link?.10:.04)+energy*.68;
     if(power<.035)continue;
-    const dx=b.x-a.x,dy=b.y-a.y,nx=-dy/d,ny=dx/d,width=(1.3+energy*2.6+(state.move?1.6:0));
+    const dx=b.x-a.x,dy=b.y-a.y,nx=-dy/d,ny=dx/d,width=(1.3+energy*2.6+(state.dragging?1.6:0));
     const positions=[[0,0],[1,0],[0,1],[0,1],[1,0],[1,1]];
     for(const [t,v] of positions)verts.push(a.x+dx*t+nx*(v-.5)*width,a.y+dy*t+ny*(v-.5)*width,t,v,power);
    }
@@ -295,9 +295,11 @@ class VisualRenderer{
   for(let i=0;i<notes.length;i++)for(let j=i+1;j<notes.length;j++){
    const a=notes[i],b=notes[j],distance=Math.hypot(a.x-b.x,a.y-b.y);
    if(distance>reach)continue;
-   c.strokeStyle=`rgba(255,255,255,${Math.min(.85,(state.move?.6:.08)+Math.max(a.energy,b.energy)*.5)})`;
+   c.strokeStyle=`rgba(255,255,255,${Math.min(.85,(state.dragging?.6:.08)+Math.max(a.energy,b.energy)*.5)})`;
    c.beginPath();c.moveTo(a.x,a.y);c.lineTo(b.x,b.y);c.stroke();}
-  for(const n of notes){c.strokeStyle=`rgba(255,255,255,${.25+n.energy*.65})`;
+  for(const n of notes){if(n.dragged){
+   c.lineWidth=2;c.strokeStyle="rgba(255,255,255,.85)";c.beginPath();c.arc(n.x,n.y,n.r*1.32,0,Math.PI*2);c.stroke();c.lineWidth=1;
+  }c.strokeStyle=`rgba(255,255,255,${.25+n.energy*.65})`;
    c.beginPath();c.arc(n.x,n.y,n.r*(1.20+n.energy*.3+(n.gesture||0)*.15),0,Math.PI*2);c.stroke();}
  }
 }

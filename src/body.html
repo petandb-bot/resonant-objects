@@ -1,11 +1,10 @@
 <div id="app">
 <header class="top">
   <div class="brand"><span class="brandmark" aria-hidden="true">✧</span><div class="brand-name">RESONANT OBJECTS<small>A LITTLE UNIVERSE OF SOUND</small></div></div>
-  <div class="top-center" role="group" aria-label="Performance mode">
-    <button class="pill selected" data-mode="play" type="button">PLAY</button><button class="pill" data-mode="move" type="button">✥ MOVE</button>
-  </div>
+  <div class="top-center one-field" aria-label="One playing field"><span class="one-field-mark">✳</span> ONE PLAYING FIELD</div>
   <div class="top-right">
     <div class="quick-count piece-count" aria-label="Number of notes"><button data-count="7" type="button">7</button><button data-count="9" type="button">9</button><button data-count="11" type="button">11</button></div>
+    <button data-lock class="flatbtn lock-btn" type="button" aria-pressed="false" title="Prevent dragging; keep playing">UNLOCKED</button>
     <button id="reset" class="flatbtn" type="button" title="Restore the current layout">RESET</button>
     <button id="tuneBtn" class="flatbtn" type="button" aria-expanded="false" aria-controls="drawer">TUNE</button>
     <button id="labButton" class="flatbtn" type="button" title="Layout playability test">LAB</button>
@@ -38,7 +37,7 @@
   <canvas id="instrument" tabindex="0" aria-label="Tap center or rim, glide or move a resonant shape"></canvas>
   <canvas id="overlay" aria-hidden="true"></canvas><div id="labels" aria-hidden="true"></div>
   <div class="stage-topline">A FLOATING FIELD OF RESONANCE <span id="gpuMode" aria-label="Graphics renderer">GPU FIELD</span></div>
-  <div class="stage-message" id="touchHint">✦ CENTER / EDGE · GLIDE · LISTEN</div>
+  <div class="stage-message" id="touchHint">✦ TAP TO PLAY · CENTER TO MOVE · RIM TO GLIDE</div>
 </main>
 <aside class="rail" aria-label="Instrument settings">
   <section class="panel"><div class="panel-title"><span class="symbol">⁙</span>OBJECTS</div>
@@ -56,8 +55,9 @@
   <section class="panel expression-panel"><div class="panel-title"><span class="symbol">〰</span>PLAY FEEL <span class="newtag">v0.7</span></div>
     <div class="switchline"><span>Expressive touch</span><button data-feel type="button" class="switchbtn" aria-pressed="true">ON</button></div>
     <div class="graphics-grid"><label>FEEL <output data-value="expression">Gentle</output></label><input data-param="expression" aria-label="Expression amount" type="range" min="0" max="100" value="46"></div>
-    <div class="switchline"><span>Sound while moving</span><button data-move-sound type="button" class="switchbtn" aria-pressed="true">ON</button></div>
-    <p class="panel-desc">Center: warm · Rim: bright · Slide: sing · Move: rub</p>
+    <div class="switchline"><span>Drag sound</span><button data-move-sound type="button" class="switchbtn" aria-pressed="true">ON</button></div>
+    <div class="switchline"><span>Contact chimes</span><button data-collision type="button" class="switchbtn" aria-pressed="true">ON</button></div>
+    <p class="panel-desc">Touch: play · Centre: drag · Edge: glide · Contact: ring</p>
   </section>
   <section class="panel"><div class="panel-title"><span class="symbol">✳</span>LIVE RESONANCE <span class="newtag">NEW</span></div>
     <div class="switchline"><span>Continuous coupling</span><button data-link type="button" class="switchbtn" aria-pressed="true">ON</button></div>
@@ -74,7 +74,7 @@
   </section>
 </aside>
 </div>
-<footer class="bottom"><span class="fine">✧  RESONANT OBJECTS · v0.7</span><span class="readout" id="status" role="status" aria-live="polite">Tap a shape to wake the instrument</span></footer>
+<footer class="bottom"><span class="fine">✧  RESONANT OBJECTS · v0.8</span><span class="readout" id="status" role="status" aria-live="polite">Tap a shape to wake the instrument</span></footer>
 </div>
 <section id="drawer" role="region" aria-label="Instrument controls">
  <div class="drawer-title">TUNE THE INSTRUMENT <button id="closeTune" type="button" class="flatbtn" aria-label="Close tuning">✕</button></div>
@@ -86,7 +86,9 @@
   <div class="mini-field"><label>Bloom <output data-value="bloom">Off</output></label><input data-param="bloom" aria-label="Bloom" type="range" min="0" max="100" value="0"></div>
   <div class="mini-field"><label>Play Feel</label><button data-feel type="button" class="switchbtn" aria-pressed="true">ON</button></div>
   <div class="mini-field"><label>Expression <output data-value="expression">Gentle</output></label><input data-param="expression" aria-label="Expression amount" type="range" min="0" max="100" value="46"></div>
-  <div class="mini-field"><label>Move Sound</label><button data-move-sound type="button" class="switchbtn" aria-pressed="true">ON</button></div>
+  <div class="mini-field"><label>Drag Sound</label><button data-move-sound type="button" class="switchbtn" aria-pressed="true">ON</button></div>
+  <div class="mini-field"><label>Contact Chimes</label><button data-collision type="button" class="switchbtn" aria-pressed="true">ON</button></div>
+  <div class="mini-field"><label>Lock Positions</label><button data-lock type="button" class="switchbtn" aria-pressed="false">UNLOCKED</button></div>
   <div class="mini-field"><label>Live Link</label><button data-link type="button" class="switchbtn" aria-pressed="true">ON</button></div>
   <div class="mini-field"><label>Hold to sing</label><button data-hold type="button" class="switchbtn" aria-pressed="true">ON</button></div>
   <div class="mini-field"><label>GPU Aura <output data-value="aura">Luminous</output></label><input data-param="aura" aria-label="GPU glow intensity" type="range" min="0" max="100" value="48"></div>
@@ -104,8 +106,8 @@
 <div id="shade" class="modal-shade"></div>
 <section id="lab" role="dialog" aria-modal="true" aria-label="Playability lab">
  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><h2>PLAYABILITY LAB</h2><button id="labClose" type="button" class="flatbtn">CLOSE</button></div>
- <p>Compare seven, nine and eleven playable shapes. Tap center/rim, glide, hold or rearrange. All numbers are exploratory measurements, not proof of ergonomic comfort.</p>
- <table><thead><tr><th>Pieces</th><th>Diameter</th><th>Gap</th><th>Hits</th><th>Empty</th><th>Slides</th><th>Rub</th><th>Move</th><th>Multi</th></tr></thead><tbody id="labRows"></tbody></table>
- <p>Diameter and gap are CSS pixel estimates at this screen size, not real touch measurements. Empty taps are not necessarily mistakes. Multi is the maximum simultaneous pointers. Rub and Move count expressive gestures, not individual motion samples. Values are reset on reload. No personal/audio data is collected.</p>
+ <p>Compare seven, nine and eleven equally sized resonators. Tap to strike, drag from the centre, glide from the rim. All numbers are exploratory measurements, not proof of ergonomic comfort.</p>
+ <table><thead><tr><th>Pieces</th><th>Diameter</th><th>Gap</th><th>Hits</th><th>Empty</th><th>Slides</th><th>Rub</th><th>Drag</th><th>Contact</th><th>Multi</th></tr></thead><tbody id="labRows"></tbody></table>
+ <p>Diameter and gap are CSS pixel estimates at this screen size, not real touch measurements. Empty taps are not necessarily mistakes. Multi is the maximum simultaneous pointers. Rub and Drag count gestures, Contact counts new object-to-object collisions. Values are reset on reload. No personal/audio data is collected.</p>
 </section>
 <div id="turn" aria-label="Rotate device"><div class="turn-geometry" aria-hidden="true">◇</div><strong>TURN SIDEWAYS</strong><small>This little instrument likes both hands.<br>Disable rotation lock if necessary.</small></div>

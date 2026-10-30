@@ -8,7 +8,7 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
 body{font:500 13px/1.35 ui-rounded,'Avenir Next',Avenir,'Helvetica Neue',Arial,sans-serif;color:var(--ink);user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 button,input,select{font:inherit}button{touch-action:manipulation;cursor:pointer;color:inherit}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #4862f1;outline-offset:2px}
 button:disabled{opacity:.45;cursor:not-allowed}
-#reset:disabled{display:none}
+#reset:disabled{opacity:.45}
 #app{position:relative;height:100vh;height:100dvh;width:100%;display:flex;flex-direction:column;isolation:isolate;overflow:hidden;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);background:radial-gradient(at 55% 45%,#d8fcf9,#deecfa 65%,#f3e5fb)}
 #app:before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 7% 80%,#fbedd7a6,transparent 35%),radial-gradient(ellipse at 83% 17%,#d7cff59e,transparent 38%)}
 .top{display:flex;align-items:center;gap:12px;padding:8px clamp(12px,1.4vw,20px);height:66px;min-height:66px;z-index:4;position:relative;border-bottom:1px solid rgba(255,255,255,.45);background:linear-gradient(90deg,rgba(255,255,255,.42),rgba(245,252,255,.20));backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
@@ -134,3 +134,10 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;background:white;bord
 .expression-panel .graphics-grid{margin:4px 0}
 .expression-panel [data-param=expression]{accent-color:#856de4}
 @media(max-width:1100px){.expression-panel{display:none}}
+
+/* v0.8 · unified performance: controls are compact, nothing separates sound and motion. */
+.one-field{font-size:10px;letter-spacing:.15em;font-weight:750;color:#5481a2;white-space:nowrap;padding:0 13px;min-height:36px;align-items:center;justify-content:center}
+.one-field-mark{font-size:17px;color:#947bea;margin-right:7px}
+.lock-btn[aria-pressed="true"]{background:linear-gradient(120deg,#b8e3fa,#cbbdff);color:#315a8b;border-color:white}
+@media(max-width:1100px){.one-field{display:none}}
+@media(max-width:720px){.lock-btn{font-size:9px!important;padding:0 6px!important}}

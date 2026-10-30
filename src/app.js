@@ -1,4 +1,4 @@
-/* RESONANT OBJECTS v0.7 — App / interaction layer.
+/* RESONANT OBJECTS v0.8 — One Playing Field / interaction layer.
  * 描画 / 音源 / 状態を分離。WebGL描画上の位置とタッチ領域は同一のモデルを参照。
  * Notes use stable IDs within each layout; no timer-driven animation when idle. */
 (()=>{
@@ -16,8 +16,8 @@ const pitchBanks={
 };
 const selects={7:[0,1,2,3,4,6,8],9:[0,1,2,3,4,5,6,7,8],11:[0,1,2,3,4,5,6,7,8,9,10]};
 const params={material:36,ring:67,space:0,bond:75,bloom:0,level:84,aura:48,trace:38,expression:46};
-const state={count:9,scale:'minor',motion:'still',move:false,scene:'original',drawer:false,link:true,hold:true,quality:'balanced',feel:true,moveSound:true};
-const sets=new Map(),stats={7:{hits:0,empty:0,slides:0,rub:0,moves:0,multi:0},9:{hits:0,empty:0,slides:0,rub:0,moves:0,multi:0},11:{hits:0,empty:0,slides:0,rub:0,moves:0,multi:0}};
+const state={count:9,scale:'minor',motion:'still',locked:false,dragging:false,collision:true,scene:'original',drawer:false,link:true,hold:true,quality:'balanced',feel:true,moveSound:true};
+const sets=new Map(),stats={7:{hits:0,empty:0,slides:0,rub:0,moves:0,bumps:0,multi:0},9:{hits:0,empty:0,slides:0,rub:0,moves:0,bumps:0,multi:0},11:{hits:0,empty:0,slides:0,rub:0,moves:0,bumps:0,multi:0}};
 const pointerMap=new Map();let notes=[],W=1,H=1,requestId=0,lastTime=0,lastActive=0,viewReady=false;
 let lastTrigger=-1,lastLinkRefresh=0;
 const engine=new ResonantEngine(msg=>say(msg)),renderer=new VisualRenderer(canvas,overlay,msg=>say(msg));
@@ -40,16 +40,26 @@ function setNotes(){clearPointers();notes=sets.get(state.count);const names=pitc
  for(const [i,n] of notes.entries()){n.name=names[i][0];n.midi=names[i][1];}
  labels.replaceChildren();for(const n of notes){const el=document.createElement('div');el.className='note-label';el.dataset.note=n.id;el.textContent=n.name;labels.appendChild(el);n.label=el;}
  resize();updateButtons();engine.stopAllHolds();if(engine.ctx)engine.syncTanks(notes);}
+// Same physical screen size for all note counts: adding notes never shrinks an object.
+// A centered note and a fixed-size elliptical ring keep thumb access predictable.
 function layoutSet(set){
- const N=set.length,rx=Math.min(W*.285,H*1.06,345),ry=Math.min(H*.30,165);
- const r=Math.max(23,Math.min(N===7?42:N===9?39:31,H*(N===7?.126:N===9?.114:.087),W*(N===11?.049:.059)));
- for(const n of set){n.r=r*(n.big?1.18:1);n.stageW=W;n.stageH=H;
-  if(!n.saved){if(n.id===0){n.u=.5;n.v=.5;}else{const a=-Math.PI/2+2*Math.PI*(n.id-1)/(N-1);
-    n.u=.5+(rx/W)*Math.cos(a);n.v=.5+(ry/H)*Math.sin(a);}}
-  n.x=clamp(n.u*W,n.r+5,W-n.r-5);n.y=clamp(n.v*H,n.r+5,H-n.r-5);
+ const N=set.length;
+ const r=clamp(Math.min(32,H*.102,W*.048),22,32);
+ const rx=Math.min(W*.335,W*.5-r-12);
+ const ry=Math.min(H*.325,H*.5-r-12);
+ for(const n of set){
+  n.r=r;n.stageW=W;n.stageH=H;
+  if(!n.saved){
+   if(n.id===0){n.u=.5;n.v=.5;}
+   else{const angle=-Math.PI/2+2*Math.PI*(n.id-1)/(N-1)+(N===11?Math.PI/10:0);
+    n.u=.5+rx/W*Math.cos(angle);n.v=.5+ry/H*Math.sin(angle);}
+  }
+  n.x=clamp(n.u*W,r+4,W-r-4);
+  n.y=clamp(n.v*H,r+4,H-r-4);
   n.u=n.x/W;n.v=n.y/H;
  }
 }
+
 function resize(){if(!viewReady)return;
  const rect=field.getBoundingClientRect();W=Math.max(1,rect.width);H=Math.max(1,rect.height);
  renderer.resize(W,H);for(const set of sets.values())layoutSet(set);updateLabels();drawRequest();}
@@ -92,75 +102,103 @@ function hit(x,y){let best=-1,dist=Infinity;
  return best;
 }
 const xy=e=>{const r=canvas.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top};};
-function play(index,velocity=1,radial=0){if(state.move)return;
- // Called directly from user input to satisfy Safari audio gesture requirements.
+function play(index,velocity=1,radial=0){
+ // Use a stable snapshot because resuming AudioContext is asynchronous on Safari.
+ const current=notes, note=current[index];if(!note)return;
  engine.unlock().then(ok=>{
   if(!ok){say('Tap again to enable sound');return;}
-  if(engine.strike(index,notes,velocity,state.feel?radial:0)){
-    say(`✦ ${notes[index].name} · ${radial>.62&&state.feel?'bright rim':'resonating'}`);drawRequest();
+  if(current!==notes)return;
+  if(engine.strike(index,current,velocity,state.feel?radial:0)){
+   say(`✦ ${note.name} · ${radial>.62&&state.feel?'bright rim':'resonating'}`);drawRequest();
   }
  });
 }
-function pointerDown(e){e.preventDefault();if($('lab').classList.contains('open'))return;
+function pointerDown(e){
+ e.preventDefault();if($('lab').classList.contains('open'))return;
  if(state.drawer){toggleDrawer(false);return;}
  const {x,y}=xy(e),i=hit(x,y);
- if(i<0){if(!state.move)stats[state.count].empty++;return;}
+ if(i<0){stats[state.count].empty++;return;}
  try{canvas.setPointerCapture(e.pointerId);}catch(_){}
- const n=notes[i],p={id:i,last:i,move:state.move,holdTimer:0,
-  x,y,startX:x,startY:y,when:performance.now(),moved:false,gesture:false,
-  offsetX:x-n.x,offsetY:y-n.y,countedRub:false,countedMove:false};
+ const n=notes[i],radial=clamp(Math.hypot(x-n.x,y-n.y)/n.r,0,1);
+ // Center-first drag, edge-first glide. They share the same immediate note onset.
+ const alreadyGrabbed=[...pointerMap.values()].some(p=>p.id===i&&p.intent==='drag');
+ const p={id:i,last:i,intent:'pending',canDrag:radial<.69&&!state.locked&&!alreadyGrabbed,
+  holdTimer:0,x,y,startX:x,startY:y,when:performance.now(),moved:false,gesture:false,
+  offsetX:x-n.x,offsetY:y-n.y,countedRub:false,countedMove:false,
+  contactWith:new Set(),lastSpeed:0};
  pointerMap.set(e.pointerId,p);
- if(state.move){
-  if(state.moveSound&&state.feel)engine.unlock();
-  say(state.moveSound?'MOVE · drag to hear the resonators':'MOVE · silent arrangement');drawRequest();return;
- }
  stats[state.count].hits++;stats[state.count].multi=Math.max(stats[state.count].multi,pointerMap.size);
- const radial=clamp(Math.hypot(x-n.x,y-n.y)/n.r,0,1);
- const v=clamp(1.03-.25*radial,.66,1);
- lastTrigger=i;play(i,v,radial);scheduleHold(e.pointerId,i);
+ play(i,clamp(1.03-.25*radial,.66,1),radial);
+ scheduleHold(e.pointerId,i);
 }
 function cancelHold(pointerId){
  const p=pointerMap.get(pointerId);if(p?.holdTimer){clearTimeout(p.holdTimer);p.holdTimer=0;}
  engine.stopHold(pointerId);
 }
 function scheduleHold(pointerId,index){
- const p=pointerMap.get(pointerId);if(!p||state.move||!state.hold||p.moved)return;
+ const p=pointerMap.get(pointerId);if(!p||!state.hold||p.moved)return;
  if(p.holdTimer)clearTimeout(p.holdTimer);
  p.holdTimer=setTimeout(()=>{
   p.holdTimer=0;
-  if(pointerMap.get(pointerId)===p&&p.last===index&&!state.move&&state.hold&&!p.moved){
+  if(pointerMap.get(pointerId)===p&&p.last===index&&state.hold&&!p.moved){
    engine.startHold(pointerId,notes[index]);notes[index].energy=Math.max(notes[index].energy,.34);drawRequest();
   }
  },270);
 }
-function pointerMove(e){const p=pointerMap.get(e.pointerId);if(!p)return;e.preventDefault();
+// Reposition without allowing a dragged object to cover the centre of another pad.
+// Contact sound is emitted only once per entry into an overlap zone (re-arms on exit).
+function dragObject(pointerId,p,x,y,speed,now){
+ const n=notes[p.id];let nx=clamp(x-p.offsetX,n.r+4,W-n.r-4);
+ let ny=clamp(y-p.offsetY,n.r+4,H-n.r-4);
+ let nearest=null,nearestDist=Infinity;
+ for(const other of notes){
+  if(other.id===n.id)continue;
+  let dx=nx-other.x,dy=ny-other.y,d=Math.hypot(dx,dy);
+  const minD=n.r+other.r+3;
+  if(d<nearestDist){nearestDist=d;nearest=other;}
+  if(d<minD){
+   if(state.collision&&state.feel&&speed>.10&&!p.contactWith.has(other.id)){
+    engine.contact(n,other,speed,notes);stats[state.count].bumps++;
+    n.energy=Math.max(n.energy,.58);other.energy=Math.max(other.energy,.48);
+    other.gesture=Math.max(other.gesture||0,.70);
+   }
+   p.contactWith.add(other.id);
+   if(d<.01){dx=n.x-other.x;dy=n.y-other.y;d=Math.hypot(dx,dy)||1;}
+   nx=other.x+dx/d*minD;ny=other.y+dy/d*minD;
+   nx=clamp(nx,n.r+4,W-n.r-4);ny=clamp(ny,n.r+4,H-n.r-4);
+  }else if(d>minD+10){p.contactWith.delete(other.id);}
+ }
+ n.x=nx;n.y=ny;n.u=nx/W;n.v=ny/H;n.saved=true;n.dragged=true;
+ state.dragging=true;
+ if(now-lastLinkRefresh>55){engine.refreshLinks(notes);lastLinkRefresh=now;}
+ if(state.feel&&state.moveSound&&params.expression>0){
+  if(!p.gesture)p.gesture=engine.beginGesture(pointerId,n);
+  if(p.gesture){
+   const reach=Math.max(75,Math.min(W,H)*.54);
+   const proximity=nearest?clamp(1-nearestDist/reach,0,1):0;
+   const pitchBend=nearest?clamp((nearest.midi-n.midi)/12,-1,1)*proximity:0;
+   engine.updateGesture(pointerId,n,{speed,radial:0,offset:pitchBend,proximity,move:true});
+   n.gesture=Math.max(n.gesture||0,.14+speed*.55);
+  }
+ }
+ if(!p.countedMove){stats[state.count].moves++;p.countedMove=true;}
+ updateLabels();drawRequest();
+}
+function pointerMove(e){
+ const p=pointerMap.get(e.pointerId);if(!p)return;e.preventDefault();
  const {x,y}=xy(e),now=performance.now(),dt=Math.max(9,Math.min(95,now-p.when));
  const delta=Math.hypot(x-p.x,y-p.y),speed=clamp(delta/dt/.74,0,1);
- p.x=x;p.y=y;p.when=now;
- if(!p.moved&&Math.hypot(x-p.startX,y-p.startY)>8){p.moved=true;cancelHold(e.pointerId);}
- if(p.move){
-  const n=notes[p.id];n.x=clamp(x-p.offsetX,n.r+4,W-n.r-4);
-  n.y=clamp(y-p.offsetY,n.r+4,H-n.r-4);
-  n.u=n.x/W;n.v=n.y/H;n.saved=true;
-  // The acoustics change while dragged, never wait for the pointer to release.
-  if(now-lastLinkRefresh>65){engine.refreshLinks(notes);lastLinkRefresh=now;}
-  if(p.moved&&state.feel&&state.moveSound&&params.expression>0){
-   if(!p.gesture)p.gesture=engine.beginGesture(e.pointerId,n);
-   if(p.gesture){
-    const neighbors=notes.filter(other=>other.id!==n.id).map(other=>({other,d:Math.hypot(n.x-other.x,n.y-other.y)})).sort((a,b)=>a.d-b.d);
-    const nearest=neighbors[0],reach=Math.max(70,Math.min(W,H)*.54);
-    const proximity=nearest?clamp(1-nearest.d/reach,0,1):0;
-    const pitchBend=nearest?clamp((nearest.other.midi-n.midi)/12,-1,1)*proximity:0;
-    engine.updateGesture(e.pointerId,n,{speed,radial:0,offset:pitchBend,proximity,move:true});
-    n.gesture=Math.max(n.gesture||0,.14+speed*.48);
-    if(!p.countedMove){stats[state.count].moves++;p.countedMove=true;}
-   }
-  }
-  updateLabels();drawRequest();return;
+ p.x=x;p.y=y;p.when=now;p.lastSpeed=speed;
+ const travel=Math.hypot(x-p.startX,y-p.startY);
+ if(!p.moved&&travel>10){p.moved=true;cancelHold(e.pointerId);}
+ if(p.intent==='pending'&&travel>15){p.intent=p.canDrag?'drag':'glide';}
+ if(p.intent==='drag'){
+  dragObject(e.pointerId,p,x,y,speed,now);return;
  }
+ if(p.intent!=='glide')return;
  const i=hit(x,y);
- if(p.moved&&state.feel&&params.expression>0){
-  const n=notes[i>=0?i:p.last];
+ if(state.feel&&params.expression>0){
+  const n=notes[i>=0?i:(p.last>=0?p.last:p.id)];
   if(n){
    if(!p.gesture)p.gesture=engine.beginGesture(e.pointerId,n);
    if(p.gesture){
@@ -171,11 +209,10 @@ function pointerMove(e){const p=pointerMap.get(e.pointerId);if(!p)return;e.preve
    }
   }
  }
- if(i!==p.last){cancelHold(e.pointerId);p.last=i;
+ if(i!==p.last){p.last=i;
   if(i>=0){stats[state.count].hits++;stats[state.count].slides++;
    const radial=clamp(Math.hypot(x-notes[i].x,y-notes[i].y)/notes[i].r,0,1);
-   const v=clamp(.86-.18*radial,.55,.86);
-   lastTrigger=i;play(i,v,radial);if(!p.moved)scheduleHold(e.pointerId,i);
+   play(i,clamp(.86-.18*radial,.55,.86),radial);
   }
  }
  drawRequest();
@@ -186,12 +223,21 @@ canvas.addEventListener('pointermove',pointerMove,{passive:false});
 function pointerEnd(e){
  const p=pointerMap.get(e.pointerId);if(!p)return;
  cancelHold(e.pointerId);engine.endGesture(e.pointerId);pointerMap.delete(e.pointerId);
- if(p.move)engine.refreshLinks(notes);
+ if(p.intent==='drag'){
+  notes[p.id].dragged=false;
+  if(state.feel&&state.moveSound&&p.lastSpeed>.23&&performance.now()-p.when<110){
+   engine.releasePluck(notes[p.id],p.lastSpeed);
+   notes[p.id].energy=Math.max(notes[p.id].energy,.35);
+  }
+  state.dragging=[...pointerMap.values()].some(v=>v.intent==='drag');
+  engine.refreshLinks(notes);drawRequest();
+ }
 }
 for(const ev of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(ev,pointerEnd);
 function updateButtons(){
  qsa('[data-count]').forEach(b=>b.setAttribute('aria-pressed',String(Number(b.dataset.count)===state.count)));
- qsa('[data-mode]').forEach(b=>b.classList.toggle('selected',b.dataset.mode===(state.move?'move':'play')));
+ qsa('[data-lock]').forEach(b=>{b.setAttribute('aria-pressed',String(state.locked));b.textContent=state.locked?'LOCKED':'UNLOCKED';});
+ qsa('[data-collision]').forEach(b=>{b.setAttribute('aria-pressed',String(state.collision));b.textContent=state.collision?'ON':'OFF';});
  qsa('[data-motion]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.motion===state.motion)));
  qsa('[data-scale]').forEach(s=>s.value=state.scale);
  qsa('[data-link]').forEach(b=>{b.setAttribute('aria-pressed',String(state.link));b.textContent=state.link?'ON':'OFF';});
@@ -199,16 +245,15 @@ function updateButtons(){
  qsa('[data-feel]').forEach(b=>{b.setAttribute('aria-pressed',String(state.feel));b.textContent=state.feel?'ON':'OFF';});
  qsa('[data-move-sound]').forEach(b=>{b.setAttribute('aria-pressed',String(state.moveSound));b.textContent=state.moveSound?'ON':'OFF';});
  qsa('[data-quality]').forEach(s=>s.value=state.quality);
- $('reset').disabled=!state.move;
- $('touchHint').textContent=state.move?(state.moveSound&&state.feel?'✦ DRAG · RUB · CONNECT':'✦ DRAG · CONNECT'):(state.feel?'✦ CENTER · RIM · GLIDE · HOLD':'✦ TAP · SLIDE · HOLD');
+ $('touchHint').textContent=state.locked?'✦ POSITIONS LOCKED · TAP · GLIDE · HOLD':'✦ TAP TO PLAY · CENTER TO MOVE · RIM TO GLIDE';
  $('sceneName').textContent=({original:'Glass garden',cloud:'Blue hour',bright:'Little sun'})[state.scene]||'Custom';
 }
 function clearPointers(){for(const id of pointerMap.keys()){
   cancelHold(id);engine.endGesture(id);
- }pointerMap.clear();}
+ }pointerMap.clear();for(const n of notes)n.dragged=false;state.dragging=false;}
 function setCount(n){if(![7,9,11].includes(n))return;clearPointers();state.count=n;setNotes();say(`${n} resonators ready`);}
 function setScale(s){if(!pitchBanks[s])return;state.scale=s;setNotes();say('New tuning · '+({minor:'D minor',penta:'Pentatonic',lydian:'F Lydian'})[s]);}
-function setMode(move){clearPointers();state.move=move;updateButtons();say(move?'Drag the shapes to change their relationships':'Tap · slide · listen');drawRequest();}
+function setLock(locked){clearPointers();state.locked=locked;updateButtons();say(locked?'Positions locked · sounds remain playable':'Drag centers to move, glide along edges');drawRequest();}
 function setMotion(m){if(!['still','float','orbit'].includes(m))return;
  state.motion=m;updateButtons();drawRequest();}
 function setParam(k,v){v=clamp(Number(v),0,100);params[k]=v;
@@ -250,13 +295,13 @@ function shuffle(){
 function reset(){for(const n of notes)n.saved=false;layoutSet(notes);engine.refreshLinks(notes);updateLabels();drawRequest();say('Positions reset');}
 function save(){
  try{const result={count:state.count,scale:state.scale,motion:state.motion,scene:state.scene,params,
-  feel:state.feel,moveSound:state.moveSound,link:state.link,hold:state.hold,quality:state.quality,
+  feel:state.feel,moveSound:state.moveSound,collision:state.collision,locked:state.locked,link:state.link,hold:state.hold,quality:state.quality,
   positions:Object.fromEntries([...sets].map(([k,set])=>[k,set.map(n=>({u:n.u,v:n.v,saved:n.saved}))]))};
-  localStorage.setItem('resonant-objects-v07',JSON.stringify(result));say('Saved on this device');
+  localStorage.setItem('resonant-objects-v08',JSON.stringify(result));say('Saved on this device');
  }catch(e){say('Storage unavailable');}
 }
 function restore(){
- try{const raw=localStorage.getItem('resonant-objects-v07')||localStorage.getItem('resonant-objects-v06')||localStorage.getItem('resonant-objects-v05')||localStorage.getItem('resonant-objects-v04');if(!raw)return;
+ try{const raw=localStorage.getItem('resonant-objects-v08')||localStorage.getItem('resonant-objects-v07')||localStorage.getItem('resonant-objects-v06')||localStorage.getItem('resonant-objects-v05')||localStorage.getItem('resonant-objects-v04');if(!raw)return;
   const v=JSON.parse(raw);if([7,9,11].includes(v.count))state.count=v.count;
   if(pitchBanks[v.scale])state.scale=v.scale;
   if(['still','float','orbit'].includes(v.motion))state.motion=v.motion;
@@ -266,6 +311,8 @@ function restore(){
   if(typeof v.hold==='boolean')state.hold=v.hold;
   if(typeof v.feel==='boolean')state.feel=v.feel;
   if(typeof v.moveSound==='boolean')state.moveSound=v.moveSound;
+  if(typeof v.collision==='boolean')state.collision=v.collision;
+  if(typeof v.locked==='boolean')state.locked=v.locked;
   if(v.positions)for(const [key,ps] of Object.entries(v.positions)){
    const set=sets.get(Number(key));if(!set||!Array.isArray(ps))continue;
    for(let i=0;i<Math.min(set.length,ps.length);i++){
@@ -286,10 +333,11 @@ function metrics(N){const set=sets.get(N);let minD=Infinity,gap=Infinity;
 function lab(open){$('lab').classList.toggle('open',open);$('shade').classList.toggle('open',open);
  if(open){toggleDrawer(false);const rows=$('labRows');rows.replaceChildren();
   for(const k of [7,9,11]){const m=metrics(k),s=stats[k],tr=document.createElement('tr');
-   tr.innerHTML=`<td>${k}${k===state.count?' ●':''}</td><td>${m.diameter}px</td><td>${m.gap}px</td><td>${s.hits}</td><td>${s.empty}</td><td>${s.slides}</td><td>${s.rub}</td><td>${s.moves}</td><td>${s.multi}</td>`;
+   tr.innerHTML=`<td>${k}${k===state.count?' ●':''}</td><td>${m.diameter}px</td><td>${m.gap}px</td><td>${s.hits}</td><td>${s.empty}</td><td>${s.slides}</td><td>${s.rub}</td><td>${s.moves}</td><td>${s.bumps}</td><td>${s.multi}</td>`;
    rows.appendChild(tr);}}
 }
-qsa('[data-mode]').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode==='move')));
+qsa('[data-lock]').forEach(b=>b.addEventListener('click',()=>setLock(!state.locked)));
+qsa('[data-collision]').forEach(b=>b.addEventListener('click',()=>{state.collision=!state.collision;updateButtons();say(state.collision?'Gentle contact notes enabled':'Contact notes muted');}));
 qsa('[data-count]').forEach(b=>b.addEventListener('click',()=>setCount(Number(b.dataset.count))));
 qsa('[data-motion]').forEach(b=>b.addEventListener('click',()=>setMotion(b.dataset.motion)));
 qsa('[data-link]').forEach(b=>b.addEventListener('click',()=>{
@@ -324,7 +372,7 @@ $('scenePrev').addEventListener('click',()=>{const order=['original','cloud','br
 $('sceneNext').addEventListener('click',()=>{const order=['original','cloud','bright'];scene(order[(order.indexOf(state.scene)+1)%3]);});
 window.addEventListener('keydown',e=>{
  if(e.key==='Escape'){lab(false);toggleDrawer(false);return;}
- if(e.repeat||state.move||state.drawer||$('lab').classList.contains('open')||['INPUT','BUTTON','SELECT'].includes(document.activeElement?.tagName))return;
+ if(e.repeat||state.drawer||$('lab').classList.contains('open')||['INPUT','BUTTON','SELECT'].includes(document.activeElement?.tagName))return;
  const idx='1234567890-'.indexOf(e.key);if(idx<0||idx>=notes.length)return;e.preventDefault();play(idx,.90);
 });
 if('ResizeObserver' in window)new ResizeObserver(resize).observe(field);else window.addEventListener('resize',resize);
@@ -332,5 +380,5 @@ window.addEventListener('orientationchange',()=>setTimeout(resize,150));
 document.addEventListener('visibilitychange',()=>{if(document.hidden){clearPointers();engine.suspend();}else{lastTime=0;resize();}});
 window.addEventListener('pagehide',()=>engine.suspend());
 // Deliberately initialize without audio; first gesture must create/resume its context.
-viewReady=true;restore();renderer.setQuality(state.quality);for(const k of Object.keys(params))setParam(k,params[k]);engine.setExpression(state.feel?params.expression:0);engine.setLink(state.link);setNotes();say('Touch a shape · GPU resonance is ready');
+viewReady=true;restore();renderer.setQuality(state.quality);for(const k of Object.keys(params))setParam(k,params[k]);engine.setExpression(state.feel?params.expression:0);engine.setLink(state.link);setNotes();say('Touch to play · drag the centre · glide at the rim');
 })();
