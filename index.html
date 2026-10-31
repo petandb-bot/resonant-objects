@@ -4,7 +4,7 @@
 <meta name="theme-color" content="#07090d">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>RESONANT OBJECTS · v0.15.0</title>
+<title>RESONANT OBJECTS · v0.16.1</title>
 <style>:root{
   --ink:#344f78; --muted:#7387a5; --aqua:#83e4e5; --violet:#9c9bfd;
   --cream:#fcfff9; --line:rgba(255,255,255,.72); --glaze:rgba(251,255,255,.50);
@@ -307,7 +307,7 @@ input[type=range]::-webkit-slider-thumb{background:#73c9dd!important;border:1px 
  <button class="material-icon" data-material-type="4" type="button" aria-label="WAVE" title="WAVE — slowly breathing tones" aria-pressed="false"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M3 14C8 5 13 23 18 14S27 5 29 14M3 21c5-9 10 9 15 0s9-9 11 0"/></svg></button>
  </div>
  <div class="top-right">
-  <div class="quick-count piece-count" role="group" aria-label="Number of sound objects"><button data-count="7" type="button">7</button><button data-count="9" type="button">9</button><button data-count="11" type="button">11</button></div>
+  <div class="quick-count piece-count" role="group" aria-label="Number of sound objects"><button data-count="7" type="button">7</button><button data-count="9" type="button">9</button><button data-count="11" type="button">11</button><button data-resonator-layout type="button" title="Nine instruments plus two resonators">9+2</button></div>
   <button data-lock class="icon-control" type="button" aria-pressed="false" title="Lock positions" aria-label="Lock positions"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M9 13V9a7 7 0 0 1 13-4M6 13h20v16H6zM16 19v5"/></svg></button>
   <button id="tuneBtn" class="icon-control" type="button" aria-expanded="false" aria-controls="drawer" aria-label="Open instrument settings" title="Instrument settings"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="8" cy="8" r="2"/><circle cx="24" cy="8" r="2"/><circle cx="8" cy="24" r="2"/><circle cx="24" cy="24" r="2"/><circle cx="16" cy="16" r="3"/></svg></button>
  </div>
@@ -345,7 +345,7 @@ input[type=range]::-webkit-slider-thumb{background:#73c9dd!important;border:1px 
 <aside class="rail" aria-label="Instrument settings">
   <section class="panel"><div class="panel-title"><span class="symbol">⁙</span>OBJECTS</div>
     <div class="piece-count" role="group" aria-label="Number of sound objects">
-      <button data-count="7" aria-pressed="false" type="button">7</button><button data-count="9" aria-pressed="true" type="button">9</button><button data-count="11" aria-pressed="false" type="button">11</button>
+      <button data-count="7" aria-pressed="false" type="button">7</button><button data-count="9" aria-pressed="true" type="button">9</button><button data-count="11" aria-pressed="false" type="button">11</button><button data-resonator-layout aria-pressed="false" type="button">9+2</button>
     </div></section>
   <section class="panel"><div class="panel-title"><span class="symbol">✧</span>SCENE</div>
     <div class="actionrow"><button id="scenePrev" type="button" aria-label="Previous scene">‹</button><button id="sceneName" type="button" disabled>Glass garden</button><button id="sceneNext" type="button" aria-label="Next scene">›</button></div>
@@ -389,7 +389,7 @@ input[type=range]::-webkit-slider-thumb{background:#73c9dd!important;border:1px 
   </section>
 </aside>
 </div>
-<footer class="bottom"><span class="fine">✧  RESONANT OBJECTS · v0.15.0</span><span class="readout" id="status" role="status" aria-live="polite">Tap a shape · drag to arrange silently</span></footer>
+<footer class="bottom"><span class="fine">✧  RESONANT OBJECTS · v0.16.1</span><span class="readout" id="status" role="status" aria-live="polite">Tap a shape · drag to arrange silently</span></footer>
 </div>
 <section id="drawer" role="region" aria-label="Instrument controls">
  <div class="drawer-title">SOUND / SPACE <button id="closeTune" type="button" class="flatbtn" aria-label="Close tuning">✕</button></div>
@@ -423,7 +423,7 @@ input[type=range]::-webkit-slider-thumb{background:#73c9dd!important;border:1px 
   <div class="mini-field"><label>GPU Trace <output data-value="trace">Gentle</output></label><input data-param="trace" aria-label="GPU resonance trail" type="range" min="0" max="100" value="38"></div>
  </div>
  <div class="drawer-grid" style="margin-top:8px">
-  <div class="mini-field"><label>Pieces</label><div class="piece-count"><button data-count="7" type="button">7</button><button data-count="9" type="button">9</button><button data-count="11" type="button">11</button></div></div>
+  <div class="mini-field"><label>Pieces</label><div class="piece-count"><button data-count="7" type="button">7</button><button data-count="9" type="button">9</button><button data-count="11" type="button">11</button><button data-resonator-layout type="button" title="Nine instruments plus two resonators">9+2</button></div></div>
   <div class="mini-field"><label>Scale</label><select data-scale aria-label="Musical scale">
       <optgroup label="Original tunings">
         <option value="minor">D minor</option><option value="penta">C pentatonic</option><option value="lydian">F Lydian</option>
@@ -456,7 +456,7 @@ input[type=range]::-webkit-slider-thumb{background:#73c9dd!important;border:1px 
 </section>
 <div id="turn" aria-label="Rotate device"><div class="turn-geometry" aria-hidden="true">◇</div><strong>TURN SIDEWAYS</strong><small>This little instrument likes both hands.<br>Disable rotation lock if necessary.</small></div>
 
-<script>/* RESONANT OBJECTS v0.15.0 — FIVE INDEPENDENT SOUND ENGINES
+<script>/* RESONANT OBJECTS v0.16.1 — FIVE INDEPENDENT SOUND ENGINES
  * 共通のWeb Audio出力バスは使うが、発音原理とノード・グラフは素材ごとに独立。
  * JEWEL: modal partial synthesis / CANDY: dynamic FM
  * CERAMIC: excited short waveguide / METAL: inharmonic cross-frequency FM
@@ -630,7 +630,7 @@ class WaveBreathingEngine {
   });
  }
 }
-/* RESONANT OBJECTS v0.15.0 — five independent acoustic engines. No external dependencies.
+/* RESONANT OBJECTS v0.16.1 — five independent acoustic engines. No external dependencies.
  * 原音を維持しつつ、近接共鳴の「打撃時」と「音声信号経由」の2層を分離する。
  * Audio graph: per-voice modal synth -> dry bus -> compressor
  *                       \-> modal tanks <-> bounded damped coupling -> wet bus
@@ -821,9 +821,24 @@ class ResonantEngine {
  }
  setLevel(v){this.level=v/100;if(this.master&&this.ctx)this.master.gain.setTargetAtTime(this.level,this.ctx.currentTime,.02);}
  clearTanks(){
-  for(const e of this.edges){try{e.gain.disconnect();}catch(_){}}
-  for(const t of this.tanks)for(const node of t.nodes){try{node.disconnect();}catch(_){}}
+  const oldEdges=this.edges,oldTanks=this.tanks;
   this.tanks=[];this.edges=[];this.tankKey='';
+  if(!oldTanks.length)return;
+  // Fade old resonators instead of disconnecting active feedback during a sounding note.
+  const now=this.ctx?.currentTime||0;
+  for(const e of oldEdges){
+   try{e.gain.gain.cancelScheduledValues(now);e.gain.gain.setTargetAtTime(0,now,.035);}catch(_){}
+  }
+  for(const t of oldTanks){
+   try{t.input.gain.setTargetAtTime(0,now,.045);
+       t.ret.gain.setTargetAtTime(0,now,.055);
+       t.loopGain.gain.setTargetAtTime(0,now,.045);}catch(_){}
+  }
+  // Nodes are kept alive until the short fade finishes, then disconnected.
+  setTimeout(()=>{
+   for(const e of oldEdges)try{e.gain.disconnect();}catch(_){}
+   for(const t of oldTanks)for(const node of t.nodes)try{node.disconnect();}catch(_){}
+  },350);
  }
  syncTanks(notes){
   if(!this.ctx||!notes?.length)return;
@@ -895,7 +910,9 @@ class ResonantEngine {
   }
  }
  newVoice(time){
-  if(this.voices.length>=28)this.releaseVoice(this.voices[0],time);
+  // Prefer preserving the musical tail. Steal only when the polyphony ceiling is reached.
+  // Voices are always faded before oscillator shutdown.
+  if(this.voices.length>=32)this.releaseVoice(this.voices[0],time);
   const bus=this.ctx.createGain();bus.gain.setValueAtTime(1,time);bus.connect(this.voiceBus);
   const voice={bus,oscillators:[],finished:false};this.voices.push(voice);return voice;
  }
@@ -903,16 +920,16 @@ class ResonantEngine {
   if(!v||v.finished)return;v.finished=true;
   const now=Math.max(time,this.ctx.currentTime);
   v.bus.gain.cancelScheduledValues(now);v.bus.gain.setValueAtTime(Math.max(.0001,v.bus.gain.value),now);
-  v.bus.gain.exponentialRampToValueAtTime(.0001,now+.055);
-  for(const osc of v.oscillators){try{osc.stop(now+.065);}catch(_){}}
+  v.bus.gain.exponentialRampToValueAtTime(.0001,now+.085);
+  for(const osc of v.oscillators){try{osc.stop(now+.105);}catch(_){}}
   const i=this.voices.indexOf(v);if(i>=0)this.voices.splice(i,1);
  }
  // The sound source is selected per object; wave accents can coexist with struck materials.
- soundType(note){return this.materialType;}
+ soundType(note){return note?.resonator?4:this.materialType;}
  // WAVE is an additive resonant veil: no primary voice is replaced.
  // Kept quiet and rate-limited so repeated notes never become a drone pile-up.
  waveVeil(note,velocity,{sympathetic=false,delay=0,radial=0}={}){
-  if(!note?.waveLayer || this.materialType===4 || velocity<.055)return;
+  if(!note?.waveLayer || note.resonator || this.materialType===4 || velocity<.055)return;
   const now=performance.now(),last=this.waveLayerTime?.get(note.id)||-10000;
   if(now-last<(sympathetic?480:180))return;
   if(!this.waveLayerTime)this.waveLayerTime=new Map();
@@ -931,34 +948,13 @@ class ResonantEngine {
   origin.streak=now-(origin.last||0)<380?Math.min(5,(origin.streak||0)+1):0;
   this.tone(origin,velocity,false,0,radial,origin.streak);
   origin.last=now;origin.energy=Math.min(1,origin.energy+velocity*.92);
-  const distances=notes.filter(n=>n.id!==index)
-   .map(n=>({n,dist:Math.hypot(n.x-origin.x,n.y-origin.y)})).sort((a,b)=>a.dist-b.dist);
-  const reach=Math.max(85,Math.min(origin.stageW,origin.stageH)*.61);
-  let sent=0;
-  for(const {n,dist} of distances){
-   if(sent>=2||dist>reach)break;
-   const v=velocity*(.09+.19*(1-dist/reach))*(.25+this.bond);
-   if(v<.045)continue;
-   this.tone(n,v,true,.014+sent*.009);n.energy=Math.min(1,n.energy+v*.55);sent++;
-  }
-  const outgoing=this.connections.filter(e=>e.a===index||e.b===index).slice(0,2);
-  for(const [k,edge] of outgoing.entries()){
+  // Nearby notes and explicit connections already share energy through the modal tanks.
+  // Do not create separate sympathetic note-on events: those sounded like ghost touches
+  // and could trigger voice stealing / discontinuous tails during fast playing.
+  for(const edge of this.connections){
+   if(edge.a!==index&&edge.b!==index)continue;
    const other=notes[edge.a===index?edge.b:edge.a];
-   if(!other)continue;
-   const v=velocity*(.075+.11*this.bond);
-   this.tone(other,v,true,.025+k*.010);
-   // Connected WAVE layers bloom into a quiet harmonic field. No new transient.
-   // A source that carries a veil can also excite a linked neighbour gently.
-   if(origin.waveLayer && !other.waveLayer && this.materialType!==4){
-    const now=performance.now();
-    if(!this.threadWaveTime)this.threadWaveTime=new Map();
-    const key=index+':'+other.id;
-    if(now-(this.threadWaveTime.get(key)||-10000)>850){
-     this.threadWaveTime.set(key,now);
-     this.synths[4].strike(other,velocity*.13,{sympathetic:true,delay:.07+k*.018});
-    }
-   }
-   other.energy=Math.min(1,other.energy+.23*v);
+   if(other)other.energy=Math.min(1,other.energy+.10*velocity);
   }
   return true;
  }
@@ -971,7 +967,7 @@ class ResonantEngine {
   if(strength<=0)return false;
   const key=Math.min(source.id,target.id)+':'+Math.max(source.id,target.id);
   const now=performance.now();
-  if(now-(this.lastContact.get(key)||-10000)<330)return false;
+  if(now-(this.lastContact.get(key)||-10000)<500)return false;
   this.lastContact.set(key,now);
   // Keep only bounded timestamps; no ever-growing contact history.
   if(this.lastContact.size>90)for(const [k,t] of this.lastContact)
@@ -1079,7 +1075,7 @@ class ResonantEngine {
 }
 
 
-/* RESONANT OBJECTS v0.15.0 — GPU field renderer
+/* RESONANT OBJECTS v0.16.1 — GPU field renderer
  * WebGL2 > WebGL1. Audio remains Web Audio (WebGL is graphics only).
  * Pass 1: native-resolution color field, geometry and GPU connection ribbons.
  * Pass 2: half-resolution double-buffered temporal resonance (GPU ping-pong).
@@ -1518,7 +1514,7 @@ class VisualRenderer{
 }
 
 
-/* RESONANT OBJECTS v0.15.0 — One Playing Field / interaction layer.
+/* RESONANT OBJECTS v0.16.1 — One Playing Field / interaction layer.
  * 描画 / 音源 / 状態を分離。WebGL描画上の位置とタッチ領域は同一のモデルを参照。
  * Notes use stable IDs within each layout; no timer-driven animation when idle. */
 (()=>{
@@ -1562,13 +1558,17 @@ const pitchBanks=Object.fromEntries(Object.entries(scaleDefinitions).map(([key,b
  [key,bank.pitches.map(m=>[midiName(m,key),m])]));
 const selects={7:[0,1,2,3,4,6,8],9:[0,1,2,3,4,5,6,7,8],11:[0,1,2,3,4,5,6,7,8,9,10]};
 const params={material:36,ring:67,space:0,bond:75,bloom:0,level:84,aura:48,trace:38,expression:46};
-const state={reverbType:'nest',waveAccents:true,materialType:0,count:9,scale:'minor',motion:'still',locked:false,dragging:false,connect:true,showNotes:false,collision:true,scene:'original',drawer:false,link:true,hold:true,quality:'balanced',feel:true,moveSound:false};
-const sets=new Map(),stats={7:{hits:0,empty:0,slides:0,rub:0,moves:0,bumps:0,multi:0},9:{hits:0,empty:0,slides:0,rub:0,moves:0,bumps:0,multi:0},11:{hits:0,empty:0,slides:0,rub:0,moves:0,bumps:0,multi:0}};
+const state={reverbType:'nest',waveAccents:true,resonatorMode:false,materialType:0,count:9,scale:'minor',motion:'still',locked:false,dragging:false,connect:true,showNotes:false,collision:true,scene:'original',drawer:false,link:true,hold:true,quality:'balanced',feel:true,moveSound:false};
+const emptyStats=()=>({hits:0,empty:0,slides:0,rub:0,moves:0,bumps:0,multi:0});
+const sets=new Map(),stats={7:emptyStats(),9:emptyStats(),11:emptyStats(),'9+2':emptyStats()};
 // The inner core is a handle. The wider annulus is a playable strike surface.
 // No speculative audio timers: there is no reliable way to predict a drag at touch-down.
 const GRAB_CORE=0.50, MOVE_THRESHOLD=13, TOUCH_HIT_MARGIN=1.13;
-const pointerMap=new Map();const connectionsByCount=new Map([[7,new Map()],[9,new Map()],[11,new Map()]]);
-const connected=()=>[...connectionsByCount.get(state.count).values()];
+const pointerMap=new Map();
+const connectionsByCount=new Map([[7,new Map()],[9,new Map()],[11,new Map()],['9+2',new Map()]]);
+const activeMode=()=>state.resonatorMode&&state.count===11?'9+2':state.count;
+const activeConnections=()=>connectionsByCount.get(activeMode());
+const connected=()=>[...activeConnections().values()];
 const pairKey=(a,b)=>Math.min(a,b)+':'+Math.max(a,b);
 let notes=[],W=1,H=1,requestId=0,lastTime=0,lastActive=0,viewReady=false;
 // Deliberately unequal printed glyphs; physical hit/collision radii remain equal.
@@ -1590,10 +1590,20 @@ function pitches(count,scale){
  return selects[count].map(i=>source[i]);
 }
 function makeSet(count){return Array.from({length:count},(_,id)=>({id,midi:50,name:'',kind:id,visualScale:VISUAL_SCALES[id%VISUAL_SCALES.length],big:id===0,
-  color:hexRGB(colors[id]),hex:colors[id],u:.5,v:.5,saved:false,r:35,x:0,y:0,energy:0,angle:0,last:0,stageW:1,stageH:1,gesture:0,impact:0,pulse:0,streak:0,waveLayer:false}));}
+  color:hexRGB(colors[id]),hex:colors[id],u:.5,v:.5,saved:false,r:35,x:0,y:0,energy:0,angle:0,last:0,stageW:1,stageH:1,gesture:0,impact:0,pulse:0,streak:0,waveLayer:false,resonator:false}));}
 for(const k of [7,9,11])sets.set(k,makeSet(k));
-function setNotes(){clearPointers();notes=sets.get(state.count);engine.setConnections(connected());const names=pitches(state.count,state.scale);
- for(const [i,n] of notes.entries()){n.name=names[i][0];n.midi=names[i][1];}
+sets.set('9+2',makeSet(11));
+function setNotes(){clearPointers();notes=sets.get(activeMode());engine.setConnections(connected());const names=pitches(state.count,state.scale);
+ for(const [i,n] of notes.entries()){n.name=names[i][0];n.midi=names[i][1];n.resonator=false;}
+ if(state.resonatorMode&&state.count===11){
+  // 9 ordinary pads + 2 dedicated WAVE resonators, tuned to the scale's tonic
+  // and a consonant fifth (or closest scale pitch). Main 9 voices are untouched.
+  const bank=scaleDefinitions[state.scale].pitches,tonic=bank[0];
+  const fifth=bank.reduce((best,m)=>Math.abs(m-(tonic+7))<Math.abs(best-(tonic+7))?m:best,bank[0]);
+  for(const [i,midi] of [[9,tonic+12],[10,fifth+12]]){
+   const n=notes[i];n.midi=midi;n.name=midiName(midi,state.scale);n.resonator=true;
+  }
+ }
  updateWaveVoices();labels.replaceChildren();for(const n of notes){const el=document.createElement('div');el.className='note-label';el.dataset.note=n.id;el.textContent=n.name;labels.appendChild(el);n.label=el;}
  resize();updateButtons();engine.stopAllHolds();if(engine.ctx)engine.syncTanks(notes);}
 // Same physical screen size for all note counts: adding notes never shrinks an object.
@@ -1712,7 +1722,7 @@ function pointerDown(e){
  // Reject synthetic/duplicate down events for an already-tracked pointer.
  if(pointerMap.has(e.pointerId))return;
  const {x,y}=xy(e),i=hit(x,y);
- if(i<0){stats[state.count].empty++;return;}
+ if(i<0){stats[activeMode()].empty++;return;}
  try{canvas.setPointerCapture(e.pointerId);}catch(_){}
  const n=notes[i],radial=clamp(Math.hypot(x-n.x,y-n.y)/n.r,0,1);
  // Touching the outer 73% of the pad area strikes immediately, even while LOCK is off.
@@ -1723,9 +1733,9 @@ function pointerDown(e){
   holdTimer:0,pointerType:e.pointerType||'mouse',x,y,startX:x,startY:y,when:performance.now(),moved:false,gesture:false,
   offsetX:x-n.x,offsetY:y-n.y,countedRub:false,countedMove:false,
   contactWith:new Set(),lastSpeed:0,connectTimer:0,connectTarget:-1,previewStart:0,
-  played:false,held:false,initialRadial:radial};
+  played:false,held:false,initialRadial:radial,lastSlideAt:0};
  pointerMap.set(e.pointerId,p);
- stats[state.count].hits++;stats[state.count].multi=Math.max(stats[state.count].multi,pointerMap.size);
+ stats[activeMode()].hits++;stats[activeMode()].multi=Math.max(stats[activeMode()].multi,pointerMap.size);
  // Unlock audio on the first gesture even when the player only moves a body.
  // This prepares the collision resonator without producing an unwanted pickup note.
  if(p.canDrag){
@@ -1748,7 +1758,7 @@ function scheduleHold(pointerId,index){
  if(p.holdTimer)clearTimeout(p.holdTimer);
  p.holdTimer=setTimeout(()=>{
   p.holdTimer=0;
-  if(pointerMap.get(pointerId)===p&&p.last===index&&state.hold&&!p.moved){
+  if(pointerMap.get(pointerId)===p&&p.last===index&&state.hold&&!p.moved&&!p.played){
    p.held=true;
    engine.startHold(pointerId,notes[index]);notes[index].energy=Math.max(notes[index].energy,.34);drawRequest();
   }
@@ -1761,14 +1771,14 @@ function countDegree(id){return connected().filter(e=>e.a===id||e.b===id).length
 function syncThreads(){engine.setConnections(connected());drawRequest();}
 function tie(a,b){
  if(a===b||!state.connect||countDegree(a)>=2||countDegree(b)>=2)return false;
- const k=pairKey(a,b),map=connectionsByCount.get(state.count);
+ const k=pairKey(a,b),map=activeConnections();
  if(map.has(k))return false;
  map.set(k,{a:Math.min(a,b),b:Math.max(a,b),flash:.65,pulses:[],created:performance.now()});
  notes[a].energy=Math.max(notes[a].energy,.28);notes[b].energy=Math.max(notes[b].energy,.28);
  syncThreads();say('Two shapes are resonating together');return true;
 }
 function removeThread(a,b,show=true){
- if(!connectionsByCount.get(state.count).delete(pairKey(a,b)))return false;
+ if(!activeConnections().delete(pairKey(a,b)))return false;
  syncThreads();if(show)say('The thread dissolved');return true;
 }
 function evaluateThread(pointerId,p){
@@ -1778,7 +1788,7 @@ function evaluateThread(pointerId,p){
   .filter(v=>v.d<=n.r+v.v.r+22 && v.d>=n.r+v.v.r-2)
   .sort((a,b)=>a.d-b.d)[0];
  const candidate=near?.v;
- if(!candidate||connectionsByCount.get(state.count).has(pairKey(n.id,candidate.id))||countDegree(n.id)>=2||countDegree(candidate.id)>=2){
+ if(!candidate||activeConnections().has(pairKey(n.id,candidate.id))||countDegree(n.id)>=2||countDegree(candidate.id)>=2){
   return cancelThread(p);
  }
  if(p.connectTarget===candidate.id){
@@ -1802,7 +1812,7 @@ function breakDistantThreads(){
  for(const e of connected()){
   const a=notes[e.a],b=notes[e.b];
   if(!a||!b||Math.hypot(a.x-b.x,a.y-b.y)>maxDist){
-   connectionsByCount.get(state.count).delete(pairKey(e.a,e.b));changed=true;
+   activeConnections().delete(pairKey(e.a,e.b));changed=true;
   }
  }
  if(changed){syncThreads();say('The thread stretched and disappeared');}
@@ -1876,9 +1886,9 @@ function dragObject(pointerId,p,x,y,speed,now){
   const dist=Math.hypot(n.x-other.x,n.y-other.y);
   const minD=n.r+other.r+COLLISION_GAP;
   if(touched.has(other.id)){
-   if(state.collision&&speed>.25&&!p.contactWith.has(other.id)&&chimed<1){
+   if(state.collision&&speed>.39&&!p.contactWith.has(other.id)&&chimed<1){
     if(engine.contact(n,other,speed,notes)){
-     stats[state.count].bumps++;chimed++;
+     stats[activeMode()].bumps++;chimed++;
      n.energy=Math.max(n.energy,.42);other.energy=Math.max(other.energy,.39);
      other.gesture=Math.max(other.gesture||0,[.38,.62,.24,.42,.35][state.materialType]);
     }
@@ -1906,7 +1916,7 @@ function dragObject(pointerId,p,x,y,speed,now){
    n.gesture=Math.max(n.gesture||0,.14+speed*.55);
   }
  }
- if(!p.countedMove){stats[state.count].moves++;p.countedMove=true;}
+ if(!p.countedMove){stats[activeMode()].moves++;p.countedMove=true;}
  updateLabels();drawRequest();
 }
 function pointerMove(e){
@@ -1925,23 +1935,15 @@ function pointerMove(e){
  }
  if(p.intent!=='glide')return;
  const i=hit(x,y);
- if(state.feel&&params.expression>0){
-  const n=notes[i>=0?i:(p.last>=0?p.last:p.id)];
-  if(n){
-   if(!p.gesture)p.gesture=engine.beginGesture(e.pointerId,n);
-   if(p.gesture){
-    const radial=clamp(Math.hypot(x-n.x,y-n.y)/n.r,0,1);
-    engine.updateGesture(e.pointerId,n,{speed,radial,offset:clamp((x-n.x)/n.r,-1,1),move:false});
-    n.gesture=Math.max(n.gesture||0,.15+speed*.55);
-    if(!p.countedRub){stats[state.count].rub++;p.countedRub=true;}
-   }
-  }
- }
+ // A moving finger changes the graphic, not an unsolicited oscillator.
+ // New pitched notes occur only when a clearly different pad is entered.
+ const active=notes[hit(x,y)];
+ if(active)active.gesture=Math.max(active.gesture||0,.12+speed*.40);
  // Require the finger to enter well inside the next pad before changing voices;
  // small boundary jitter no longer makes the sound hop between neighbours.
  const confirmed=i>=0&&Math.hypot(x-notes[i].x,y-notes[i].y)<notes[i].r*.90;
- if(confirmed&&i!==p.last){p.last=i;
-  stats[state.count].hits++;stats[state.count].slides++;
+ if(confirmed&&i!==p.last&&now-p.lastSlideAt>115){p.last=i;p.lastSlideAt=now;
+  stats[activeMode()].hits++;stats[activeMode()].slides++;
   const radial=clamp(Math.hypot(x-notes[i].x,y-notes[i].y)/notes[i].r,0,1);
   play(i,clamp(.86-.18*radial,.55,.86),radial);
  }
@@ -1967,7 +1969,8 @@ function pointerEnd(e){
 }
 for(const ev of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(ev,pointerEnd,{passive:false});
 function updateButtons(){
- qsa('[data-count]').forEach(b=>b.setAttribute('aria-pressed',String(Number(b.dataset.count)===state.count)));
+ qsa('[data-count]').forEach(b=>b.setAttribute('aria-pressed',String(Number(b.dataset.count)===state.count&&!state.resonatorMode)));
+ qsa('[data-resonator-layout]').forEach(b=>b.setAttribute('aria-pressed',String(state.resonatorMode)));
  qsa('[data-connect]').forEach(b=>{b.setAttribute('aria-pressed',String(state.connect));b.textContent=state.connect?'ON':'OFF';});
  qsa('[data-show-notes]').forEach(b=>{b.setAttribute('aria-pressed',String(state.showNotes));b.textContent=state.showNotes?'ON':'OFF';});
  $('app').classList.toggle('show-notes',state.showNotes);
@@ -1992,7 +1995,11 @@ function clearPointers(){for(const [id,p] of pointerMap){
   cancelHold(id);cancelThread(p);engine.endGesture(id);
   try{if(canvas.hasPointerCapture?.(id))canvas.releasePointerCapture(id);}catch(_){}
  }pointerMap.clear();for(const n of notes)n.dragged=false;state.dragging=false;}
-function setCount(n){if(![7,9,11].includes(n))return;clearPointers();state.count=n;state.threadPreview=null;setNotes();say(`${n} resonators ready`);}
+function setCount(n){if(![7,9,11].includes(n))return;playingMemory.clear();clearPointers();state.count=n;state.resonatorMode=false;state.threadPreview=null;setNotes();say(`${n} instruments ready`);}
+function setResonatorLayout(){
+ playingMemory.clear();clearPointers();state.count=11;state.resonatorMode=true;state.threadPreview=null;
+ setNotes();say('Nine instruments and two resonators ready');
+}
 function setScale(s){if(!pitchBanks[s]||s===state.scale)return;state.scale=s;playingMemory.clear();engine.stopAllHolds();setNotes();state.scene='custom';updateButtons();say('Tuning · '+scaleDefinitions[s].name);}
 function setLock(locked){clearPointers();state.locked=locked;updateButtons();say(locked?'Positions locked · sounds remain playable':'Drag centers to move, glide along edges');drawRequest();}
 function setMotion(m){if(!['still','float','orbit'].includes(m))return;
@@ -2001,11 +2008,12 @@ function setMotion(m){if(!['still','float','orbit'].includes(m))return;
 function updateWaveVoices(){
  for(const set of sets.values()){
   const last=set.length-2;
-  for(const n of set)n.waveLayer=state.waveAccents&&state.materialType!==4&&(n.id===2||n.id===last);
+  for(const n of set)n.waveLayer=n.resonator||(state.waveAccents&&state.materialType!==4&&(n.id===2||n.id===last)&&!(state.resonatorMode&&set.length===11));
  }
  for(const set of sets.values())for(const n of set){
   const palette=MATERIALS[state.materialType].colors;
-  n.hex=palette[n.id%palette.length];n.color=hexRGB(n.hex);
+  n.hex=n.resonator?'#70D9F2':palette[n.id%palette.length];n.color=hexRGB(n.hex);
+  n.visualScale=n.resonator?.82:VISUAL_SCALES[n.id%VISUAL_SCALES.length];
  }
  if(engine.ctx)engine.syncTanks(notes);
  drawRequest();
@@ -2069,9 +2077,9 @@ function shuffle(){
  selectReverb(['nest','velvet','prism','horizon'][Math.floor(Math.random()*4)],false);
  state.scene='custom';updateButtons();say('A different resonance');
 }
-function reset(){connectionsByCount.get(state.count).clear();syncThreads();for(const n of notes)n.saved=false;layoutSet(notes);engine.refreshLinks(notes);updateLabels();drawRequest();say('Positions reset');}
+function reset(){activeConnections().clear();syncThreads();for(const n of notes)n.saved=false;layoutSet(notes);engine.refreshLinks(notes);updateLabels();drawRequest();say('Positions reset');}
 function save(){
- try{const result={count:state.count,scale:state.scale,motion:state.motion,scene:state.scene,params,
+ try{const result={count:state.count,resonatorMode:state.resonatorMode,scale:state.scale,motion:state.motion,scene:state.scene,params,
   materialType:state.materialType,reverbType:state.reverbType,waveAccents:state.waveAccents,feel:state.feel,moveSound:state.moveSound,connect:state.connect,showNotes:state.showNotes,collision:state.collision,locked:state.locked,link:state.link,hold:state.hold,quality:state.quality,
   connections:Object.fromEntries([...connectionsByCount].map(([k,map])=>[k,[...map.values()].map(e=>[e.a,e.b])])),
   positions:Object.fromEntries([...sets].map(([k,set])=>[k,set.map(n=>({u:n.u,v:n.v,saved:n.saved}))]))};
@@ -2081,6 +2089,7 @@ function save(){
 function restore(){
  try{const ownSave=localStorage.getItem('resonant-objects-v012');const raw=ownSave||localStorage.getItem('resonant-objects-v0113')||localStorage.getItem('resonant-objects-v0112')||localStorage.getItem('resonant-objects-v0111')||localStorage.getItem('resonant-objects-v011')||localStorage.getItem('resonant-objects-v010')||localStorage.getItem('resonant-objects-v09')||localStorage.getItem('resonant-objects-v081')||localStorage.getItem('resonant-objects-v08')||localStorage.getItem('resonant-objects-v07')||localStorage.getItem('resonant-objects-v06')||localStorage.getItem('resonant-objects-v05')||localStorage.getItem('resonant-objects-v04');if(!raw)return;
   const v=JSON.parse(raw);if([7,9,11].includes(v.count))state.count=v.count;
+  state.resonatorMode=state.count===11&&v.resonatorMode===true;
   if(Number.isInteger(v.materialType)&&v.materialType>=0&&v.materialType<=4)state.materialType=v.materialType;
   if(typeof v.waveAccents==='boolean')state.waveAccents=v.waveAccents;
   if(['nest','velvet','prism','horizon'].includes(v.reverbType))state.reverbType=v.reverbType;
@@ -2098,7 +2107,8 @@ function restore(){
   if(typeof v.connect==='boolean')state.connect=v.connect;
   if(typeof v.showNotes==='boolean')state.showNotes=v.showNotes;
   if(v.connections)for(const [k,list] of Object.entries(v.connections)){
-   const N=Number(k),map=connectionsByCount.get(N);if(!map||!Array.isArray(list))continue;
+   const N=k==='9+2'?11:Number(k),map=connectionsByCount.get(k==='9+2'?'9+2':N);
+   if(!map||!Array.isArray(list))continue;
    for(const pair of list){if(!Array.isArray(pair)||pair.length!==2)continue;const [a,b]=pair;
     if(!Number.isInteger(a)||!Number.isInteger(b)||a===b||a<0||b<0||a>=N||b>=N)continue;
     const degree=id=>[...map.values()].filter(e=>e.a===id||e.b===id).length;
@@ -2106,11 +2116,25 @@ function restore(){
   }
   if(typeof v.locked==='boolean')state.locked=v.locked;
   if(v.positions)for(const [key,ps] of Object.entries(v.positions)){
-   const set=sets.get(Number(key));if(!set||!Array.isArray(ps))continue;
+   const set=sets.get(key==='9+2'?'9+2':Number(key));if(!set||!Array.isArray(ps))continue;
    for(let i=0;i<Math.min(set.length,ps.length);i++){
     const p=ps[i];if(!p||!p.saved)continue;
     if(!Number.isFinite(p.u)||!Number.isFinite(p.v))continue;
     set[i].u=clamp(p.u,0,1);set[i].v=clamp(p.v,0,1);set[i].saved=true;
+   }
+  }
+  // v0.16 stored ordinary 11-note and 9+2 scenes in the same slot.
+  // When importing a scene saved while 9+2 was active, copy its layout and
+  // threads into the new independent slot without deleting the original data.
+  if(v.count===11&&v.resonatorMode===true){
+   if(!v.positions?.['9+2']){
+    const old=sets.get(11),dest=sets.get('9+2');
+    old.forEach((n,i)=>{dest[i].u=n.u;dest[i].v=n.v;dest[i].saved=n.saved;});
+   }
+   if(!v.connections?.['9+2']){
+    const dest=connectionsByCount.get('9+2');
+    for(const edge of connectionsByCount.get(11).values())
+     dest.set(pairKey(edge.a,edge.b),{a:edge.a,b:edge.b,flash:0,created:0});
    }
   }
   if(v.params)for(const k of Object.keys(params))if(Number.isFinite(v.params[k]))setParam(k,v.params[k]);
@@ -2124,14 +2148,14 @@ function metrics(N){const set=sets.get(N);let minD=Infinity,gap=Infinity;
 }
 function lab(open){$('lab').classList.toggle('open',open);$('shade').classList.toggle('open',open);
  if(open){toggleDrawer(false);const rows=$('labRows');rows.replaceChildren();
-  for(const k of [7,9,11]){const m=metrics(k),s=stats[k],tr=document.createElement('tr');
-   tr.innerHTML=`<td>${k}${k===state.count?' ●':''}</td><td>${m.diameter}px</td><td>${m.gap}px</td><td>${s.hits}</td><td>${s.empty}</td><td>${s.slides}</td><td>${s.rub}</td><td>${s.moves}</td><td>${s.bumps}</td><td>${s.multi}</td>`;
+  for(const k of [7,9,11,'9+2']){const m=metrics(k),s=stats[k],tr=document.createElement('tr');
+   tr.innerHTML=`<td>${k}${k===activeMode()?' ●':''}</td><td>${m.diameter}px</td><td>${m.gap}px</td><td>${s.hits}</td><td>${s.empty}</td><td>${s.slides}</td><td>${s.rub}</td><td>${s.moves}</td><td>${s.bumps}</td><td>${s.multi}</td>`;
    rows.appendChild(tr);}}
 }
 qsa('[data-connect]').forEach(b=>b.addEventListener('click',()=>{state.connect=!state.connect;
  for(const p of pointerMap.values())cancelThread(p);updateButtons();say(state.connect?'Connection gestures on':'Connection gestures off');}));
 qsa('[data-show-notes]').forEach(b=>b.addEventListener('click',()=>{state.showNotes=!state.showNotes;updateButtons();drawRequest();}));
-$('clearConnections').addEventListener('click',()=>{connectionsByCount.get(state.count).clear();syncThreads();say('Threads cleared');});
+$('clearConnections').addEventListener('click',()=>{activeConnections().clear();syncThreads();say('Threads cleared');});
 $('miniReset').addEventListener('click',()=>{reset();toggleDrawer(false);});
 $('miniLab').addEventListener('click',()=>lab(true));
 qsa('[data-material-type]').forEach(b=>b.addEventListener('click',()=>setMaterialType(Number(b.dataset.materialType))));
@@ -2139,6 +2163,7 @@ qsa('[data-material-type]').forEach(b=>b.addEventListener('click',()=>setMateria
 qsa('[data-lock]').forEach(b=>b.addEventListener('click',()=>setLock(!state.locked)));
 qsa('[data-collision]').forEach(b=>b.addEventListener('click',()=>{state.collision=!state.collision;updateButtons();say(state.collision?'Gentle contact notes enabled':'Contact notes muted');}));
 qsa('[data-count]').forEach(b=>b.addEventListener('click',()=>setCount(Number(b.dataset.count))));
+qsa('[data-resonator-layout]').forEach(b=>b.addEventListener('click',setResonatorLayout));
 qsa('[data-motion]').forEach(b=>b.addEventListener('click',()=>setMotion(b.dataset.motion)));
 qsa('[data-link]').forEach(b=>b.addEventListener('click',()=>{
  state.link=!state.link;engine.setLink(state.link);updateButtons();say(state.link?'Live resonance connected':'Live resonance bypassed');drawRequest();
