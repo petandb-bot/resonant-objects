@@ -4,7 +4,7 @@
 <meta name="theme-color" content="#07090d">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>RESONANT OBJECTS · v0.16.1</title>
+<title>RESONANT OBJECTS · v0.17.0</title>
 <style>:root{
   --ink:#344f78; --muted:#7387a5; --aqua:#83e4e5; --violet:#9c9bfd;
   --cream:#fcfff9; --line:rgba(255,255,255,.72); --glaze:rgba(251,255,255,.50);
@@ -295,6 +295,50 @@ input[type=range]::-webkit-slider-thumb{background:#73c9dd!important;border:1px 
 .stage-topline,.stage-message{opacity:.45!important}
 .bottom{background:#080a0e!important;border-top:1px solid #1a212c!important}
 @media(max-width:690px){.material-strip{gap:3px!important}.material-icon{min-width:32px!important;width:32px!important}}
+
+/* v0.17 SETTINGS WORKFLOW — category navigation, readable touch targets, no new parameters. */
+#drawer{display:none!important;position:fixed!important;top:50%!important;bottom:auto!important;left:50%!important;right:auto!important;transform:translate(-50%,-50%)!important;width:min(780px,calc(100vw - 24px))!important;max-height:min(88dvh,590px)!important;padding:0!important;overflow:hidden!important;flex-direction:column!important;background:#10151e!important;border:1px solid #394455!important;border-radius:12px!important;z-index:18!important}
+#drawer.open{display:flex!important}
+#drawer .drawer-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0!important;padding:11px 16px 8px;color:#e1eaf4!important;font-size:11px;letter-spacing:.16em}
+#drawer #closeTune{height:31px;min-width:34px;font-size:16px}
+#drawer .settings-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;padding:0 12px 10px;border-bottom:1px solid #293443}
+#drawer .settings-tab{min-height:38px;border:1px solid #293544;border-radius:7px;background:#151d28;color:#9aacc0;font-size:11px;font-weight:750;letter-spacing:.10em}
+#drawer .settings-tab[aria-selected="true"]{background:#263a4d;border-color:#6aafc7;color:#e3f9ff}
+#drawer .settings-tab:focus-visible{outline:2px solid #8ee4f0;outline-offset:1px}
+#drawer .settings-scroll{overflow-y:auto;overscroll-behavior:contain;min-height:0;padding:10px 13px 15px;scrollbar-color:#53667a #111821}
+#drawer .settings-page[hidden]{display:none!important}
+#drawer .settings-page-caption{margin:0 0 10px;color:#8fa2b6;font-size:11px}
+#drawer .settings-group{border:1px solid #2b3746;background:#141b25;border-radius:9px;padding:10px 11px;margin:0 0 10px}
+#drawer .settings-group h3{margin:0 0 9px;color:#7fc6dc;font-size:10px;letter-spacing:.15em;font-weight:750}
+#drawer .settings-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 16px;align-items:start}
+#drawer .settings-fields .mini-field{min-width:0;display:flex;flex-direction:column;gap:4px}
+#drawer .settings-fields .mini-field label{display:flex;justify-content:space-between;align-items:center;min-height:18px;font-size:11px;gap:8px;color:#c8d5e2!important}
+#drawer .settings-fields .mini-field output{font-variant-numeric:tabular-nums;white-space:nowrap}
+#drawer .settings-fields .mini-field select,#drawer .settings-fields .mini-field .switchbtn{min-height:38px;width:100%}
+#drawer .settings-fields .mini-field .rowbuttons button,#drawer .settings-fields .mini-field .actionrow button,#drawer .settings-fields .mini-field .piece-count button{min-height:38px;height:auto}
+#drawer .settings-fields input[type=range]{height:34px;margin:0}
+#drawer .settings-fields .material-choice{grid-column:1/-1}
+#drawer .settings-fields .material-choices{grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
+#drawer .settings-fields .material-choices button{min-height:38px;font-size:10px}
+#drawer .settings-fields .reverb-field{grid-column:1/-1}
+#drawer .settings-fields .reverb-choices{margin-top:4px;gap:7px}
+#drawer .settings-fields .reverb-choices button{min-height:49px}
+#drawer .settings-fields .reverb-footnote{margin:3px 0 0;font-size:10px}
+#drawer .settings-fields .piece-count button{font-size:11px}
+#drawer .settings-fields .piece-count{gap:5px}
+@media(max-width:720px){
+ #drawer{width:calc(100vw - 12px)!important;max-height:calc(100dvh - 12px)!important}
+ #drawer .drawer-title{padding:7px 10px 5px}
+ #drawer .settings-tabs{padding:0 8px 7px}
+ #drawer .settings-tab{min-height:34px;font-size:10px}
+ #drawer .settings-scroll{padding:8px}
+ #drawer .settings-group{padding:8px;margin-bottom:7px}
+ #drawer .settings-fields{gap:8px 12px}
+ #drawer .settings-fields .reverb-choices button{min-height:43px}
+}
+@media(max-width:480px) and (orientation:portrait){#drawer .settings-fields{grid-template-columns:1fr}#drawer .settings-fields .material-choice,#drawer .settings-fields .reverb-field{grid-column:auto}}
+@media(prefers-reduced-motion:reduce){#drawer *{scroll-behavior:auto!important;transition:none!important}}
+
 </style></head><body>
 <div id="app">
 <header class="top kinetic-top" aria-label="Instrument tools">
@@ -389,64 +433,96 @@ input[type=range]::-webkit-slider-thumb{background:#73c9dd!important;border:1px 
   </section>
 </aside>
 </div>
-<footer class="bottom"><span class="fine">✧  RESONANT OBJECTS · v0.16.1</span><span class="readout" id="status" role="status" aria-live="polite">Tap a shape · drag to arrange silently</span></footer>
+<footer class="bottom"><span class="fine">✧  RESONANT OBJECTS · v0.17.0</span><span class="readout" id="status" role="status" aria-live="polite">Tap a shape · drag to arrange silently</span></footer>
 </div>
 <section id="drawer" role="region" aria-label="Instrument controls">
- <div class="drawer-title">SOUND / SPACE <button id="closeTune" type="button" class="flatbtn" aria-label="Close tuning">✕</button></div>
- <p class="drawer-tip">Drag to connect. Hold near another shape; pull away to release.</p>
- <div class="drawer-grid">
-  <div class="mini-field material-choice"><label>MATERIAL</label><div class="material-choices">
-  <button data-material-type="0" type="button">JEWEL</button><button data-material-type="1" type="button">CANDY</button>
-  <button data-material-type="2" type="button">CERAMIC</button><button data-material-type="3" type="button">METAL</button><button data-material-type="4" type="button">WAVE</button></div></div>
-  <div class="mini-field"><label>Brightness <output data-value="material">Warm</output></label><input data-param="material" aria-label="Material" type="range" min="0" max="100" value="36"></div>
-  <div class="mini-field"><label>Ring <output data-value="ring">Long</output></label><input data-param="ring" aria-label="Ring" type="range" min="0" max="100" value="67"></div>
-  <div class="mini-field"><label>Space <output data-value="space">Dry</output></label><input data-param="space" aria-label="Space" type="range" min="0" max="100" value="0"></div>
-  <div class="mini-field reverb-field"><label>SPACE CHARACTER <span class="reverb-hint">Choose the kind of room</span></label>
-    <div class="reverb-choices" role="group" aria-label="Reverb type">
-      <button type="button" data-reverb-choice="nest" aria-pressed="true"><span aria-hidden="true">◔</span><small>NEST</small></button>
-      <button type="button" data-reverb-choice="velvet" aria-pressed="false"><span aria-hidden="true">≈</span><small>VELVET</small></button>
-      <button type="button" data-reverb-choice="prism" aria-pressed="false"><span aria-hidden="true">◇</span><small>PRISM</small></button>
-      <button type="button" data-reverb-choice="horizon" aria-pressed="false"><span aria-hidden="true">◌</span><small>HORIZON</small></button>
-    </div><p class="reverb-footnote">SPACE controls how much reverb you hear. 0 is completely dry.</p>
-  </div>
-  <div class="mini-field"><label>Bond <output data-value="bond">Connected</output></label><input data-param="bond" aria-label="Bond" type="range" min="0" max="100" value="75"></div>
-  <div class="mini-field"><label>Bloom <output data-value="bloom">Off</output></label><input data-param="bloom" aria-label="Bloom" type="range" min="0" max="100" value="0"></div>
-  <div class="mini-field"><label>Play Feel</label><button data-feel type="button" class="switchbtn" aria-pressed="true">ON</button></div>
-  <div class="mini-field"><label>Expression <output data-value="expression">Gentle</output></label><input data-param="expression" aria-label="Expression amount" type="range" min="0" max="100" value="46"></div>
-  <div class="mini-field"><label>Drag Sound</label><button data-move-sound type="button" class="switchbtn" aria-pressed="false">OFF</button></div>
-  <div class="mini-field"><label>Gentle Material Collision</label><button data-collision type="button" class="switchbtn" aria-pressed="true">ON</button></div>
-  <div class="mini-field"><label>Lock Positions</label><button data-lock type="button" class="switchbtn" aria-pressed="false">UNLOCKED</button></div>
-  <div class="mini-field"><label>Live Link</label><button data-link type="button" class="switchbtn" aria-pressed="true">ON</button></div>
-  <div class="mini-field"><label>Hold to sing</label><button data-hold type="button" class="switchbtn" aria-pressed="true">ON</button></div>
-  <div class="mini-field"><label>WAVE VEIL · two layered voices</label><button data-wave-accents type="button" class="switchbtn" aria-pressed="true">ON</button></div>
-  <div class="mini-field"><label>GPU Aura <output data-value="aura">Luminous</output></label><input data-param="aura" aria-label="GPU glow intensity" type="range" min="0" max="100" value="48"></div>
-  <div class="mini-field"><label>GPU Trace <output data-value="trace">Gentle</output></label><input data-param="trace" aria-label="GPU resonance trail" type="range" min="0" max="100" value="38"></div>
- </div>
- <div class="drawer-grid" style="margin-top:8px">
-  <div class="mini-field"><label>Pieces</label><div class="piece-count"><button data-count="7" type="button">7</button><button data-count="9" type="button">9</button><button data-count="11" type="button">11</button><button data-resonator-layout type="button" title="Nine instruments plus two resonators">9+2</button></div></div>
-  <div class="mini-field"><label>Scale</label><select data-scale aria-label="Musical scale">
-      <optgroup label="Original tunings">
-        <option value="minor">D minor</option><option value="penta">C pentatonic</option><option value="lydian">F Lydian</option>
-      </optgroup>
-      <optgroup label="Open / melodic">
-        <option value="eminor">E minor</option><option value="adorian">A Dorian</option><option value="gmajor">G major</option><option value="aminorpent">A minor pentatonic</option>
-      </optgroup>
-      <optgroup label="Resonant / modal">
-        <option value="dkurd">D Kurd</option><option value="dceltic">D Celtic</option><option value="hirajoshi">C Hirajoshi</option><option value="insen">D In Sen</option><option value="whole">C whole tone</option>
-      </optgroup>
-    </select></div>
-  <div class="mini-field"><label>Graphics quality</label><select data-quality aria-label="GPU graphics quality"><option value="eco">Eco</option><option value="balanced">Balanced</option><option value="high">High</option></select></div>
-  <div class="mini-field"><label>Motion</label><div class="rowbuttons"><button data-motion="still" type="button">Still</button><button data-motion="float" type="button">Float</button><button data-motion="orbit" type="button">Orbit</button></div></div>
-  <div class="mini-field"><label>Scene</label><div class="actionrow"><button id="miniScenePrev" type="button">‹</button><button id="miniSceneNext" type="button">›</button></div></div>
-  <div class="mini-field"><label>Explore</label><div class="actionrow"><button id="miniShuffle" type="button">Shuffle</button><button id="miniSave" type="button">Save</button></div></div>
-  <div class="mini-field"><label>THREAD / Link on hold</label><button data-connect type="button" class="switchbtn" aria-pressed="true">ON</button></div>
-  <div class="mini-field"><label>Note names</label><button data-show-notes type="button" class="switchbtn" aria-pressed="false">OFF</button></div>
-  <div class="mini-field"><label>Links</label><button id="clearConnections" class="switchbtn" type="button">Untie all</button></div>
-  <div class="mini-field"><label>Arrangement</label><button id="miniReset" class="switchbtn" type="button">Reset positions</button></div>
-  <div class="mini-field"><label>Test</label><button id="miniLab" class="switchbtn" type="button">Open Lab</button></div>
-
- </div>
-</section>
+<div class="drawer-title"><span>INSTRUMENT SETTINGS</span><button id="closeTune" type="button" class="flatbtn" aria-label="Close settings">✕</button></div>
+<div class="settings-tabs" role="tablist" aria-label="Settings category">
+<button type="button" class="settings-tab" id="settings-tab-sound" role="tab" aria-controls="settings-panel-sound" aria-selected="true" tabindex="0" data-settings-tab="sound">SOUND</button>
+<button type="button" class="settings-tab" id="settings-tab-play" role="tab" aria-controls="settings-panel-play" aria-selected="false" tabindex="-1" data-settings-tab="play">PLAY</button>
+<button type="button" class="settings-tab" id="settings-tab-visual" role="tab" aria-controls="settings-panel-visual" aria-selected="false" tabindex="-1" data-settings-tab="visual">VISUAL</button>
+<button type="button" class="settings-tab" id="settings-tab-manage" role="tab" aria-controls="settings-panel-manage" aria-selected="false" tabindex="-1" data-settings-tab="manage">SCENE</button>
+</div><div class="settings-scroll">
+<div class="settings-page" id="settings-panel-sound" role="tabpanel" aria-labelledby="settings-tab-sound" data-settings-page="sound" >
+<p class="settings-page-caption">Pitch, timbre and acoustic space</p>
+<section class="settings-group"><h3>TUNING</h3><div class="settings-fields">
+<div class="mini-field"><label>Scale</label><select aria-label="Musical scale" data-scale="">
+<optgroup label="Original tunings">
+<option value="minor">D minor</option><option value="penta">C pentatonic</option><option value="lydian">F Lydian</option>
+</optgroup>
+<optgroup label="Open / melodic">
+<option value="eminor">E minor</option><option value="adorian">A Dorian</option><option value="gmajor">G major</option><option value="aminorpent">A minor pentatonic</option>
+</optgroup>
+<optgroup label="Resonant / modal">
+<option value="dkurd">D Kurd</option><option value="dceltic">D Celtic</option><option value="hirajoshi">C Hirajoshi</option><option value="insen">D In Sen</option><option value="whole">C whole tone</option>
+</optgroup>
+</select></div>
+<div class="mini-field"><label>Pieces</label><div class="piece-count"><button data-count="7" type="button">7</button><button data-count="9" type="button">9</button><button data-count="11" type="button">11</button><button data-resonator-layout="" title="Nine instruments plus two resonators" type="button">9+2</button></div></div>
+</div></section>
+<section class="settings-group"><h3>MATERIAL</h3><div class="settings-fields">
+<div class="mini-field material-choice"><label>MATERIAL</label><div class="material-choices">
+<button data-material-type="0" type="button">JEWEL</button><button data-material-type="1" type="button">CANDY</button>
+<button data-material-type="2" type="button">CERAMIC</button><button data-material-type="3" type="button">METAL</button><button data-material-type="4" type="button">WAVE</button></div></div>
+<div class="mini-field"><label>Brightness <output data-value="material">Warm</output></label><input aria-label="Material" data-param="material" max="100" min="0" type="range" value="36"/></div>
+<div class="mini-field"><label>Ring <output data-value="ring">Long</output></label><input aria-label="Ring" data-param="ring" max="100" min="0" type="range" value="67"/></div>
+</div></section>
+<section class="settings-group"><h3>SPACE</h3><div class="settings-fields">
+<div class="mini-field"><label>Space <output data-value="space">Dry</output></label><input aria-label="Space" data-param="space" max="100" min="0" type="range" value="0"/></div>
+<div class="mini-field reverb-field"><label>SPACE CHARACTER <span class="reverb-hint">Choose the kind of room</span></label>
+<div aria-label="Reverb type" class="reverb-choices" role="group">
+<button aria-pressed="true" data-reverb-choice="nest" type="button"><span aria-hidden="true">◔</span><small>NEST</small></button>
+<button aria-pressed="false" data-reverb-choice="velvet" type="button"><span aria-hidden="true">≈</span><small>VELVET</small></button>
+<button aria-pressed="false" data-reverb-choice="prism" type="button"><span aria-hidden="true">◇</span><small>PRISM</small></button>
+<button aria-pressed="false" data-reverb-choice="horizon" type="button"><span aria-hidden="true">◌</span><small>HORIZON</small></button>
+</div><p class="reverb-footnote">SPACE controls how much reverb you hear. 0 is completely dry.</p>
+</div>
+<div class="mini-field"><label>Bloom <output data-value="bloom">Off</output></label><input aria-label="Bloom" data-param="bloom" max="100" min="0" type="range" value="0"/></div>
+</div></section>
+<section class="settings-group"><h3>RESONANCE</h3><div class="settings-fields">
+<div class="mini-field"><label>Bond <output data-value="bond">Connected</output></label><input aria-label="Bond" data-param="bond" max="100" min="0" type="range" value="75"/></div>
+<div class="mini-field"><label>WAVE VEIL · two layered voices</label><button aria-pressed="true" class="switchbtn" data-wave-accents="" type="button">ON</button></div>
+</div></section>
+</div>
+<div class="settings-page" id="settings-panel-play" role="tabpanel" aria-labelledby="settings-tab-play" data-settings-page="play" hidden>
+<p class="settings-page-caption">Touch, movement and connections</p>
+<section class="settings-group"><h3>GESTURE</h3><div class="settings-fields">
+<div class="mini-field"><label>Play Feel</label><button aria-pressed="true" class="switchbtn" data-feel="" type="button">ON</button></div>
+<div class="mini-field"><label>Expression <output data-value="expression">Gentle</output></label><input aria-label="Expression amount" data-param="expression" max="100" min="0" type="range" value="46"/></div>
+<div class="mini-field"><label>Hold to sing</label><button aria-pressed="true" class="switchbtn" data-hold="" type="button">ON</button></div>
+<div class="mini-field"><label>Drag Sound</label><button aria-pressed="false" class="switchbtn" data-move-sound="" type="button">OFF</button></div>
+</div></section>
+<section class="settings-group"><h3>INTERACTION</h3><div class="settings-fields">
+<div class="mini-field"><label>Gentle Material Collision</label><button aria-pressed="true" class="switchbtn" data-collision="" type="button">ON</button></div>
+<div class="mini-field"><label>Live Link</label><button aria-pressed="true" class="switchbtn" data-link="" type="button">ON</button></div>
+<div class="mini-field"><label>THREAD / Link on hold</label><button aria-pressed="true" class="switchbtn" data-connect="" type="button">ON</button></div>
+<div class="mini-field"><label>Lock Positions</label><button aria-pressed="false" class="switchbtn" data-lock="" type="button">UNLOCKED</button></div>
+</div></section>
+</div>
+<div class="settings-page" id="settings-panel-visual" role="tabpanel" aria-labelledby="settings-tab-visual" data-settings-page="visual" hidden>
+<p class="settings-page-caption">Appearance and movement</p>
+<section class="settings-group"><h3>GRAPHICS</h3><div class="settings-fields">
+<div class="mini-field"><label>GPU Aura <output data-value="aura">Luminous</output></label><input aria-label="GPU glow intensity" data-param="aura" max="100" min="0" type="range" value="48"/></div>
+<div class="mini-field"><label>GPU Trace <output data-value="trace">Gentle</output></label><input aria-label="GPU resonance trail" data-param="trace" max="100" min="0" type="range" value="38"/></div>
+<div class="mini-field"><label>Graphics quality</label><select aria-label="GPU graphics quality" data-quality=""><option value="eco">Eco</option><option value="balanced">Balanced</option><option value="high">High</option></select></div>
+</div></section>
+<section class="settings-group"><h3>MOTION</h3><div class="settings-fields">
+<div class="mini-field"><label>Motion</label><div class="rowbuttons"><button data-motion="still" type="button">Still</button><button data-motion="float" type="button">Float</button><button data-motion="orbit" type="button">Orbit</button></div></div>
+<div class="mini-field"><label>Note names</label><button aria-pressed="false" class="switchbtn" data-show-notes="" type="button">OFF</button></div>
+</div></section>
+</div>
+<div class="settings-page" id="settings-panel-manage" role="tabpanel" aria-labelledby="settings-tab-manage" data-settings-page="manage" hidden>
+<p class="settings-page-caption">Save and reset your instrument</p>
+<section class="settings-group"><h3>ARRANGEMENT</h3><div class="settings-fields">
+<div class="mini-field"><label>Scene</label><div class="actionrow"><button id="miniScenePrev" type="button">‹</button><button id="miniSceneNext" type="button">›</button></div></div>
+<div class="mini-field"><label>Explore</label><div class="actionrow"><button id="miniShuffle" type="button">Shuffle</button><button id="miniSave" type="button">Save</button></div></div>
+</div></section>
+<section class="settings-group"><h3>MAINTENANCE</h3><div class="settings-fields">
+<div class="mini-field"><label>Links</label><button class="switchbtn" id="clearConnections" type="button">Untie all</button></div>
+<div class="mini-field"><label>Arrangement</label><button class="switchbtn" id="miniReset" type="button">Reset positions</button></div>
+<div class="mini-field"><label>Test</label><button class="switchbtn" id="miniLab" type="button">Open Lab</button></div>
+</div></section>
+</div>
+</div></section>
 <div id="shade" class="modal-shade"></div>
 <section id="lab" role="dialog" aria-modal="true" aria-label="Playability lab">
  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><h2>PLAYABILITY LAB</h2><button id="labClose" type="button" class="flatbtn">CLOSE</button></div>
@@ -456,7 +532,7 @@ input[type=range]::-webkit-slider-thumb{background:#73c9dd!important;border:1px 
 </section>
 <div id="turn" aria-label="Rotate device"><div class="turn-geometry" aria-hidden="true">◇</div><strong>TURN SIDEWAYS</strong><small>This little instrument likes both hands.<br>Disable rotation lock if necessary.</small></div>
 
-<script>/* RESONANT OBJECTS v0.16.1 — FIVE INDEPENDENT SOUND ENGINES
+<script>/* RESONANT OBJECTS v0.17.0 — FIVE INDEPENDENT SOUND ENGINES
  * 共通のWeb Audio出力バスは使うが、発音原理とノード・グラフは素材ごとに独立。
  * JEWEL: modal partial synthesis / CANDY: dynamic FM
  * CERAMIC: excited short waveguide / METAL: inharmonic cross-frequency FM
@@ -630,7 +706,7 @@ class WaveBreathingEngine {
   });
  }
 }
-/* RESONANT OBJECTS v0.16.1 — five independent acoustic engines. No external dependencies.
+/* RESONANT OBJECTS v0.17.0 — five independent acoustic engines. No external dependencies.
  * 原音を維持しつつ、近接共鳴の「打撃時」と「音声信号経由」の2層を分離する。
  * Audio graph: per-voice modal synth -> dry bus -> compressor
  *                       \-> modal tanks <-> bounded damped coupling -> wet bus
@@ -1075,7 +1151,7 @@ class ResonantEngine {
 }
 
 
-/* RESONANT OBJECTS v0.16.1 — GPU field renderer
+/* RESONANT OBJECTS v0.17.0 — GPU field renderer
  * WebGL2 > WebGL1. Audio remains Web Audio (WebGL is graphics only).
  * Pass 1: native-resolution color field, geometry and GPU connection ribbons.
  * Pass 2: half-resolution double-buffered temporal resonance (GPU ping-pong).
@@ -1514,7 +1590,7 @@ class VisualRenderer{
 }
 
 
-/* RESONANT OBJECTS v0.16.1 — One Playing Field / interaction layer.
+/* RESONANT OBJECTS v0.17.0 — One Playing Field / interaction layer.
  * 描画 / 音源 / 状態を分離。WebGL描画上の位置とタッチ領域は同一のモデルを参照。
  * Notes use stable IDs within each layout; no timer-driven animation when idle. */
 (()=>{
@@ -2193,6 +2269,27 @@ qsa('[data-param]').forEach(input=>input.addEventListener('input',()=>{
 $('reset').addEventListener('click',reset);$('shuffle').addEventListener('click',shuffle);$('save').addEventListener('click',save);
 $('miniShuffle').addEventListener('click',shuffle);$('miniSave').addEventListener('click',save);
 $('miniScenePrev').addEventListener('click',()=>$('scenePrev').click());$('miniSceneNext').addEventListener('click',()=>$('sceneNext').click());
+
+// SETTINGS: one active category at a time; preserve every control and its existing listener.
+const settingsTabs=qsa('[data-settings-tab]');
+function activateSettingsTab(name,focus=false){
+ for(const tab of settingsTabs){
+  const active=tab.dataset.settingsTab===name;
+  tab.setAttribute('aria-selected',String(active));tab.tabIndex=active?0:-1;
+  if(active&&focus)tab.focus();
+ }
+ qsa('[data-settings-page]').forEach(page=>{page.hidden=page.dataset.settingsPage!==name;});
+ const scroller=$('drawer').querySelector('.settings-scroll');if(scroller)scroller.scrollTop=0;
+}
+settingsTabs.forEach((tab,i)=>{
+ tab.addEventListener('click',()=>activateSettingsTab(tab.dataset.settingsTab));
+ tab.addEventListener('keydown',e=>{
+  if(!['ArrowRight','ArrowLeft','Home','End'].includes(e.key))return;
+  e.preventDefault();const index=e.key==='Home'?0:e.key==='End'?settingsTabs.length-1:(i+(e.key==='ArrowRight'?1:-1)+settingsTabs.length)%settingsTabs.length;
+  activateSettingsTab(settingsTabs[index].dataset.settingsTab,true);
+ });
+});
+
 $('tuneBtn').addEventListener('click',()=>toggleDrawer(!state.drawer));$('closeTune').addEventListener('click',()=>toggleDrawer(false));
 $('labButton').addEventListener('click',()=>lab(true));$('labClose').addEventListener('click',()=>lab(false));$('shade').addEventListener('click',()=>lab(false));
 $('scenePrev').addEventListener('click',()=>{const order=['original','cloud','bright'];scene(order[(order.indexOf(state.scene)+2)%3]);});

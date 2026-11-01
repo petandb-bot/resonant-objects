@@ -1,40 +1,19 @@
-# RESONANT OBJECTS v0.16.1 — AUDITED BUILD
+# RESONANT OBJECTS v0.17 — SETTINGS WORKFLOW
 
-v0.16からの点検・互換性修正版です。音色を新しく作り直した版ではありません。
+v0.16.1をベースに、音響エンジンと演奏フィールドは変更せず、設定画面を4カテゴリに再配置。
 
-## 確認した問題と修正
+- SOUND: Scale・音数・素材・Brightness/Ring・Space/Reverb/Bloom・Bond/WAVE
+- PLAY: Play Feel・Expression・Hold・Drag Sound・Collision・Live Link・Thread・Lock
+- VISUAL: GPU Aura・Trace・Graphics Quality・Motion・Note names
+- SCENE: Scene切替・Shuffle/Save・接続解除・配置リセット・Lab
 
-1. **11音モードと9+2モードの接続状態が共用されていた** — v0.16では `connectionsByCount.get(11)` を両モードが使用していました。v0.16.1では `'9+2'` を独立した保存キーとし、接続・配置・演奏統計を分離しました。
-2. **モード切替時に配置も共用されていた** — それぞれ独立した11個の配置データを持つよう修正しました。7・9・11音の既存動作は変更していません。
-3. **既存保存データの後方互換** — v0.16の9+2状態で保存された11音スロットの配置と接続を、初回読込時に9+2スロットへコピーします。元の11音スロットは残します。
-4. **配布ZIPの内容表示** — 前回のZIPではテストファイルが一部不足していました。今回のZIPには、2種の回帰テスト、旧保存データの移行テスト、スクリーンショット、差分を同梱します。
+既存の28種類の設定コントロールを維持。新しい音響パラメータは追加していません。
+各カテゴリはタブ切替、キーボードの左右/Home/Endにも対応。小型横画面はスクロールで全項目にアクセス可能。
+音源5種類、12 Scale、7/9/11/9+2、4種類のリバーブ、Connect、WebGL2、保存処理はv0.16.1と同じです。
 
-## 変更しなかった機能
-
-- JEWEL / CANDY / CERAMIC / METAL / WAVE の音源
-- WAVEレイヤー、9+2共鳴体、7・9・11音の配置選択
-- タップ／中心ドラッグ／長押し、衝突とConnect
-- 4種のリバーブ、WebGL描画コードと2D代替描画
-- ボイス上限、余韻のフェード、音響パラメーター
-
-## 動作確認
-
-- `node --check` によるJavaScript構文検査: PASS
-- Chromiumでモード切替、9+2の音源割当（通常9+WAVE2）: PASS
-- 通常11音と9+2の配置／Connect状態の独立性: PASS
-- 保存・再読込後の9+2配置・Connect復元: PASS（localStorageの模擬環境）
-- v0.16保存データの9+2移行テスト: PASS（localStorageの模擬環境）
-- AudioContextの起動と11個の共鳴回路の作成: PASS
-- Scale・Material・リバーブの連続切替: PASS（JavaScript例外なし）
-- 中心ドラッグでの余計な発音なし、通常タップ・RESONANTタップ: PASS
-- 844×390 / 667×375での画面表示: PASS（Canvas 2D互換描画）
-
-## 残る注意点
-
-今回使用した実行環境ではWebGLコンテキストを取得できませんでした。掲載プレビューはCanvas 2D代替表示です。WebGLシェーダーの実描画やiPhone Safari上の動作は、この修正版では検証できていません。
-
-iPhoneの内蔵スピーカーでのクリックノイズ、長時間演奏での音切れ、音質、レイテンシー、発熱については未検証です。ボイス上限32と旧共鳴回路のフェード処理は前版のまま維持しています。「ブチッ」の完全解消を保証するものではありません。
-
-## 配置方法
-
-`index.html` をGitHub Pagesの既存 `index.html` と置換してください。保存設定は以前のLocal Storageキーを使用し、可能な範囲で引き継ぎます。
+検証:
+- Node.js JavaScript構文検査: PASS
+- Chromium 844x390、667x375、1280x720で設定画面のタブ、Scale、Reverb、Collision切替: PASS
+- JavaScript例外: これらの操作では検出なし
+- iPhone Safari実機でのタッチ・音質・GPU負荷: 未検証
+- ChromiumのGPU実描画および長時間演奏の音響テスト: 今回は未実施

@@ -1,232 +1,279 @@
---- v0.16/index.html
-+++ v0.16.1/index.html
+--- v0.16.1/index.html
++++ v0.17/index.html
 @@ -4,7 +4,7 @@
  <meta name="theme-color" content="#07090d">
  <meta name="apple-mobile-web-app-capable" content="yes">
  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
--<title>RESONANT OBJECTS · v0.16.0</title>
-+<title>RESONANT OBJECTS · v0.16.1</title>
+-<title>RESONANT OBJECTS · v0.16.1</title>
++<title>RESONANT OBJECTS · v0.17.0</title>
  <style>:root{
    --ink:#344f78; --muted:#7387a5; --aqua:#83e4e5; --violet:#9c9bfd;
    --cream:#fcfff9; --line:rgba(255,255,255,.72); --glaze:rgba(251,255,255,.50);
-@@ -389,7 +389,7 @@
+@@ -295,6 +295,50 @@
+ .stage-topline,.stage-message{opacity:.45!important}
+ .bottom{background:#080a0e!important;border-top:1px solid #1a212c!important}
+ @media(max-width:690px){.material-strip{gap:3px!important}.material-icon{min-width:32px!important;width:32px!important}}
++
++/* v0.17 SETTINGS WORKFLOW — category navigation, readable touch targets, no new parameters. */
++#drawer{display:none!important;position:fixed!important;top:50%!important;bottom:auto!important;left:50%!important;right:auto!important;transform:translate(-50%,-50%)!important;width:min(780px,calc(100vw - 24px))!important;max-height:min(88dvh,590px)!important;padding:0!important;overflow:hidden!important;flex-direction:column!important;background:#10151e!important;border:1px solid #394455!important;border-radius:12px!important;z-index:18!important}
++#drawer.open{display:flex!important}
++#drawer .drawer-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0!important;padding:11px 16px 8px;color:#e1eaf4!important;font-size:11px;letter-spacing:.16em}
++#drawer #closeTune{height:31px;min-width:34px;font-size:16px}
++#drawer .settings-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;padding:0 12px 10px;border-bottom:1px solid #293443}
++#drawer .settings-tab{min-height:38px;border:1px solid #293544;border-radius:7px;background:#151d28;color:#9aacc0;font-size:11px;font-weight:750;letter-spacing:.10em}
++#drawer .settings-tab[aria-selected="true"]{background:#263a4d;border-color:#6aafc7;color:#e3f9ff}
++#drawer .settings-tab:focus-visible{outline:2px solid #8ee4f0;outline-offset:1px}
++#drawer .settings-scroll{overflow-y:auto;overscroll-behavior:contain;min-height:0;padding:10px 13px 15px;scrollbar-color:#53667a #111821}
++#drawer .settings-page[hidden]{display:none!important}
++#drawer .settings-page-caption{margin:0 0 10px;color:#8fa2b6;font-size:11px}
++#drawer .settings-group{border:1px solid #2b3746;background:#141b25;border-radius:9px;padding:10px 11px;margin:0 0 10px}
++#drawer .settings-group h3{margin:0 0 9px;color:#7fc6dc;font-size:10px;letter-spacing:.15em;font-weight:750}
++#drawer .settings-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 16px;align-items:start}
++#drawer .settings-fields .mini-field{min-width:0;display:flex;flex-direction:column;gap:4px}
++#drawer .settings-fields .mini-field label{display:flex;justify-content:space-between;align-items:center;min-height:18px;font-size:11px;gap:8px;color:#c8d5e2!important}
++#drawer .settings-fields .mini-field output{font-variant-numeric:tabular-nums;white-space:nowrap}
++#drawer .settings-fields .mini-field select,#drawer .settings-fields .mini-field .switchbtn{min-height:38px;width:100%}
++#drawer .settings-fields .mini-field .rowbuttons button,#drawer .settings-fields .mini-field .actionrow button,#drawer .settings-fields .mini-field .piece-count button{min-height:38px;height:auto}
++#drawer .settings-fields input[type=range]{height:34px;margin:0}
++#drawer .settings-fields .material-choice{grid-column:1/-1}
++#drawer .settings-fields .material-choices{grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
++#drawer .settings-fields .material-choices button{min-height:38px;font-size:10px}
++#drawer .settings-fields .reverb-field{grid-column:1/-1}
++#drawer .settings-fields .reverb-choices{margin-top:4px;gap:7px}
++#drawer .settings-fields .reverb-choices button{min-height:49px}
++#drawer .settings-fields .reverb-footnote{margin:3px 0 0;font-size:10px}
++#drawer .settings-fields .piece-count button{font-size:11px}
++#drawer .settings-fields .piece-count{gap:5px}
++@media(max-width:720px){
++ #drawer{width:calc(100vw - 12px)!important;max-height:calc(100dvh - 12px)!important}
++ #drawer .drawer-title{padding:7px 10px 5px}
++ #drawer .settings-tabs{padding:0 8px 7px}
++ #drawer .settings-tab{min-height:34px;font-size:10px}
++ #drawer .settings-scroll{padding:8px}
++ #drawer .settings-group{padding:8px;margin-bottom:7px}
++ #drawer .settings-fields{gap:8px 12px}
++ #drawer .settings-fields .reverb-choices button{min-height:43px}
++}
++@media(max-width:480px) and (orientation:portrait){#drawer .settings-fields{grid-template-columns:1fr}#drawer .settings-fields .material-choice,#drawer .settings-fields .reverb-field{grid-column:auto}}
++@media(prefers-reduced-motion:reduce){#drawer *{scroll-behavior:auto!important;transition:none!important}}
++
+ </style></head><body>
+ <div id="app">
+ <header class="top kinetic-top" aria-label="Instrument tools">
+@@ -389,64 +433,96 @@
    </section>
  </aside>
  </div>
--<footer class="bottom"><span class="fine">✧  RESONANT OBJECTS · v0.16.0</span><span class="readout" id="status" role="status" aria-live="polite">Tap a shape · drag to arrange silently</span></footer>
-+<footer class="bottom"><span class="fine">✧  RESONANT OBJECTS · v0.16.1</span><span class="readout" id="status" role="status" aria-live="polite">Tap a shape · drag to arrange silently</span></footer>
+-<footer class="bottom"><span class="fine">✧  RESONANT OBJECTS · v0.16.1</span><span class="readout" id="status" role="status" aria-live="polite">Tap a shape · drag to arrange silently</span></footer>
++<footer class="bottom"><span class="fine">✧  RESONANT OBJECTS · v0.17.0</span><span class="readout" id="status" role="status" aria-live="polite">Tap a shape · drag to arrange silently</span></footer>
  </div>
  <section id="drawer" role="region" aria-label="Instrument controls">
-  <div class="drawer-title">SOUND / SPACE <button id="closeTune" type="button" class="flatbtn" aria-label="Close tuning">✕</button></div>
-@@ -456,7 +456,7 @@
+- <div class="drawer-title">SOUND / SPACE <button id="closeTune" type="button" class="flatbtn" aria-label="Close tuning">✕</button></div>
+- <p class="drawer-tip">Drag to connect. Hold near another shape; pull away to release.</p>
+- <div class="drawer-grid">
+-  <div class="mini-field material-choice"><label>MATERIAL</label><div class="material-choices">
+-  <button data-material-type="0" type="button">JEWEL</button><button data-material-type="1" type="button">CANDY</button>
+-  <button data-material-type="2" type="button">CERAMIC</button><button data-material-type="3" type="button">METAL</button><button data-material-type="4" type="button">WAVE</button></div></div>
+-  <div class="mini-field"><label>Brightness <output data-value="material">Warm</output></label><input data-param="material" aria-label="Material" type="range" min="0" max="100" value="36"></div>
+-  <div class="mini-field"><label>Ring <output data-value="ring">Long</output></label><input data-param="ring" aria-label="Ring" type="range" min="0" max="100" value="67"></div>
+-  <div class="mini-field"><label>Space <output data-value="space">Dry</output></label><input data-param="space" aria-label="Space" type="range" min="0" max="100" value="0"></div>
+-  <div class="mini-field reverb-field"><label>SPACE CHARACTER <span class="reverb-hint">Choose the kind of room</span></label>
+-    <div class="reverb-choices" role="group" aria-label="Reverb type">
+-      <button type="button" data-reverb-choice="nest" aria-pressed="true"><span aria-hidden="true">◔</span><small>NEST</small></button>
+-      <button type="button" data-reverb-choice="velvet" aria-pressed="false"><span aria-hidden="true">≈</span><small>VELVET</small></button>
+-      <button type="button" data-reverb-choice="prism" aria-pressed="false"><span aria-hidden="true">◇</span><small>PRISM</small></button>
+-      <button type="button" data-reverb-choice="horizon" aria-pressed="false"><span aria-hidden="true">◌</span><small>HORIZON</small></button>
+-    </div><p class="reverb-footnote">SPACE controls how much reverb you hear. 0 is completely dry.</p>
+-  </div>
+-  <div class="mini-field"><label>Bond <output data-value="bond">Connected</output></label><input data-param="bond" aria-label="Bond" type="range" min="0" max="100" value="75"></div>
+-  <div class="mini-field"><label>Bloom <output data-value="bloom">Off</output></label><input data-param="bloom" aria-label="Bloom" type="range" min="0" max="100" value="0"></div>
+-  <div class="mini-field"><label>Play Feel</label><button data-feel type="button" class="switchbtn" aria-pressed="true">ON</button></div>
+-  <div class="mini-field"><label>Expression <output data-value="expression">Gentle</output></label><input data-param="expression" aria-label="Expression amount" type="range" min="0" max="100" value="46"></div>
+-  <div class="mini-field"><label>Drag Sound</label><button data-move-sound type="button" class="switchbtn" aria-pressed="false">OFF</button></div>
+-  <div class="mini-field"><label>Gentle Material Collision</label><button data-collision type="button" class="switchbtn" aria-pressed="true">ON</button></div>
+-  <div class="mini-field"><label>Lock Positions</label><button data-lock type="button" class="switchbtn" aria-pressed="false">UNLOCKED</button></div>
+-  <div class="mini-field"><label>Live Link</label><button data-link type="button" class="switchbtn" aria-pressed="true">ON</button></div>
+-  <div class="mini-field"><label>Hold to sing</label><button data-hold type="button" class="switchbtn" aria-pressed="true">ON</button></div>
+-  <div class="mini-field"><label>WAVE VEIL · two layered voices</label><button data-wave-accents type="button" class="switchbtn" aria-pressed="true">ON</button></div>
+-  <div class="mini-field"><label>GPU Aura <output data-value="aura">Luminous</output></label><input data-param="aura" aria-label="GPU glow intensity" type="range" min="0" max="100" value="48"></div>
+-  <div class="mini-field"><label>GPU Trace <output data-value="trace">Gentle</output></label><input data-param="trace" aria-label="GPU resonance trail" type="range" min="0" max="100" value="38"></div>
+- </div>
+- <div class="drawer-grid" style="margin-top:8px">
+-  <div class="mini-field"><label>Pieces</label><div class="piece-count"><button data-count="7" type="button">7</button><button data-count="9" type="button">9</button><button data-count="11" type="button">11</button><button data-resonator-layout type="button" title="Nine instruments plus two resonators">9+2</button></div></div>
+-  <div class="mini-field"><label>Scale</label><select data-scale aria-label="Musical scale">
+-      <optgroup label="Original tunings">
+-        <option value="minor">D minor</option><option value="penta">C pentatonic</option><option value="lydian">F Lydian</option>
+-      </optgroup>
+-      <optgroup label="Open / melodic">
+-        <option value="eminor">E minor</option><option value="adorian">A Dorian</option><option value="gmajor">G major</option><option value="aminorpent">A minor pentatonic</option>
+-      </optgroup>
+-      <optgroup label="Resonant / modal">
+-        <option value="dkurd">D Kurd</option><option value="dceltic">D Celtic</option><option value="hirajoshi">C Hirajoshi</option><option value="insen">D In Sen</option><option value="whole">C whole tone</option>
+-      </optgroup>
+-    </select></div>
+-  <div class="mini-field"><label>Graphics quality</label><select data-quality aria-label="GPU graphics quality"><option value="eco">Eco</option><option value="balanced">Balanced</option><option value="high">High</option></select></div>
+-  <div class="mini-field"><label>Motion</label><div class="rowbuttons"><button data-motion="still" type="button">Still</button><button data-motion="float" type="button">Float</button><button data-motion="orbit" type="button">Orbit</button></div></div>
+-  <div class="mini-field"><label>Scene</label><div class="actionrow"><button id="miniScenePrev" type="button">‹</button><button id="miniSceneNext" type="button">›</button></div></div>
+-  <div class="mini-field"><label>Explore</label><div class="actionrow"><button id="miniShuffle" type="button">Shuffle</button><button id="miniSave" type="button">Save</button></div></div>
+-  <div class="mini-field"><label>THREAD / Link on hold</label><button data-connect type="button" class="switchbtn" aria-pressed="true">ON</button></div>
+-  <div class="mini-field"><label>Note names</label><button data-show-notes type="button" class="switchbtn" aria-pressed="false">OFF</button></div>
+-  <div class="mini-field"><label>Links</label><button id="clearConnections" class="switchbtn" type="button">Untie all</button></div>
+-  <div class="mini-field"><label>Arrangement</label><button id="miniReset" class="switchbtn" type="button">Reset positions</button></div>
+-  <div class="mini-field"><label>Test</label><button id="miniLab" class="switchbtn" type="button">Open Lab</button></div>
+-
+- </div>
+-</section>
++<div class="drawer-title"><span>INSTRUMENT SETTINGS</span><button id="closeTune" type="button" class="flatbtn" aria-label="Close settings">✕</button></div>
++<div class="settings-tabs" role="tablist" aria-label="Settings category">
++<button type="button" class="settings-tab" id="settings-tab-sound" role="tab" aria-controls="settings-panel-sound" aria-selected="true" tabindex="0" data-settings-tab="sound">SOUND</button>
++<button type="button" class="settings-tab" id="settings-tab-play" role="tab" aria-controls="settings-panel-play" aria-selected="false" tabindex="-1" data-settings-tab="play">PLAY</button>
++<button type="button" class="settings-tab" id="settings-tab-visual" role="tab" aria-controls="settings-panel-visual" aria-selected="false" tabindex="-1" data-settings-tab="visual">VISUAL</button>
++<button type="button" class="settings-tab" id="settings-tab-manage" role="tab" aria-controls="settings-panel-manage" aria-selected="false" tabindex="-1" data-settings-tab="manage">SCENE</button>
++</div><div class="settings-scroll">
++<div class="settings-page" id="settings-panel-sound" role="tabpanel" aria-labelledby="settings-tab-sound" data-settings-page="sound" >
++<p class="settings-page-caption">Pitch, timbre and acoustic space</p>
++<section class="settings-group"><h3>TUNING</h3><div class="settings-fields">
++<div class="mini-field"><label>Scale</label><select aria-label="Musical scale" data-scale="">
++<optgroup label="Original tunings">
++<option value="minor">D minor</option><option value="penta">C pentatonic</option><option value="lydian">F Lydian</option>
++</optgroup>
++<optgroup label="Open / melodic">
++<option value="eminor">E minor</option><option value="adorian">A Dorian</option><option value="gmajor">G major</option><option value="aminorpent">A minor pentatonic</option>
++</optgroup>
++<optgroup label="Resonant / modal">
++<option value="dkurd">D Kurd</option><option value="dceltic">D Celtic</option><option value="hirajoshi">C Hirajoshi</option><option value="insen">D In Sen</option><option value="whole">C whole tone</option>
++</optgroup>
++</select></div>
++<div class="mini-field"><label>Pieces</label><div class="piece-count"><button data-count="7" type="button">7</button><button data-count="9" type="button">9</button><button data-count="11" type="button">11</button><button data-resonator-layout="" title="Nine instruments plus two resonators" type="button">9+2</button></div></div>
++</div></section>
++<section class="settings-group"><h3>MATERIAL</h3><div class="settings-fields">
++<div class="mini-field material-choice"><label>MATERIAL</label><div class="material-choices">
++<button data-material-type="0" type="button">JEWEL</button><button data-material-type="1" type="button">CANDY</button>
++<button data-material-type="2" type="button">CERAMIC</button><button data-material-type="3" type="button">METAL</button><button data-material-type="4" type="button">WAVE</button></div></div>
++<div class="mini-field"><label>Brightness <output data-value="material">Warm</output></label><input aria-label="Material" data-param="material" max="100" min="0" type="range" value="36"/></div>
++<div class="mini-field"><label>Ring <output data-value="ring">Long</output></label><input aria-label="Ring" data-param="ring" max="100" min="0" type="range" value="67"/></div>
++</div></section>
++<section class="settings-group"><h3>SPACE</h3><div class="settings-fields">
++<div class="mini-field"><label>Space <output data-value="space">Dry</output></label><input aria-label="Space" data-param="space" max="100" min="0" type="range" value="0"/></div>
++<div class="mini-field reverb-field"><label>SPACE CHARACTER <span class="reverb-hint">Choose the kind of room</span></label>
++<div aria-label="Reverb type" class="reverb-choices" role="group">
++<button aria-pressed="true" data-reverb-choice="nest" type="button"><span aria-hidden="true">◔</span><small>NEST</small></button>
++<button aria-pressed="false" data-reverb-choice="velvet" type="button"><span aria-hidden="true">≈</span><small>VELVET</small></button>
++<button aria-pressed="false" data-reverb-choice="prism" type="button"><span aria-hidden="true">◇</span><small>PRISM</small></button>
++<button aria-pressed="false" data-reverb-choice="horizon" type="button"><span aria-hidden="true">◌</span><small>HORIZON</small></button>
++</div><p class="reverb-footnote">SPACE controls how much reverb you hear. 0 is completely dry.</p>
++</div>
++<div class="mini-field"><label>Bloom <output data-value="bloom">Off</output></label><input aria-label="Bloom" data-param="bloom" max="100" min="0" type="range" value="0"/></div>
++</div></section>
++<section class="settings-group"><h3>RESONANCE</h3><div class="settings-fields">
++<div class="mini-field"><label>Bond <output data-value="bond">Connected</output></label><input aria-label="Bond" data-param="bond" max="100" min="0" type="range" value="75"/></div>
++<div class="mini-field"><label>WAVE VEIL · two layered voices</label><button aria-pressed="true" class="switchbtn" data-wave-accents="" type="button">ON</button></div>
++</div></section>
++</div>
++<div class="settings-page" id="settings-panel-play" role="tabpanel" aria-labelledby="settings-tab-play" data-settings-page="play" hidden>
++<p class="settings-page-caption">Touch, movement and connections</p>
++<section class="settings-group"><h3>GESTURE</h3><div class="settings-fields">
++<div class="mini-field"><label>Play Feel</label><button aria-pressed="true" class="switchbtn" data-feel="" type="button">ON</button></div>
++<div class="mini-field"><label>Expression <output data-value="expression">Gentle</output></label><input aria-label="Expression amount" data-param="expression" max="100" min="0" type="range" value="46"/></div>
++<div class="mini-field"><label>Hold to sing</label><button aria-pressed="true" class="switchbtn" data-hold="" type="button">ON</button></div>
++<div class="mini-field"><label>Drag Sound</label><button aria-pressed="false" class="switchbtn" data-move-sound="" type="button">OFF</button></div>
++</div></section>
++<section class="settings-group"><h3>INTERACTION</h3><div class="settings-fields">
++<div class="mini-field"><label>Gentle Material Collision</label><button aria-pressed="true" class="switchbtn" data-collision="" type="button">ON</button></div>
++<div class="mini-field"><label>Live Link</label><button aria-pressed="true" class="switchbtn" data-link="" type="button">ON</button></div>
++<div class="mini-field"><label>THREAD / Link on hold</label><button aria-pressed="true" class="switchbtn" data-connect="" type="button">ON</button></div>
++<div class="mini-field"><label>Lock Positions</label><button aria-pressed="false" class="switchbtn" data-lock="" type="button">UNLOCKED</button></div>
++</div></section>
++</div>
++<div class="settings-page" id="settings-panel-visual" role="tabpanel" aria-labelledby="settings-tab-visual" data-settings-page="visual" hidden>
++<p class="settings-page-caption">Appearance and movement</p>
++<section class="settings-group"><h3>GRAPHICS</h3><div class="settings-fields">
++<div class="mini-field"><label>GPU Aura <output data-value="aura">Luminous</output></label><input aria-label="GPU glow intensity" data-param="aura" max="100" min="0" type="range" value="48"/></div>
++<div class="mini-field"><label>GPU Trace <output data-value="trace">Gentle</output></label><input aria-label="GPU resonance trail" data-param="trace" max="100" min="0" type="range" value="38"/></div>
++<div class="mini-field"><label>Graphics quality</label><select aria-label="GPU graphics quality" data-quality=""><option value="eco">Eco</option><option value="balanced">Balanced</option><option value="high">High</option></select></div>
++</div></section>
++<section class="settings-group"><h3>MOTION</h3><div class="settings-fields">
++<div class="mini-field"><label>Motion</label><div class="rowbuttons"><button data-motion="still" type="button">Still</button><button data-motion="float" type="button">Float</button><button data-motion="orbit" type="button">Orbit</button></div></div>
++<div class="mini-field"><label>Note names</label><button aria-pressed="false" class="switchbtn" data-show-notes="" type="button">OFF</button></div>
++</div></section>
++</div>
++<div class="settings-page" id="settings-panel-manage" role="tabpanel" aria-labelledby="settings-tab-manage" data-settings-page="manage" hidden>
++<p class="settings-page-caption">Save and reset your instrument</p>
++<section class="settings-group"><h3>ARRANGEMENT</h3><div class="settings-fields">
++<div class="mini-field"><label>Scene</label><div class="actionrow"><button id="miniScenePrev" type="button">‹</button><button id="miniSceneNext" type="button">›</button></div></div>
++<div class="mini-field"><label>Explore</label><div class="actionrow"><button id="miniShuffle" type="button">Shuffle</button><button id="miniSave" type="button">Save</button></div></div>
++</div></section>
++<section class="settings-group"><h3>MAINTENANCE</h3><div class="settings-fields">
++<div class="mini-field"><label>Links</label><button class="switchbtn" id="clearConnections" type="button">Untie all</button></div>
++<div class="mini-field"><label>Arrangement</label><button class="switchbtn" id="miniReset" type="button">Reset positions</button></div>
++<div class="mini-field"><label>Test</label><button class="switchbtn" id="miniLab" type="button">Open Lab</button></div>
++</div></section>
++</div>
++</div></section>
+ <div id="shade" class="modal-shade"></div>
+ <section id="lab" role="dialog" aria-modal="true" aria-label="Playability lab">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><h2>PLAYABILITY LAB</h2><button id="labClose" type="button" class="flatbtn">CLOSE</button></div>
+@@ -456,7 +532,7 @@
  </section>
  <div id="turn" aria-label="Rotate device"><div class="turn-geometry" aria-hidden="true">◇</div><strong>TURN SIDEWAYS</strong><small>This little instrument likes both hands.<br>Disable rotation lock if necessary.</small></div>
  
--<script>/* RESONANT OBJECTS v0.16.0 — FIVE INDEPENDENT SOUND ENGINES
-+<script>/* RESONANT OBJECTS v0.16.1 — FIVE INDEPENDENT SOUND ENGINES
+-<script>/* RESONANT OBJECTS v0.16.1 — FIVE INDEPENDENT SOUND ENGINES
++<script>/* RESONANT OBJECTS v0.17.0 — FIVE INDEPENDENT SOUND ENGINES
   * 共通のWeb Audio出力バスは使うが、発音原理とノード・グラフは素材ごとに独立。
   * JEWEL: modal partial synthesis / CANDY: dynamic FM
   * CERAMIC: excited short waveguide / METAL: inharmonic cross-frequency FM
-@@ -630,7 +630,7 @@
+@@ -630,7 +706,7 @@
    });
   }
  }
--/* RESONANT OBJECTS v0.16.0 — five independent acoustic engines. No external dependencies.
-+/* RESONANT OBJECTS v0.16.1 — five independent acoustic engines. No external dependencies.
+-/* RESONANT OBJECTS v0.16.1 — five independent acoustic engines. No external dependencies.
++/* RESONANT OBJECTS v0.17.0 — five independent acoustic engines. No external dependencies.
   * 原音を維持しつつ、近接共鳴の「打撃時」と「音声信号経由」の2層を分離する。
   * Audio graph: per-voice modal synth -> dry bus -> compressor
   *                       \-> modal tanks <-> bounded damped coupling -> wet bus
-@@ -1075,7 +1075,7 @@
+@@ -1075,7 +1151,7 @@
  }
  
  
--/* RESONANT OBJECTS v0.16.0 — GPU field renderer
-+/* RESONANT OBJECTS v0.16.1 — GPU field renderer
+-/* RESONANT OBJECTS v0.16.1 — GPU field renderer
++/* RESONANT OBJECTS v0.17.0 — GPU field renderer
   * WebGL2 > WebGL1. Audio remains Web Audio (WebGL is graphics only).
   * Pass 1: native-resolution color field, geometry and GPU connection ribbons.
   * Pass 2: half-resolution double-buffered temporal resonance (GPU ping-pong).
-@@ -1514,7 +1514,7 @@
+@@ -1514,7 +1590,7 @@
  }
  
  
--/* RESONANT OBJECTS v0.16.0 — One Playing Field / interaction layer.
-+/* RESONANT OBJECTS v0.16.1 — One Playing Field / interaction layer.
+-/* RESONANT OBJECTS v0.16.1 — One Playing Field / interaction layer.
++/* RESONANT OBJECTS v0.17.0 — One Playing Field / interaction layer.
   * 描画 / 音源 / 状態を分離。WebGL描画上の位置とタッチ領域は同一のモデルを参照。
   * Notes use stable IDs within each layout; no timer-driven animation when idle. */
  (()=>{
-@@ -1559,12 +1559,16 @@
- const selects={7:[0,1,2,3,4,6,8],9:[0,1,2,3,4,5,6,7,8],11:[0,1,2,3,4,5,6,7,8,9,10]};
- const params={material:36,ring:67,space:0,bond:75,bloom:0,level:84,aura:48,trace:38,expression:46};
- const state={reverbType:'nest',waveAccents:true,resonatorMode:false,materialType:0,count:9,scale:'minor',motion:'still',locked:false,dragging:false,connect:true,showNotes:false,collision:true,scene:'original',drawer:false,link:true,hold:true,quality:'balanced',feel:true,moveSound:false};
--const sets=new Map(),stats={7:{hits:0,empty:0,slides:0,rub:0,moves:0,bumps:0,multi:0},9:{hits:0,empty:0,slides:0,rub:0,moves:0,bumps:0,multi:0},11:{hits:0,empty:0,slides:0,rub:0,moves:0,bumps:0,multi:0}};
-+const emptyStats=()=>({hits:0,empty:0,slides:0,rub:0,moves:0,bumps:0,multi:0});
-+const sets=new Map(),stats={7:emptyStats(),9:emptyStats(),11:emptyStats(),'9+2':emptyStats()};
- // The inner core is a handle. The wider annulus is a playable strike surface.
- // No speculative audio timers: there is no reliable way to predict a drag at touch-down.
- const GRAB_CORE=0.50, MOVE_THRESHOLD=13, TOUCH_HIT_MARGIN=1.13;
--const pointerMap=new Map();const connectionsByCount=new Map([[7,new Map()],[9,new Map()],[11,new Map()]]);
--const connected=()=>[...connectionsByCount.get(state.count).values()];
-+const pointerMap=new Map();
-+const connectionsByCount=new Map([[7,new Map()],[9,new Map()],[11,new Map()],['9+2',new Map()]]);
-+const activeMode=()=>state.resonatorMode&&state.count===11?'9+2':state.count;
-+const activeConnections=()=>connectionsByCount.get(activeMode());
-+const connected=()=>[...activeConnections().values()];
- const pairKey=(a,b)=>Math.min(a,b)+':'+Math.max(a,b);
- let notes=[],W=1,H=1,requestId=0,lastTime=0,lastActive=0,viewReady=false;
- // Deliberately unequal printed glyphs; physical hit/collision radii remain equal.
-@@ -1588,7 +1592,8 @@
- function makeSet(count){return Array.from({length:count},(_,id)=>({id,midi:50,name:'',kind:id,visualScale:VISUAL_SCALES[id%VISUAL_SCALES.length],big:id===0,
-   color:hexRGB(colors[id]),hex:colors[id],u:.5,v:.5,saved:false,r:35,x:0,y:0,energy:0,angle:0,last:0,stageW:1,stageH:1,gesture:0,impact:0,pulse:0,streak:0,waveLayer:false,resonator:false}));}
- for(const k of [7,9,11])sets.set(k,makeSet(k));
--function setNotes(){clearPointers();notes=sets.get(state.count);engine.setConnections(connected());const names=pitches(state.count,state.scale);
-+sets.set('9+2',makeSet(11));
-+function setNotes(){clearPointers();notes=sets.get(activeMode());engine.setConnections(connected());const names=pitches(state.count,state.scale);
-  for(const [i,n] of notes.entries()){n.name=names[i][0];n.midi=names[i][1];n.resonator=false;}
-  if(state.resonatorMode&&state.count===11){
-   // 9 ordinary pads + 2 dedicated WAVE resonators, tuned to the scale's tonic
-@@ -1717,7 +1722,7 @@
-  // Reject synthetic/duplicate down events for an already-tracked pointer.
-  if(pointerMap.has(e.pointerId))return;
-  const {x,y}=xy(e),i=hit(x,y);
-- if(i<0){stats[state.count].empty++;return;}
-+ if(i<0){stats[activeMode()].empty++;return;}
-  try{canvas.setPointerCapture(e.pointerId);}catch(_){}
-  const n=notes[i],radial=clamp(Math.hypot(x-n.x,y-n.y)/n.r,0,1);
-  // Touching the outer 73% of the pad area strikes immediately, even while LOCK is off.
-@@ -1730,7 +1735,7 @@
-   contactWith:new Set(),lastSpeed:0,connectTimer:0,connectTarget:-1,previewStart:0,
-   played:false,held:false,initialRadial:radial,lastSlideAt:0};
-  pointerMap.set(e.pointerId,p);
-- stats[state.count].hits++;stats[state.count].multi=Math.max(stats[state.count].multi,pointerMap.size);
-+ stats[activeMode()].hits++;stats[activeMode()].multi=Math.max(stats[activeMode()].multi,pointerMap.size);
-  // Unlock audio on the first gesture even when the player only moves a body.
-  // This prepares the collision resonator without producing an unwanted pickup note.
-  if(p.canDrag){
-@@ -1766,14 +1771,14 @@
- function syncThreads(){engine.setConnections(connected());drawRequest();}
- function tie(a,b){
-  if(a===b||!state.connect||countDegree(a)>=2||countDegree(b)>=2)return false;
-- const k=pairKey(a,b),map=connectionsByCount.get(state.count);
-+ const k=pairKey(a,b),map=activeConnections();
-  if(map.has(k))return false;
-  map.set(k,{a:Math.min(a,b),b:Math.max(a,b),flash:.65,pulses:[],created:performance.now()});
-  notes[a].energy=Math.max(notes[a].energy,.28);notes[b].energy=Math.max(notes[b].energy,.28);
-  syncThreads();say('Two shapes are resonating together');return true;
- }
- function removeThread(a,b,show=true){
-- if(!connectionsByCount.get(state.count).delete(pairKey(a,b)))return false;
-+ if(!activeConnections().delete(pairKey(a,b)))return false;
-  syncThreads();if(show)say('The thread dissolved');return true;
- }
- function evaluateThread(pointerId,p){
-@@ -1783,7 +1788,7 @@
-   .filter(v=>v.d<=n.r+v.v.r+22 && v.d>=n.r+v.v.r-2)
-   .sort((a,b)=>a.d-b.d)[0];
-  const candidate=near?.v;
-- if(!candidate||connectionsByCount.get(state.count).has(pairKey(n.id,candidate.id))||countDegree(n.id)>=2||countDegree(candidate.id)>=2){
-+ if(!candidate||activeConnections().has(pairKey(n.id,candidate.id))||countDegree(n.id)>=2||countDegree(candidate.id)>=2){
-   return cancelThread(p);
-  }
-  if(p.connectTarget===candidate.id){
-@@ -1807,7 +1812,7 @@
-  for(const e of connected()){
-   const a=notes[e.a],b=notes[e.b];
-   if(!a||!b||Math.hypot(a.x-b.x,a.y-b.y)>maxDist){
--   connectionsByCount.get(state.count).delete(pairKey(e.a,e.b));changed=true;
-+   activeConnections().delete(pairKey(e.a,e.b));changed=true;
-   }
-  }
-  if(changed){syncThreads();say('The thread stretched and disappeared');}
-@@ -1883,7 +1888,7 @@
-   if(touched.has(other.id)){
-    if(state.collision&&speed>.39&&!p.contactWith.has(other.id)&&chimed<1){
-     if(engine.contact(n,other,speed,notes)){
--     stats[state.count].bumps++;chimed++;
-+     stats[activeMode()].bumps++;chimed++;
-      n.energy=Math.max(n.energy,.42);other.energy=Math.max(other.energy,.39);
-      other.gesture=Math.max(other.gesture||0,[.38,.62,.24,.42,.35][state.materialType]);
-     }
-@@ -1911,7 +1916,7 @@
-    n.gesture=Math.max(n.gesture||0,.14+speed*.55);
-   }
-  }
-- if(!p.countedMove){stats[state.count].moves++;p.countedMove=true;}
-+ if(!p.countedMove){stats[activeMode()].moves++;p.countedMove=true;}
-  updateLabels();drawRequest();
- }
- function pointerMove(e){
-@@ -1938,7 +1943,7 @@
-  // small boundary jitter no longer makes the sound hop between neighbours.
-  const confirmed=i>=0&&Math.hypot(x-notes[i].x,y-notes[i].y)<notes[i].r*.90;
-  if(confirmed&&i!==p.last&&now-p.lastSlideAt>115){p.last=i;p.lastSlideAt=now;
--  stats[state.count].hits++;stats[state.count].slides++;
-+  stats[activeMode()].hits++;stats[activeMode()].slides++;
-   const radial=clamp(Math.hypot(x-notes[i].x,y-notes[i].y)/notes[i].r,0,1);
-   play(i,clamp(.86-.18*radial,.55,.86),radial);
-  }
-@@ -2072,7 +2077,7 @@
-  selectReverb(['nest','velvet','prism','horizon'][Math.floor(Math.random()*4)],false);
-  state.scene='custom';updateButtons();say('A different resonance');
- }
--function reset(){connectionsByCount.get(state.count).clear();syncThreads();for(const n of notes)n.saved=false;layoutSet(notes);engine.refreshLinks(notes);updateLabels();drawRequest();say('Positions reset');}
-+function reset(){activeConnections().clear();syncThreads();for(const n of notes)n.saved=false;layoutSet(notes);engine.refreshLinks(notes);updateLabels();drawRequest();say('Positions reset');}
- function save(){
-  try{const result={count:state.count,resonatorMode:state.resonatorMode,scale:state.scale,motion:state.motion,scene:state.scene,params,
-   materialType:state.materialType,reverbType:state.reverbType,waveAccents:state.waveAccents,feel:state.feel,moveSound:state.moveSound,connect:state.connect,showNotes:state.showNotes,collision:state.collision,locked:state.locked,link:state.link,hold:state.hold,quality:state.quality,
-@@ -2102,7 +2107,8 @@
-   if(typeof v.connect==='boolean')state.connect=v.connect;
-   if(typeof v.showNotes==='boolean')state.showNotes=v.showNotes;
-   if(v.connections)for(const [k,list] of Object.entries(v.connections)){
--   const N=Number(k),map=connectionsByCount.get(N);if(!map||!Array.isArray(list))continue;
-+   const N=k==='9+2'?11:Number(k),map=connectionsByCount.get(k==='9+2'?'9+2':N);
-+   if(!map||!Array.isArray(list))continue;
-    for(const pair of list){if(!Array.isArray(pair)||pair.length!==2)continue;const [a,b]=pair;
-     if(!Number.isInteger(a)||!Number.isInteger(b)||a===b||a<0||b<0||a>=N||b>=N)continue;
-     const degree=id=>[...map.values()].filter(e=>e.a===id||e.b===id).length;
-@@ -2110,13 +2116,27 @@
-   }
-   if(typeof v.locked==='boolean')state.locked=v.locked;
-   if(v.positions)for(const [key,ps] of Object.entries(v.positions)){
--   const set=sets.get(Number(key));if(!set||!Array.isArray(ps))continue;
-+   const set=sets.get(key==='9+2'?'9+2':Number(key));if(!set||!Array.isArray(ps))continue;
-    for(let i=0;i<Math.min(set.length,ps.length);i++){
-     const p=ps[i];if(!p||!p.saved)continue;
-     if(!Number.isFinite(p.u)||!Number.isFinite(p.v))continue;
-     set[i].u=clamp(p.u,0,1);set[i].v=clamp(p.v,0,1);set[i].saved=true;
-    }
-   }
-+  // v0.16 stored ordinary 11-note and 9+2 scenes in the same slot.
-+  // When importing a scene saved while 9+2 was active, copy its layout and
-+  // threads into the new independent slot without deleting the original data.
-+  if(v.count===11&&v.resonatorMode===true){
-+   if(!v.positions?.['9+2']){
-+    const old=sets.get(11),dest=sets.get('9+2');
-+    old.forEach((n,i)=>{dest[i].u=n.u;dest[i].v=n.v;dest[i].saved=n.saved;});
-+   }
-+   if(!v.connections?.['9+2']){
-+    const dest=connectionsByCount.get('9+2');
-+    for(const edge of connectionsByCount.get(11).values())
-+     dest.set(pairKey(edge.a,edge.b),{a:edge.a,b:edge.b,flash:0,created:0});
-+   }
-+  }
-   if(v.params)for(const k of Object.keys(params))if(Number.isFinite(v.params[k]))setParam(k,v.params[k]);
-  }catch(e){console.warn('Saved scene ignored:',e);}
- }
-@@ -2128,14 +2148,14 @@
- }
- function lab(open){$('lab').classList.toggle('open',open);$('shade').classList.toggle('open',open);
-  if(open){toggleDrawer(false);const rows=$('labRows');rows.replaceChildren();
--  for(const k of [7,9,11]){const m=metrics(k),s=stats[k],tr=document.createElement('tr');
--   tr.innerHTML=`<td>${k}${k===state.count?' ●':''}</td><td>${m.diameter}px</td><td>${m.gap}px</td><td>${s.hits}</td><td>${s.empty}</td><td>${s.slides}</td><td>${s.rub}</td><td>${s.moves}</td><td>${s.bumps}</td><td>${s.multi}</td>`;
-+  for(const k of [7,9,11,'9+2']){const m=metrics(k),s=stats[k],tr=document.createElement('tr');
-+   tr.innerHTML=`<td>${k}${k===activeMode()?' ●':''}</td><td>${m.diameter}px</td><td>${m.gap}px</td><td>${s.hits}</td><td>${s.empty}</td><td>${s.slides}</td><td>${s.rub}</td><td>${s.moves}</td><td>${s.bumps}</td><td>${s.multi}</td>`;
-    rows.appendChild(tr);}}
- }
- qsa('[data-connect]').forEach(b=>b.addEventListener('click',()=>{state.connect=!state.connect;
-  for(const p of pointerMap.values())cancelThread(p);updateButtons();say(state.connect?'Connection gestures on':'Connection gestures off');}));
- qsa('[data-show-notes]').forEach(b=>b.addEventListener('click',()=>{state.showNotes=!state.showNotes;updateButtons();drawRequest();}));
--$('clearConnections').addEventListener('click',()=>{connectionsByCount.get(state.count).clear();syncThreads();say('Threads cleared');});
-+$('clearConnections').addEventListener('click',()=>{activeConnections().clear();syncThreads();say('Threads cleared');});
- $('miniReset').addEventListener('click',()=>{reset();toggleDrawer(false);});
- $('miniLab').addEventListener('click',()=>lab(true));
- qsa('[data-material-type]').forEach(b=>b.addEventListener('click',()=>setMaterialType(Number(b.dataset.materialType))));
+@@ -2193,6 +2269,27 @@
+ $('reset').addEventListener('click',reset);$('shuffle').addEventListener('click',shuffle);$('save').addEventListener('click',save);
+ $('miniShuffle').addEventListener('click',shuffle);$('miniSave').addEventListener('click',save);
+ $('miniScenePrev').addEventListener('click',()=>$('scenePrev').click());$('miniSceneNext').addEventListener('click',()=>$('sceneNext').click());
++
++// SETTINGS: one active category at a time; preserve every control and its existing listener.
++const settingsTabs=qsa('[data-settings-tab]');
++function activateSettingsTab(name,focus=false){
++ for(const tab of settingsTabs){
++  const active=tab.dataset.settingsTab===name;
++  tab.setAttribute('aria-selected',String(active));tab.tabIndex=active?0:-1;
++  if(active&&focus)tab.focus();
++ }
++ qsa('[data-settings-page]').forEach(page=>{page.hidden=page.dataset.settingsPage!==name;});
++ const scroller=$('drawer').querySelector('.settings-scroll');if(scroller)scroller.scrollTop=0;
++}
++settingsTabs.forEach((tab,i)=>{
++ tab.addEventListener('click',()=>activateSettingsTab(tab.dataset.settingsTab));
++ tab.addEventListener('keydown',e=>{
++  if(!['ArrowRight','ArrowLeft','Home','End'].includes(e.key))return;
++  e.preventDefault();const index=e.key==='Home'?0:e.key==='End'?settingsTabs.length-1:(i+(e.key==='ArrowRight'?1:-1)+settingsTabs.length)%settingsTabs.length;
++  activateSettingsTab(settingsTabs[index].dataset.settingsTab,true);
++ });
++});
++
+ $('tuneBtn').addEventListener('click',()=>toggleDrawer(!state.drawer));$('closeTune').addEventListener('click',()=>toggleDrawer(false));
+ $('labButton').addEventListener('click',()=>lab(true));$('labClose').addEventListener('click',()=>lab(false));$('shade').addEventListener('click',()=>lab(false));
+ $('scenePrev').addEventListener('click',()=>{const order=['original','cloud','bright'];scene(order[(order.indexOf(state.scene)+2)%3]);});
