@@ -1,32 +1,26 @@
-# v0.19 テスト記録
+# v0.20 回帰テスト結果
 
-## 静的
-- Node.js `--check`: PASS
-- 外部ライブラリ不要の単体HTML構成: 維持
+JS syntax: PASS
 
-## ブラウザ（Chromium）
-- 667x375 / 844x390 / 1280x720: 画面表示・設定開閉 PASS
-- SOUND / PLAY / VISUAL / SCENE タブ切替 PASS
-- DELAY OFF / ECHO / DRIFT / TRANSFER 選択 PASS
-- Delay amountスライダー操作 PASS
-- 9+2への切替、音源のクリックによるWeb Audio起動 PASS
-- JavaScript pageerror / console error: 0（テストした操作に限る）
-- 描画モード: Canvas2D COMPATIBILITY（WebGL GPU実描画は検証できず）
+## ブラウザ操作
+667×375 / 844×390 / 1280×720 で Delay切替、Amount、SOUND / PLAY / VISUAL、素材切替、演奏場の基本操作を実行。JavaScript例外 0。描画は2D互換モード。
 
-## Web Audio 回帰
-- AudioContext unlock: running
-- 9音源: 9タンク、2遅延タップ
-- TRANSFERで0-1を接続: 2方向の遅延経路を生成
-- OFFに切替: 0経路（フェード後にノードを解放）
-- 9+2: 11タンク、Scale/Material変更後も11タンク
-- 9音に復帰: 9タンク
-- 実行中JavaScript例外: なし
+## 音響シミュレーション
+CANDY（C4）0.35–0.65s RMS: 0.0000485
+CERAMIC（C4）0.35–0.65s RMS: 0.02459
+ECHO OFF 0.22–0.52s RMS: 0.000000
+ECHO ON 0.22–0.52s RMS: 0.01196
+DRIFT ON 0.55–0.85s RMS: 0.00946
+非接続 0.12–0.50s RMS: 0.03109
+接続あり 0.12–0.50s RMS: 0.04398
+TRANSFER 0.50–1.0s RMS: 0.00620
+
+## 音量・負荷
+CANDY連打と接続: peak 0.405
+CERAMIC連打と接続: peak 0.456
+非有限サンプル: いずれも0。
 
 ## 保存
-- 模擬LocalStorageでTRANSFERとDelay amount=73を保存し、新規ページに同じデータを注入して再初期化: PASS
-- 実ブラウザの永続LocalStorageリロード: 環境のローカルHTTPアクセス制限により未検証
+模擬Storageで9+2 / Transfer / Amount 61の復元とモード切替: PASS。
 
-## 未検証
-- iPhone Safari実機での演奏感、遅延音の音質、クリックノイズ
-- WebGL2実描画、長時間高負荷演奏
-- 実際のスピーカー・ヘッドホンでの音響測定
+実機試験ではないため、主観的な音質や端末固有のノイズについては未判定。

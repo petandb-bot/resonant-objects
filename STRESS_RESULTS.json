@@ -1,0 +1,16 @@
+{
+  "candy_transfer": {
+    "peak": 0.4051353931427002,
+    "rms": 0.061675317808382125,
+    "nonfinite": 0,
+    "samples_ge_1": 0,
+    "max_adjacent_delta": 0.023930467665195465
+  },
+  "ceramic_transfer": {
+    "peak": 0.4561651945114136,
+    "rms": 0.10916786004955131,
+    "nonfinite": 0,
+    "samples_ge_1": 0,
+    "max_adjacent_delta": 0.01974951382726431
+  }
+}

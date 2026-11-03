@@ -1,0 +1,109 @@
+{
+  "ui_844x390": {
+    "exception_count": 0,
+    "errors": [],
+    "renderer": "2D COMPATIBILITY",
+    "echo_buttons": 1
+  },
+  "ui_667x375": {
+    "exception_count": 0,
+    "errors": [],
+    "renderer": "2D COMPATIBILITY",
+    "echo_buttons": 1
+  },
+  "ui_1280x720": {
+    "exception_count": 0,
+    "errors": [],
+    "renderer": "2D COMPATIBILITY",
+    "echo_buttons": 1
+  },
+  "audio_synth_offline": {
+    "candy": {
+      "peak": 0.21463656425476074,
+      "windows": [
+        {
+          "rms": 0.0676531345390127,
+          "peak": 0.21463656425476074,
+          "zero_crossing_per_sec": 551.2820512820513
+        },
+        {
+          "rms": 0.007507626032520063,
+          "peak": 0.03327219560742378,
+          "zero_crossing_per_sec": 515
+        },
+        {
+          "rms": 4.851032662879152e-05,
+          "peak": 0.00023329377290792763,
+          "zero_crossing_per_sec": 523.3333333333333
+        },
+        {
+          "rms": 0,
+          "peak": 0,
+          "zero_crossing_per_sec": 0
+        }
+      ]
+    },
+    "ceramic": {
+      "peak": 0.1792718917131424,
+      "windows": [
+        {
+          "rms": 0.07063755866567395,
+          "peak": 0.1792718917131424,
+          "zero_crossing_per_sec": 628.2051282051282
+        },
+        {
+          "rms": 0.04513022493864317,
+          "peak": 0.12251751124858856,
+          "zero_crossing_per_sec": 675
+        },
+        {
+          "rms": 0.024593072881279,
+          "peak": 0.06887941807508469,
+          "zero_crossing_per_sec": 563.3333333333333
+        },
+        {
+          "rms": 0.007999215427127154,
+          "peak": 0.024427024647593498,
+          "zero_crossing_per_sec": 521.6666666666667
+        }
+      ]
+    }
+  },
+  "audio_delay_offline": {
+    "off": {
+      "early": 0.07997248263942458,
+      "echoWindow": 0,
+      "late": 0,
+      "peak": 0.03089371882379055
+    },
+    "echo": {
+      "early": 0.07997248263942458,
+      "echoWindow": 0.011962722479379718,
+      "late": 0.0017700380107506196,
+      "peak": 0.03089371882379055
+    },
+    "drift": {
+      "early": 0.07997248263942458,
+      "echoWindow": 0.007191623284097239,
+      "late": 0.009455883615065788,
+      "peak": 0.03089371882379055
+    }
+  },
+  "audio_connect_offline": {
+    "unconnected": {
+      "start": 0.05717234509664892,
+      "mid": 0.031093024663378738,
+      "tail": 0.003952336347433344
+    },
+    "connected": {
+      "start": 0.07088939029953309,
+      "mid": 0.04398075801872658,
+      "tail": 0.005333237804085146
+    },
+    "transfer": {
+      "start": 0.058363118543983135,
+      "mid": 0.03509943797963675,
+      "tail": 0.006201141672297291
+    }
+  }
+}
