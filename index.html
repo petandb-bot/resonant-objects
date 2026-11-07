@@ -4,7 +4,7 @@
 <meta name="theme-color" content="#07090d">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>RESONANT OBJECTS · v0.20.0</title>
+<title>RESONANT OBJECTS · v0.20.1</title>
 <style>:root{
   --ink:#344f78; --muted:#7387a5; --aqua:#83e4e5; --violet:#9c9bfd;
   --cream:#fcfff9; --line:rgba(255,255,255,.72); --glaze:rgba(251,255,255,.50);
@@ -462,7 +462,7 @@ input[type=range]::-webkit-slider-thumb{background:#73c9dd!important;border:1px 
   </section>
 </aside>
 </div>
-<footer class="bottom"><span class="fine">✧  RESONANT OBJECTS · v0.20.0</span><span class="readout" id="status" role="status" aria-live="polite">Tap a shape · drag to arrange silently</span></footer>
+<footer class="bottom"><span class="fine">✧  RESONANT OBJECTS · v0.20.1</span><span class="readout" id="status" role="status" aria-live="polite">Tap a shape · drag to arrange silently</span></footer>
 </div>
 <section id="drawer" role="region" aria-label="Instrument controls">
 <div class="drawer-title"><span>INSTRUMENT SETTINGS</span><button id="closeTune" type="button" class="flatbtn" aria-label="Close settings">✕</button></div>
@@ -571,8 +571,7 @@ input[type=range]::-webkit-slider-thumb{background:#73c9dd!important;border:1px 
 </section>
 <div id="turn" aria-label="Rotate device"><div class="turn-geometry" aria-hidden="true">◇</div><strong>TURN SIDEWAYS</strong><small>This little instrument likes both hands.<br>Disable rotation lock if necessary.</small></div>
 
-<script>/* RESONANT OBJECTS v0.20.0 — FIVE INDEPENDENT SOUND ENGINES
- * 共通のWeb Audio出力バスは使うが、発音原理とノード・グラフは素材ごとに独立。
+<script>/* RESONANT OBJECTS v0.20.1 — FIVE INDEPENDENT SOUND ENGINES
  * JEWEL: modal partial synthesis / CANDY: dynamic FM
  * CERAMIC: excited short waveguide / METAL: inharmonic cross-frequency FM
  * Noise generators are NOT used. Every source has a scheduled stop and cleanup.
@@ -752,7 +751,13 @@ class WaveBreathingEngine {
  constructor(host){this.host=host;this.name='WAVE / slow beating harmonic field';}
  strike(note,velocity,{sympathetic=false,delay=0,radial=0,repeat=0,impact=false}={}){
   const h=this.host,ctx=h.ctx,hz=soundHz(note.midi),v=bounded(velocity,0,1);
+  // Long WAVE voices are gently replaced, not accumulated indefinitely.
+  const active=h.voices.filter(voice=>voice.kind==='wave'&&!voice.finished);
+  const same=active.find(voice=>voice.noteId===note.id);
+  const previous=same||(active.length>=6?active[0]:null);
+  if(previous)h.releaseVoice(previous,h.ctx.currentTime+.004+delay);
   const e=new MaterialEvent(h,note,delay,!impact);
+  e.voice.kind='wave';e.voice.noteId=note.id;
   if(impact){
    // A collision remains brief and quiet: a harmonic ping rather than a snare.
    for(const [ratio,amp,dur] of [[2.012,.025,.17],[3.006,.014,.12]]){
@@ -790,8 +795,7 @@ class WaveBreathingEngine {
   });
  }
 }
-/* RESONANT OBJECTS v0.20.0 — five independent acoustic engines. No external dependencies.
- * 原音を維持しつつ、近接共鳴の「打撃時」と「音声信号経由」の2層を分離する。
+/* RESONANT OBJECTS v0.20.1 — five independent acoustic engines. No external dependencies.
  * Audio graph: per-voice modal synth -> dry bus -> compressor
  *                       \-> modal tanks <-> bounded damped coupling -> wet bus
  *                              \-> BLOOM diffused delay -> compressor
@@ -815,10 +819,38 @@ class ResonantEngine {
   const c=this.ctx=new A({latencyHint:'interactive'});
   this.voiceBus=c.createGain();this.voiceBus.gain.value=.84;
   this.effectInsert=c.createGain();this.compressor=c.createDynamicsCompressor();
-  this.compressor.threshold.value=-16;this.compressor.knee.value=12;
-  this.compressor.ratio.value=3.6;this.compressor.attack.value=.004;this.compressor.release.value=.20;
+  // Wide-knee bus control leaves individual attacks intact and avoids hard pumping.
+  this.compressor.threshold.value=-16;this.compressor.knee.value=16;
+  this.compressor.ratio.value=3.0;this.compressor.attack.value=.006;this.compressor.release.value=.23;
+  // Output correction is shared by dry, room, echo, Bloom and connected voices.
+  // Small static cuts control midrange buildup and sharp upper partials without
+  // changing the five material engines or the four room impulse responses.
+  this.outputHP=c.createBiquadFilter();this.outputHP.type='highpass';
+  this.outputHP.frequency.value=38;this.outputHP.Q.value=.707;
+  this.outputLowMid=c.createBiquadFilter();this.outputLowMid.type='peaking';
+  this.outputLowMid.frequency.value=350;this.outputLowMid.Q.value=.72;this.outputLowMid.gain.value=-1.1;
+  this.outputPresence=c.createBiquadFilter();this.outputPresence.type='peaking';
+  this.outputPresence.frequency.value=3800;this.outputPresence.Q.value=.85;this.outputPresence.gain.value=-1.7;
+  this.outputAir=c.createBiquadFilter();this.outputAir.type='highshelf';
+  this.outputAir.frequency.value=6900;this.outputAir.gain.value=-1.3;
+  // Preserve low touch latency: one dynamics stage, with downstream headroom.
+  // Calibrate nominal loudness after EQ and dynamics, with headroom for stacked voices.
+  this.outputTrim=c.createGain();this.outputTrim.gain.value=1.12;
   this.master=c.createGain();this.master.gain.value=this.level;
-  this.voiceBus.connect(this.effectInsert).connect(this.compressor).connect(this.master).connect(c.destination);
+  // A mostly linear, oversampled safety curve catches exceptionally dense stacks
+  // without a second compressor or its additional processing latency.
+  this.outputSafety=c.createWaveShaper();
+  const safetyCurve=new Float32Array(2049);
+  for(let i=0;i<safetyCurve.length;i++){
+   const x=i/(safetyCurve.length-1)*2-1,a=Math.abs(x);
+   const y=a<=.68?a:.68+.25*(1-Math.exp(-(a-.68)/.25));
+   safetyCurve[i]=Math.sign(x)*y;
+  }
+  this.outputSafety.curve=safetyCurve;this.outputSafety.oversample='2x';
+  this.voiceBus.connect(this.effectInsert).connect(this.compressor);
+  this.compressor.connect(this.outputHP).connect(this.outputLowMid)
+   .connect(this.outputPresence).connect(this.outputAir)
+   .connect(this.outputTrim).connect(this.master).connect(this.outputSafety).connect(c.destination);
   this.wetGains=[];
   for(const [seconds,cutoff,amount] of [[.063,3200,.21],[.142,2400,.16],[.282,1700,.11]]){
    const del=c.createDelay(.5);del.delayTime.value=seconds;
@@ -1018,7 +1050,7 @@ class ResonantEngine {
   for(let i=0;i<this.delayTaps.length;i++){
    const t=this.delayTaps[i],drift=active==='drift';
    t.delay.delayTime.setTargetAtTime(drift?[.365,.587][i]:[.238,.401][i],now,.10);
-   t.filter.frequency.setTargetAtTime(drift?[1750,1320][i]:[2950,2150][i],now,.10);
+   t.filter.frequency.setTargetAtTime(drift?[1750,1320][i]:[2700,1950][i],now,.10);
    t.feedback.gain.setTargetAtTime(drift?.29:.27,now,.075);
    t.out.gain.setTargetAtTime(enabled?(drift?(i===0?.38:.48):(i===0?.56:.32)):0,now,.065);
   }
@@ -1035,13 +1067,13 @@ class ResonantEngine {
   for(const edge of neighbors){
    const targetId=edge.a===note.id?edge.b:edge.a,target=this.tanks[targetId];
    if(!target)continue;
-   const send=event.gain(.56*strength),color=event.node(c.createBiquadFilter());
+   const send=event.gain(.52*strength),color=event.node(c.createBiquadFilter());
    const damping=event.node(c.createBiquadFilter()),travel=event.node(c.createDelay(.9));
-   const toTank=event.gain(.29),audible=event.gain(transfer?.67*amount:.36);
+   const toTank=event.gain(.26),audible=event.gain(transfer?.59*amount:.32);
    const targetHz=this.layout?.[targetId]?soundHz(this.layout[targetId].midi):soundHz(note.midi);
    color.type='peaking';color.frequency.value=Math.min(3500,targetHz*1.5);
-   color.Q.value=.85;color.gain.value=5;
-   damping.type='lowpass';damping.frequency.value=transfer?2100:2800;
+   color.Q.value=.78;color.gain.value=1.4;
+   damping.type='lowpass';damping.frequency.value=transfer?1950:2400;
    travel.delayTime.value=transfer?.235+(targetId%3)*.047:.047+(targetId%3)*.009;
    event.voice.bus.connect(send).connect(color).connect(damping).connect(travel);
    travel.connect(toTank).connect(target.input);
@@ -1135,8 +1167,8 @@ class ResonantEngine {
   if(!n||n.length!==this.tanks.length)return;
   const connectedIds=new Set(this.connections.flatMap(e=>[e.a,e.b]));
   for(const t of this.tanks){
-   t.ret.gain.setTargetAtTime(this.link?(connectedIds.has(t.id)?.39:.19):0,now,.045);
-   t.loopGain.gain.setTargetAtTime(this.link?[.30,.22,.27,.24,.17][this.soundType(n[t.id])]:0,now,.055);
+   t.ret.gain.setTargetAtTime(this.link?(connectedIds.has(t.id)?.34:.17):0,now,.045);
+   t.loopGain.gain.setTargetAtTime(this.link?[.27,.22,.24,.22,.17][this.soundType(n[t.id])]:0,now,.055);
   }
   const reach=Math.max(95,Math.min(n[0].stageW,n[0].stageH)*.82);
   // Each source sends to only the three nearest objects, normalized to avoid a gain explosion.
@@ -1163,8 +1195,9 @@ class ResonantEngine {
   if(!v||v.finished)return;v.finished=true;
   const now=Math.max(time,this.ctx.currentTime);
   v.bus.gain.cancelScheduledValues(now);v.bus.gain.setValueAtTime(Math.max(.0001,v.bus.gain.value),now);
-  v.bus.gain.exponentialRampToValueAtTime(.0001,now+.085);
-  for(const osc of v.oscillators){try{osc.stop(now+.105);}catch(_){}}
+  const fade=v.kind==='wave'?.22:.085;
+  v.bus.gain.exponentialRampToValueAtTime(.0001,now+fade);
+  for(const osc of v.oscillators){try{osc.stop(now+fade+.02);}catch(_){}}
   const i=this.voices.indexOf(v);if(i>=0)this.voices.splice(i,1);
  }
  // The sound source is selected per object; wave accents can coexist with struck materials.
@@ -1319,7 +1352,7 @@ class ResonantEngine {
 }
 
 
-/* RESONANT OBJECTS v0.20.0 — GPU field renderer
+/* RESONANT OBJECTS v0.20.1 — GPU field renderer
  * WebGL2 > WebGL1. Audio remains Web Audio (WebGL is graphics only).
  * Pass 1: native-resolution color field, geometry and GPU connection ribbons.
  * Pass 2: half-resolution double-buffered temporal resonance (GPU ping-pong).
@@ -1795,8 +1828,7 @@ class VisualRenderer{
 }
 
 
-/* RESONANT OBJECTS v0.20.0 — One Playing Field / interaction layer.
- * 描画 / 音源 / 状態を分離。WebGL描画上の位置とタッチ領域は同一のモデルを参照。
+/* RESONANT OBJECTS v0.20.1 — One Playing Field / interaction layer.
  * Notes use stable IDs within each layout; no timer-driven animation when idle. */
 (()=>{
 'use strict';

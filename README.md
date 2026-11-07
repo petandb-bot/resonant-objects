@@ -1,48 +1,20 @@
-# RESONANT OBJECTS v0.20 — ACOUSTIC DIFFERENTIATION
+# RESONANT OBJECTS v0.20.1
 
-v0.19に対する音響修正版。GUI、図形・色、7 / 9 / 11 / 9+2、Scale、JEWEL/METAL/WAVE、4種類のReverb、Bloom、保存方式は維持しています。
+An interactive audiovisual instrument for the browser.
 
-## 変更点
+## Features
+- Five sound materials: Jewel, Candy, Ceramic, Metal and Wave.
+- 7, 9, 11 and 9+2 object layouts.
+- Connectable resonators with Echo, Drift and Transfer delay.
+- Four reverbs, responsive graphics and touch-friendly controls.
 
-### CANDY
-- 旧版の強いサブオシレーターを廃止。発音直後だけ高次倍音を含むFMインデックスを強め、時間とともに丸い正弦波へ移行。
-- 明確な下降ピッチカーブと、ごく小さな遅延リバウンドを追加。全て短く、クリックを出さないエンベロープで制御。
-- 音の輪郭は弾力のある短いプラック。CERAMICの長い余韻と区別しやすくする。
+## Run
+Open `index.html` in a modern browser, or publish it with GitHub Pages.
+Tap to play, drag to move, and use the settings panel to shape the sound.
 
-### CERAMIC
-- 独立した3つの音程比（1 : 1.51 : 2.37）による、空洞を持つ器のような共鳴を構成。
-- 短い打撃の色づけには励振した遅延線を用いる。長い響きは有限時間のモーダル発振器で実現。
-- 遅延線フィードバックは低い値に制限。初期テストで検出した自己発振・振幅発散を防止した。
-- 基音の連続的な正弦波に依存した旧実装を再設計。
+## v0.20.1
+Refined output EQ, controlled WAVE polyphony and a soft peak ceiling.
+Reduced harshness in connected signals and low-mid resonance buildup.
+Sound engines, reverb choices, interface and saved settings remain unchanged.
 
-### Delay
-- 以前の既定量24で極めて弱かった並列ディレイのゲイン配分を見直し、原音を維持したまま反復音を聴き取りやすく調整。
-- ECHO: 約238ms / 401ms、明確な反復。DRIFT: 約365ms / 587ms、ごく遅い時間変調。
-- フィードバックは控えめに制限。既存のReverbとBloomの回路は変更なし。
-
-### Connect
-- 明示的な接続先へ、実際に鳴った音声を**追加発音なしで**フィルター／短い遅延を通して送る。
-- 接続先の共鳴回路に信号が入り、聴こえる並列反射成分も追加。
-- TRANSFERでは信号の移動時間を長くし、Connectの有無による違いを強調。
-- v0.19の常設相互フィードバック型のTRANSFER経路は廃止し、音声イベント単位の安定した伝送に変更。
-- 1つの物体からの明示的なリンクは既存仕様に従い最大2個。音量はコンプレッサーを通る。
-
-## GitHub Pagesへの配置
-`index.html` をリポジトリ直下に置き換えます。古いHTMLをバックアップしておくことを推奨します。
-既存の保存キーは変更していないため、v0.19の保存設定を読み込みます。
-
-## 比較方法
-1. CANDYとCERAMICを同じScale / 音量 / Ringで比較し、立ち上がりと0.5秒以降の余韻を確認。
-2. SOUND > DELAYで ECHO / DRIFT を選び、Amount 24〜45程度で聴く。OFFの場合は効果がありません。
-3. 2個のオブジェクトをConnectし、同じ音を接続前後で比較。TRANSFERは接続されている場合にだけ意味があります。
-4. 9+2、従来の11個モード、リバーブとの併用も比較。
-
-## 検証と制限
-- Node.js構文検査: PASS。
-- Chromium（667x375、844x390、1280x720）の設定・素材選択: テスト操作中に例外なし。
-- OfflineAudioContextでCANDY/CERAMIC、ECHO/DRIFT、Connectあり/なし/TRANSFERをレンダリングしてRMS確認。
-- 3個の音をConnectし6回鳴らす簡易負荷試験: 出力ピークは0.46未満、非有限値なし。
-- 模擬Local Storageを使う保存・復元、および7→11→9+2切替: PASS。
-- 9個以上の高密度・長時間連打による負荷テストは未完了（長いオフラインレンダリングは時間切れ）。
-- iPhone Safari実機の音質・発音遅延・WebGL GPU描画は未検証。クリックノイズの完全解消は断定しません。
-- WAVはC4 / Velocity 0.82の**ドライ音声**です。実機のリバーブやコンプレッサーを通さず、独立音源の違いを確認するために生成しています。
+Best experienced with headphones or stereo speakers. Start at a low volume.

@@ -1,26 +1,33 @@
-# v0.20 回帰テスト結果
+# v0.20.1 Verification
 
-JS syntax: PASS
+## Static checks
+- JavaScript syntax: PASS (`node --check`).
+- No Japanese-language comments or UI strings remain in `index.html`.
+- README is short and English-only.
+- Existing material types, reverb presets, object layouts, and storage keys are unchanged.
 
-## ブラウザ操作
-667×375 / 844×390 / 1280×720 で Delay切替、Amount、SOUND / PLAY / VISUAL、素材切替、演奏場の基本操作を実行。JavaScript例外 0。描画は2D互換モード。
+## UI regression (Chromium, Canvas 2D fallback)
+- Viewports: 667 × 375, 844 × 390, and 1280 × 720.
+- Tested: settings drawer, four tabs, all four delay modes, four reverb presets, 9+2 mode, Ceramic material.
+- Browser JavaScript exceptions during these interactions: 0.
 
-## 音響シミュレーション
-CANDY（C4）0.35–0.65s RMS: 0.0000485
-CERAMIC（C4）0.35–0.65s RMS: 0.02459
-ECHO OFF 0.22–0.52s RMS: 0.000000
-ECHO ON 0.22–0.52s RMS: 0.01196
-DRIFT ON 0.55–0.85s RMS: 0.00946
-非接続 0.12–0.50s RMS: 0.03109
-接続あり 0.12–0.50s RMS: 0.04398
-TRANSFER 0.50–1.0s RMS: 0.00620
+## Web Audio offline rendering (44.1 kHz)
+Nominal scenario: ten notes, multiple connections, room mix 75, Bloom 50, Delay 65.
+No non-finite samples or clipped samples were observed in the tested material scenarios.
 
-## 音量・負荷
-CANDY連打と接続: peak 0.405
-CERAMIC連打と接続: peak 0.456
-非有限サンプル: いずれも0。
+Stress scenario: 22 strikes over approximately 1.2 seconds, nine connected resonators, Delay 100, Space 100, Bloom 100, Master 100, Bond 100.
 
-## 保存
-模擬Storageで9+2 / Transfer / Amount 61の復元とモード切替: PASS。
+| Material | Highest absolute sample (v0.20.1) | Clipped samples | Non-finite samples |
+|---|---:|---:|---:|
+| Jewel | 0.832 | 0 | 0 |
+| Candy | 0.710 | 0 | 0 |
+| Ceramic | 0.843 | 0 | 0 |
+| Metal | 0.801 | 0 | 0 |
+| Wave | 0.861 | 0 | 0 |
 
-実機試験ではないため、主観的な音質や端末固有のノイズについては未判定。
+By comparison, v0.20 reached 1.236 in the Wave stress scenario (527 samples at or above 0.98). This was the strongest identified clipping risk.
+
+## Limitations
+- No iPhone Safari hardware audio, headphone listening, or continuous multi-hour performance test was performed.
+- Browser screenshots used Canvas 2D compatibility mode; WebGL 2 rendering was not verified on this machine.
+- A numerical peak result cannot establish subjective sound quality; compare by listening on the target device.
