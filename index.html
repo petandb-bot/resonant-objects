@@ -4,7 +4,7 @@
 <meta name="theme-color" content="#07090d">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>RESONANT OBJECTS · v0.20.1</title>
+<title>RESONANT OBJECTS · v0.21.0</title>
 <style>:root{
   --ink:#344f78; --muted:#7387a5; --aqua:#83e4e5; --violet:#9c9bfd;
   --cream:#fcfff9; --line:rgba(255,255,255,.72); --glaze:rgba(251,255,255,.50);
@@ -462,7 +462,7 @@ input[type=range]::-webkit-slider-thumb{background:#73c9dd!important;border:1px 
   </section>
 </aside>
 </div>
-<footer class="bottom"><span class="fine">✧  RESONANT OBJECTS · v0.20.1</span><span class="readout" id="status" role="status" aria-live="polite">Tap a shape · drag to arrange silently</span></footer>
+<footer class="bottom"><span class="fine">✧  RESONANT OBJECTS · v0.21.0</span><span class="readout" id="status" role="status" aria-live="polite">Tap a shape · drag to arrange silently</span></footer>
 </div>
 <section id="drawer" role="region" aria-label="Instrument controls">
 <div class="drawer-title"><span>INSTRUMENT SETTINGS</span><button id="closeTune" type="button" class="flatbtn" aria-label="Close settings">✕</button></div>
@@ -571,7 +571,7 @@ input[type=range]::-webkit-slider-thumb{background:#73c9dd!important;border:1px 
 </section>
 <div id="turn" aria-label="Rotate device"><div class="turn-geometry" aria-hidden="true">◇</div><strong>TURN SIDEWAYS</strong><small>This little instrument likes both hands.<br>Disable rotation lock if necessary.</small></div>
 
-<script>/* RESONANT OBJECTS v0.20.1 — FIVE INDEPENDENT SOUND ENGINES
+<script>/* RESONANT OBJECTS v0.21.0 — FIVE INDEPENDENT SOUND ENGINES
  * JEWEL: modal partial synthesis / CANDY: dynamic FM
  * CERAMIC: excited short waveguide / METAL: inharmonic cross-frequency FM
  * Noise generators are NOT used. Every source has a scheduled stop and cleanup.
@@ -582,7 +582,7 @@ const bounded = (v,min,max) => Math.min(max,Math.max(min,v));
 class MaterialEvent {
  constructor(host,note,delay=0,sendToTank=true){
   this.host=host;this.ctx=host.ctx;this.t=this.ctx.currentTime+.004+delay;
-  this.voice=host.newVoice(this.t);this.nodes=[];this.live=0;
+  this.voice=host.newVoice(this.t);this.nodes=[];this.live=0;this.routeShadows=[];
   if(sendToTank && host.link && host.tanks[note.id])this.voice.bus.connect(host.tanks[note.id].input);
   if(sendToTank && host.link)host.routeConnectedVoice(this,note);
  }
@@ -594,6 +594,18 @@ class MaterialEvent {
   o.onended=()=>{
    if(--this.live!==0)return;
    try{this.voice.bus.disconnect();}catch(_){}
+   // Sympathetic carriers are controlled by the source's extracted amplitude.
+   // Fade them gently when the source ends; do not let them become autonomous notes.
+   const endAt=this.ctx.currentTime;
+   for(const shadow of this.routeShadows){
+    try{shadow.level.gain.setTargetAtTime(0,endAt,.030);}catch(_){}
+    try{shadow.osc.stop(endAt+.18);}catch(_){}
+   }
+   if(this.host.activeCouplings){
+    for(const route of [...this.host.activeCouplings].filter(r=>r.event===this)){
+     this.host.activeCouplings.delete(route);
+    }
+   }
    const clean=()=>{for(const n of this.nodes){try{n.disconnect();}catch(_){}}};
    if(this.routeDelayTail)setTimeout(clean,Math.ceil(this.routeDelayTail*1000));else clean();
    this.voice.finished=true;
@@ -795,7 +807,7 @@ class WaveBreathingEngine {
   });
  }
 }
-/* RESONANT OBJECTS v0.20.1 — five independent acoustic engines. No external dependencies.
+/* RESONANT OBJECTS v0.21.0 — five independent acoustic engines. No external dependencies.
  * Audio graph: per-voice modal synth -> dry bus -> compressor
  *                       \-> modal tanks <-> bounded damped coupling -> wet bus
  *                              \-> BLOOM diffused delay -> compressor
@@ -807,7 +819,7 @@ class ResonantEngine {
   this.material=.36;this.materialType=0;this.decay=.67;this.bond=.75;this.space=0;this.bloom=0;this.level=.84;
   this.delayType='off';this.delayAmount=.24;
   this.reverbType='nest';this.reverbSlots=[];this.reverbCurrent=0;this.reverbBuffers=new Map();
-  this.link=true;this.connections=[];this.tanks=[];this.edges=[];this.tankKey='';this.wetGains=[];
+  this.link=true;this.connections=[];this.activeCouplings=new Set();this.tanks=[];this.edges=[];this.tankKey='';this.wetGains=[];
   this.lastContact=new Map();this.waveLayerTime=new Map();this.threadWaveTime=new Map();
   this.synths=[new JewelModalEngine(this),new CandyElasticFMEngine(this),
    new CeramicWaveguideEngine(this),new MetalInharmonicFMEngine(this),new WaveBreathingEngine(this)];
@@ -848,6 +860,10 @@ class ResonantEngine {
   }
   this.outputSafety.curve=safetyCurve;this.outputSafety.oversample='2x';
   this.voiceBus.connect(this.effectInsert).connect(this.compressor);
+  // The connection return joins the shared room/echo path, not a separate dry output.
+  // A controlled mute also makes Live Link OFF immediately audible.
+  this.connectBus=c.createGain();this.connectBus.gain.value=this.link?1:0;
+  this.connectBus.connect(this.effectInsert);
   this.compressor.connect(this.outputHP).connect(this.outputLowMid)
    .connect(this.outputPresence).connect(this.outputAir)
    .connect(this.outputTrim).connect(this.master).connect(this.outputSafety).connect(c.destination);
@@ -895,8 +911,24 @@ class ResonantEngine {
  setExpression(v){this.expression=Math.min(1,Math.max(0,v/100));}
  setDecay(v){this.decay=v/100;}
  setBond(v){this.bond=v/100;this.refreshLinks();}
- setLink(v){this.link=!!v;this.refreshLinks();}
- setConnections(connections){this.connections=connections.map(e=>({a:e.a,b:e.b}));this.refreshLinks();}
+ setLink(v){
+  this.link=!!v;
+  if(this.ctx&&this.connectBus)this.connectBus.gain.setTargetAtTime(this.link?1:0,this.ctx.currentTime,.035);
+  this.refreshLinks();
+ }
+ setConnections(connections){
+  this.connections=connections.map(e=>({a:e.a,b:e.b}));
+  // Dissolving a thread silences its in-flight feed-forward voice with a short fade.
+  if(this.ctx){
+   const now=this.ctx.currentTime;
+   for(const route of this.activeCouplings){
+    if(this.connections.some(e=>(e.a===route.from&&e.b===route.to)||(e.b===route.from&&e.a===route.to)))continue;
+    route.send.gain.setTargetAtTime(0,now,.038);
+    route.level.gain.setTargetAtTime(0,now,.038);
+   }
+  }
+  this.refreshLinks();
+ }
  /* Four genuinely different acoustic spaces: no pitch shift, no surprise percussion.
   * An early-reflection cluster and filtered diffuse late field are generated once
   * per AudioContext. The impulse is high-pass corrected and energy-normalized.
@@ -1060,27 +1092,82 @@ class ResonantEngine {
  // Source signal excites the target tank and creates a controlled acoustic reflection.
  routeConnectedVoice(event,note){
   if(!this.ctx||!this.tanks.length||!this.link||!this.connections.length)return;
-  const neighbors=this.connections.filter(edge=>edge.a===note.id||edge.b===note.id).slice(0,2);
+  const neighbors=this.connections.filter(e=>e.a===note.id||e.b===note.id).slice(0,2);
   if(!neighbors.length)return;
-  const c=this.ctx,transfer=this.delayType==='transfer',strength=Math.pow(this.bond,.75);
-  const amount=Math.sqrt(this.delayAmount);
+  const c=this.ctx,transfer=this.delayType==='transfer';
+  const typeProfiles=[
+   {ratios:[1,2.002],weights:[1,.24],filter:3550}, // JEWEL, clear glassy upper mode
+   {ratios:[1,1.992],weights:[1,.14],filter:1950}, // CANDY, rounded harmonic pulse
+   {ratios:[1,1.510],weights:[1,.37],filter:2350}, // CERAMIC, hollow inharmonic cavity
+   {ratios:[1,2.174],weights:[1,.22],filter:3000}, // METAL, faint metallic second mode
+   {ratios:[1,1.006],weights:[1,.26],filter:1850}  // WAVE, a slow beating companion
+  ];
+  if(!this.couplingEnvelopeCurve){
+   const curve=new Float32Array(1025);
+   for(let i=0;i<curve.length;i++){
+    const a=Math.abs(2*i/(curve.length-1)-1);
+    curve[i]=a/(1+3*a); // half-wave energy remains bounded even with strong attacks
+   }
+   this.couplingEnvelopeCurve=curve;
+  }
+  const strength=Math.pow(this.bond,.8);
+  const degreeScale=neighbors.length>1?.76:1;
   for(const edge of neighbors){
-   const targetId=edge.a===note.id?edge.b:edge.a,target=this.tanks[targetId];
-   if(!target)continue;
-   const send=event.gain(.52*strength),color=event.node(c.createBiquadFilter());
-   const damping=event.node(c.createBiquadFilter()),travel=event.node(c.createDelay(.9));
-   const toTank=event.gain(.26),audible=event.gain(transfer?.59*amount:.32);
-   const targetHz=this.layout?.[targetId]?soundHz(this.layout[targetId].midi):soundHz(note.midi);
-   color.type='peaking';color.frequency.value=Math.min(3500,targetHz*1.5);
-   color.Q.value=.78;color.gain.value=1.4;
-   damping.type='lowpass';damping.frequency.value=transfer?1950:2400;
-   travel.delayTime.value=transfer?.235+(targetId%3)*.047:.047+(targetId%3)*.009;
-   event.voice.bus.connect(send).connect(color).connect(damping).connect(travel);
+   const targetId=edge.a===note.id?edge.b:edge.a;
+   const target=this.tanks[targetId],targetNote=this.layout?.[targetId];
+   if(!target||!targetNote)continue;
+   const distance=Math.hypot(targetNote.x-note.x,targetNote.y-note.y);
+   const reach=Math.max(95,Math.min(note.stageW||400,note.stageH||400)*.82);
+   const distanceScale=.78+.22*Math.max(0,1-distance/reach);
+   const coupling=strength*degreeScale*distanceScale;
+   // The first layer transfers the original timbre through a damped, delayed conduit.
+   // Delay time increases with distance between the physical objects.
+   const send=event.gain(.55*coupling);
+   const damping=event.node(c.createBiquadFilter());damping.type='lowpass';
+   damping.frequency.value=transfer?1820:2550;
+   const travel=event.node(c.createDelay(.9));
+   const transit=transfer?.20:.034;
+   travel.delayTime.value=transit+Math.min(transfer?.15:.070,distance/2100);
+   const toTank=event.gain(.23);
+   const audible=event.gain(transfer?.22*Math.sqrt(this.delayAmount):.13);
+   event.voice.bus.connect(send).connect(damping).connect(travel);
    travel.connect(toTank).connect(target.input);
-   // A separate audible wet path makes the connection distinguishable even when
-   // unrelated notes do not excite each other's narrow resonant modes strongly.
-   travel.connect(audible).connect(this.compressor);
-   if(transfer)event.routeDelayTail=Math.max(event.routeDelayTail||0,.8);
+   travel.connect(audible).connect(this.connectBus);
+
+   // A sympathetic *spectral identity* is the perceptible change on CONNECT:
+   // the source amplitude continuously articulates tones at the connected object's pitch.
+   // The carrier never has its own trigger envelope and cannot sound independently.
+   const highpass=event.node(c.createBiquadFilter());highpass.type='highpass';highpass.frequency.value=110;
+   const rectifier=event.node(c.createWaveShaper());rectifier.curve=this.couplingEnvelopeCurve;
+   const follower=event.node(c.createBiquadFilter());follower.type='lowpass';follower.frequency.value=16;
+   const shadowWet=event.gain(1.42*coupling);
+   const level=event.gain(1); // shared fade for removal / voice end
+   const profile=typeProfiles[this.soundType(targetNote)];
+   const spectral=event.node(c.createBiquadFilter());spectral.type='lowpass';
+   spectral.frequency.value=profile.filter;
+   event.voice.bus.connect(highpass).connect(rectifier).connect(follower);
+   // A close octave of the target's scale tone avoids extreme register jumps.
+   let midi=targetNote.midi;
+   while(midi-note.midi>7)midi-=12;
+   while(note.midi-midi>7)midi+=12;
+   const baseHz=soundHz(midi);
+   for(let k=0;k<profile.ratios.length;k++){
+    const osc=event.node(c.createOscillator());osc.type='sine';
+    osc.frequency.value=Math.min(7200,baseHz*profile.ratios[k]);
+    const dyn=event.gain(0),partial=event.gain(profile.weights[k]);
+    follower.connect(dyn.gain);
+    osc.connect(dyn).connect(partial).connect(level).connect(spectral);
+    osc.start(event.t);osc.stop(event.t+9);
+    event.voice.oscillators.push(osc);
+    event.routeShadows.push({osc,level});
+   }
+   spectral.connect(shadowWet).connect(this.connectBus);
+   // Let the target's own resonator color the transferred fundamental.
+   const sympathetic=event.gain(.14);
+   spectral.connect(sympathetic).connect(target.input);
+   this.activeCouplings.add({event,from:note.id,to:targetId,send,level});
+   // The muted original signal can still travel briefly after the source ends.
+   event.routeDelayTail=Math.max(event.routeDelayTail||0,transfer?.75:.18);
   }
  }
  // Old persistent tank-to-tank delay loops were retired in v0.20.
@@ -1179,7 +1266,7 @@ class ResonantEngine {
    const attached=this.connections.some(v=>(v.a===edge.from&&v.b===edge.to)||(v.a===edge.to&&v.b===edge.from));
    // Bounded total matrix gains; explicit links are audible but never runaway.
    const materialMatrix=[1,.75,.90,1.05,.65][this.soundType(n[edge.from])];
-   const coeff=(attached?.205:(target ? (.035+.055*(1-target.d/reach)) : 0))*materialMatrix;
+   const coeff=(attached?.245:(target ? (.026+.045*(1-target.d/reach)) : 0))*materialMatrix;
    const amount=this.link?coeff*Math.pow(this.bond,1.15):0;
    edge.gain.gain.setTargetAtTime(amount,now,.045);
   }
@@ -1230,8 +1317,8 @@ class ResonantEngine {
   for(const edge of this.connections){
    if(edge.a!==index&&edge.b!==index)continue;
    const other=notes[edge.a===index?edge.b:edge.a];
-   if(other){other.energy=Math.min(1,other.energy+.20*velocity);
-    other.coupling=Math.min(1,(other.coupling||0)+.65*velocity);}
+   if(other){other.energy=Math.min(1,other.energy+.32*velocity);
+    other.coupling=Math.min(1,(other.coupling||0)+.85*velocity);}
   }
   return true;
  }
@@ -1352,7 +1439,7 @@ class ResonantEngine {
 }
 
 
-/* RESONANT OBJECTS v0.20.1 — GPU field renderer
+/* RESONANT OBJECTS v0.21.0 — GPU field renderer
  * WebGL2 > WebGL1. Audio remains Web Audio (WebGL is graphics only).
  * Pass 1: native-resolution color field, geometry and GPU connection ribbons.
  * Pass 2: half-resolution double-buffered temporal resonance (GPU ping-pong).
@@ -1828,7 +1915,7 @@ class VisualRenderer{
 }
 
 
-/* RESONANT OBJECTS v0.20.1 — One Playing Field / interaction layer.
+/* RESONANT OBJECTS v0.21.0 — One Playing Field / interaction layer.
  * Notes use stable IDs within each layout; no timer-driven animation when idle. */
 (()=>{
 'use strict';

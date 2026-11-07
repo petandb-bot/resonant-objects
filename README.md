@@ -1,20 +1,15 @@
-# RESONANT OBJECTS v0.20.1
+# RESONANT OBJECTS v0.21
 
-An interactive audiovisual instrument for the browser.
+An interactive audiovisual instrument built with Web Audio and WebGL.
 
-## Features
-- Five sound materials: Jewel, Candy, Ceramic, Metal and Wave.
-- 7, 9, 11 and 9+2 object layouts.
-- Connectable resonators with Echo, Drift and Transfer delay.
-- Four reverbs, responsive graphics and touch-friendly controls.
+## Play
+- Tap the shapes to play sounds; drag to arrange them.
+- Move one shape close to another and hold to create a connection.
+- Connected shapes share audible, pitch-aware sympathetic resonance.
+- Use the settings panel to choose materials, scales, delay, and reverb.
 
 ## Run
-Open `index.html` in a modern browser, or publish it with GitHub Pages.
-Tap to play, drag to move, and use the settings panel to shape the sound.
+Open `index.html` in a modern browser or publish it using GitHub Pages.
+For mobile use, landscape orientation is recommended.
 
-## v0.20.1
-Refined output EQ, controlled WAVE polyphony and a soft peak ceiling.
-Reduced harshness in connected signals and low-mid resonance buildup.
-Sound engines, reverb choices, interface and saved settings remain unchanged.
-
-Best experienced with headphones or stereo speakers. Start at a low volume.
+No external dependencies. Audio begins after user interaction.
